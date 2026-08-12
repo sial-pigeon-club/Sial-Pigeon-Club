@@ -1,0 +1,139 @@
+{
+  "clubs": [
+    {
+      "id": "sample-club-1",
+      "name": "Sohni Dharti Pigeon Club",
+      "city": "",
+      "lat": null,
+      "lon": null,
+      "tournaments": [
+        {
+          "id": "sample-t-1",
+          "name": "",
+          "meta": {
+            "date": "13 Jun 2026",
+            "uraan_time": "05:00",
+            "aakhri_time": "20:30",
+            "sunrise": "04:55",
+            "sunset": "19:41",
+            "flying": 0,
+            "landed": 18,
+            "pigeons": 18,
+            "lofts": 3,
+            "first_winner_time": "10:20",
+            "first_winner_name": "رانا وسیم",
+            "winner_pigeon_time": "13:56",
+            "winner_pigeon_name": "پیر فواد عظیم امرا",
+            "winner_pigeon_total_ready": false,
+            "daily_winners": [
+              {
+                "day": 1,
+                "first_winner_name": "رانا وسیم",
+                "first_winner_time": "10:20",
+                "winner_pigeon_name": "پیر فواد عظیم امرا",
+                "winner_pigeon_time": "13:56",
+                "ready": true
+              }
+            ],
+            "daily_double_mohar": [
+              {
+                "day": 1,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              }
+            ],
+            "daily_baby_winner": [
+              {
+                "day": 1,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              }
+            ],
+            "is_live": false,
+            "first_winner_amount_show": true,
+            "winner_pigeon_amount_show": true,
+            "double_mohar_amount_show": true,
+            "baby_winner_amount_show": true,
+            "duration_days": 1,
+            "first_winner_amount": "",
+            "winner_pigeon_amount": "",
+            "double_mohar_time": "",
+            "double_mohar_name": "",
+            "double_mohar_amount": "",
+            "baby_winner_time": "",
+            "baby_winner_name": "",
+            "baby_winner_amount": ""
+          },
+          "columns": [
+            "#6",
+            "#5",
+            "#4",
+            "#3",
+            "#2",
+            "#1"
+          ],
+          "birds": [
+            {
+              "name": "پیر فواد عظیم امرا",
+              "image": "",
+              "total": "59:12",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "times": [
+                "1/09:46",
+                "1/17:32",
+                "1/17:19",
+                "1/16:42",
+                "1/13:57",
+                "1/13:56"
+              ]
+            },
+            {
+              "name": "احسان جٹ دہم",
+              "image": "",
+              "total": "41:29",
+              "deduction": "-06:00",
+              "note": "کبوتر صبح 5:01 پر آرائے تھے",
+              "dm_cols": [],
+              "baby_cols": [],
+              "times": [
+                "1/05:00",
+                "1/16:00",
+                "1/15:01",
+                "1/14:57",
+                "1/14:03",
+                "1/12:28"
+              ]
+            },
+            {
+              "name": "رانا وسیم",
+              "image": "",
+              "total": "57:45",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "times": [
+                "1/10:20",
+                "1/17:10",
+                "1/16:55",
+                "1/16:20",
+                "1/13:40",
+                "1/13:20"
+              ]
+            }
+          ],
+          "position_amounts_by_tab": {
+            "total": []
+          }
+        }
+      ]
+    }
+  ]
+}
