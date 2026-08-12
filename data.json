@@ -1,38 +1,43 @@
 {
   "clubs": [
     {
-      "id": "sample-club-1",
-      "name": "Sohni Dharti Pigeon Club",
-      "city": "",
-      "lat": null,
-      "lon": null,
+      "id": "msqbml6nt1nmc",
+      "name": "Awami Cup Rana Town ",
+      "city": "Lahore",
+      "lat": 31.558,
+      "lon": 74.35071,
       "tournaments": [
         {
-          "id": "sample-t-1",
-          "name": "",
+          "id": "msqbml6n84tqs",
+          "name": "Awami Cup Rana Town ",
           "meta": {
-            "date": "13 Jun 2026",
-            "uraan_time": "05:00",
+            "date": "14 August 2026",
+            "uraan_time": "06:00",
             "aakhri_time": "20:30",
-            "sunrise": "04:55",
-            "sunset": "19:41",
-            "flying": 0,
-            "landed": 18,
-            "pigeons": 18,
-            "lofts": 3,
-            "first_winner_time": "10:20",
-            "first_winner_name": "رانا وسیم",
-            "winner_pigeon_time": "13:56",
-            "winner_pigeon_name": "پیر فواد عظیم امرا",
+            "duration_days": 1,
+            "sunrise": "",
+            "sunset": "",
+            "flying": 40,
+            "landed": 0,
+            "pigeons": 40,
+            "lofts": 8,
+            "is_live": true,
+            "first_winner_time": "",
+            "first_winner_name": "",
+            "winner_pigeon_time": "",
+            "winner_pigeon_name": "",
+            "double_mohar_col": null,
+            "double_mohar_time": "",
+            "double_mohar_name": "",
             "winner_pigeon_total_ready": false,
             "daily_winners": [
               {
                 "day": 1,
-                "first_winner_name": "رانا وسیم",
-                "first_winner_time": "10:20",
-                "winner_pigeon_name": "پیر فواد عظیم امرا",
-                "winner_pigeon_time": "13:56",
-                "ready": true
+                "first_winner_name": "",
+                "first_winner_time": "",
+                "winner_pigeon_name": "",
+                "winner_pigeon_time": "",
+                "ready": false
               }
             ],
             "daily_double_mohar": [
@@ -53,84 +58,161 @@
                 "ready": false
               }
             ],
-            "is_live": false,
             "first_winner_amount_show": true,
             "winner_pigeon_amount_show": true,
             "double_mohar_amount_show": true,
             "baby_winner_amount_show": true,
-            "duration_days": 1,
             "first_winner_amount": "",
             "winner_pigeon_amount": "",
-            "double_mohar_time": "",
-            "double_mohar_name": "",
             "double_mohar_amount": "",
             "baby_winner_time": "",
             "baby_winner_name": "",
             "baby_winner_amount": ""
           },
           "columns": [
-            "#6",
-            "#5",
-            "#4",
-            "#3",
+            "#1",
             "#2",
-            "#1"
+            "#3",
+            "#4",
+            "#5"
           ],
           "birds": [
             {
-              "name": "پیر فواد عظیم امرا",
+              "name": "استاد منیر مغل چھت رانا عمر بڈھنکے",
               "image": "",
-              "total": "59:12",
+              "total": "0:00",
               "deduction": "",
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
               "times": [
-                "1/09:46",
-                "1/17:32",
-                "1/17:19",
-                "1/16:42",
-                "1/13:57",
-                "1/13:56"
+                "",
+                "",
+                "",
+                "",
+                ""
               ]
             },
             {
-              "name": "احسان جٹ دہم",
+              "name": "استاد عامر کھرل چھت تنویر بھٹی",
               "image": "",
-              "total": "41:29",
-              "deduction": "-06:00",
-              "note": "کبوتر صبح 5:01 پر آرائے تھے",
-              "dm_cols": [],
-              "baby_cols": [],
-              "times": [
-                "1/05:00",
-                "1/16:00",
-                "1/15:01",
-                "1/14:57",
-                "1/14:03",
-                "1/12:28"
-              ]
-            },
-            {
-              "name": "رانا وسیم",
-              "image": "",
-              "total": "57:45",
+              "total": "0:00",
               "deduction": "",
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
               "times": [
-                "1/10:20",
-                "1/17:10",
-                "1/16:55",
-                "1/16:20",
-                "1/13:40",
-                "1/13:20"
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد عمران بٹ چھت وکی والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد حیدر جوئیہ چھت شفاقت جرمنی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد ناظم چھت حسنین ڈیرے والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد عاطف بھٹی چھت گھر والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "عمر سپراء چھت گھر والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد سیفی گھر چھت ناظر جٹ",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                ""
               ]
             }
           ],
+          "gallery": [],
           "position_amounts_by_tab": {
             "total": []
+          },
+          "column_days": {
+            "3": 1,
+            "4": 1
           }
         }
       ]
