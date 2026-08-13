@@ -21,7 +21,7 @@
             "landed": 0,
             "pigeons": 40,
             "lofts": 8,
-            "is_live": true,
+            "is_live": false,
             "first_winner_time": "",
             "first_winner_name": "",
             "winner_pigeon_time": "",
