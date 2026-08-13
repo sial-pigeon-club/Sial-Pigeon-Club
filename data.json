@@ -13,7 +13,7 @@
           "meta": {
             "date": "14 August 2026",
             "uraan_time": "06:00",
-            "aakhri_time": "20:30",
+            "aakhri_time": "19:30",
             "duration_days": 1,
             "sunrise": "",
             "sunset": "",
@@ -21,7 +21,7 @@
             "landed": 0,
             "pigeons": 40,
             "lofts": 8,
-            "is_live": false,
+            "is_live": true,
             "first_winner_time": "",
             "first_winner_name": "",
             "winner_pigeon_time": "",
@@ -68,7 +68,7 @@
             "baby_winner_time": "",
             "baby_winner_name": "",
             "baby_winner_amount": "",
-            "is_upcoming": true
+            "is_upcoming": false
           },
           "columns": [
             "#1",
