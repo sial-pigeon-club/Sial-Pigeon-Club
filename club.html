@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Club Results</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+  :root{
+    --green: #4C7A5E;
+    --green-dark: #3C6249;
+    --bg: #F5F7F5;
+    --card: #FFFFFF;
+    --entry-bg: #EAF5EC;
+    --gold: #F0A93A;
+    --gold-bg: #FFF6E4;
+    --cyan: #6FD8E8;
+    --cyan-bg: #E4FBFE;
+    --text: #1E2622;
+    --text-dim: #5C6B62;
+    --line: #E2E8E3;
+    --danger: #D64545;
+    --silver: #B9BFBB;
+    --radius: 14px;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  .urdu{ font-family: 'Noto Nastaliq Urdu', serif; direction: rtl; unicode-bidi: embed; line-height: 1.9; }
+
+  .wrap{ max-width: 480px; margin: 0 auto; padding: 14px 14px 60px; }
+
+  .back-link{ display:inline-flex; align-items:center; gap:4px; color: var(--green); text-decoration:none; font-size: 13px; font-weight:600; margin-bottom: 10px; }
+
+  /* Tournament history */
+  .history{ display:flex; gap: 8px; overflow-x:auto; padding-bottom: 6px; margin-bottom: 14px; }
+  .history-chip{
+    flex-shrink:0; background: var(--card); border: 1.5px solid var(--line); color: var(--text-dim);
+    border-radius: 20px; padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-decoration:none; white-space:nowrap;
+  }
+  .history-chip.active{ background: var(--green); border-color: var(--green); color:#fff; }
+
+  /* Day tabs (Total / Din-wise) */
+  .day-tabs{ display:flex; gap: 8px; overflow-x:auto; padding-bottom: 6px; margin-bottom: 12px; }
+  .tab-btn{
+    flex-shrink:0; background: #111; border: 1.5px solid #111; color: #fff;
+    border-radius: 10px; padding: 10px 18px; font-size: 14px; font-weight: 700; cursor:pointer;
+  }
+  .tab-btn.active{ background: var(--gold); border-color: var(--gold); color: #1a1a1a; }
+  .day-breakdown{ display:flex; gap: 8px; overflow-x:auto; margin: 8px 0; }
+
+  /* Info bar */
+  .infobar{
+    background: linear-gradient(160deg, var(--green), var(--green-dark));
+    color: #fff; border-radius: var(--radius);
+    padding: 14px 16px; font-size: 14px; line-height: 1.7;
+    margin-bottom: 14px;
+  }
+  .infobar .line1{ font-weight: 600; }
+  .infobar .line2{ opacity: 0.92; }
+
+  .dl-btn{
+    display:flex; align-items:center; justify-content:center; gap: 8px;
+    border: 1.5px solid var(--green); color: var(--green); background: #fff;
+    border-radius: 10px; padding: 10px; font-weight: 600; font-size: 14.5px;
+    cursor: pointer; width: auto; flex:1;
+  }
+  .dl-btn:hover{ background: var(--entry-bg); }
+  .dl-btn:disabled{ opacity: 0.6; cursor: not-allowed; }
+  .dl-row{ display:flex; gap: 8px; margin-bottom: 16px; }
+
+  /* Stat cards */
+  .stats{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+  .stat{
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 12px;
+    padding: 10px 4px; text-align:center;
+  }
+  .stat.flying{ border-color: var(--gold); }
+  .stat.landed{ border-color: var(--green); }
+  .stat .num{ font-size: 22px; font-weight: 700; }
+  .stat.flying .num{ color: var(--gold); }
+  .stat.landed .num{ color: var(--green); }
+  .stat .lbl{ font-size: 10.5px; color: var(--text-dim); letter-spacing: 0.5px; margin-top: 2px; }
+
+  .progress{
+    background: var(--gold-bg); border-radius: 20px; height: 34px; position: relative; overflow: hidden;
+    margin-bottom: 16px; display:flex; align-items:center;
+  }
+  .progress .fill{
+    position:absolute; left:0; top:0; bottom:0; background: var(--green); z-index: 1;
+    border-radius: 20px;
+  }
+  .progress .landed-lbl{ position:absolute; left: 10px; top:50%; transform: translateY(-50%); font-size: 11.5px; font-weight:600; color:#fff; text-shadow: 0 1px 2px rgba(0,0,0,0.45); z-index: 2; white-space: nowrap; }
+  .progress .flying-lbl{ position:absolute; right: 10px; top:50%; transform: translateY(-50%); font-size: 11.5px; font-weight:600; color:#fff; text-shadow: 0 1px 2px rgba(0,0,0,0.45); z-index: 2; white-space: nowrap; }
+
+  /* Winner cards */
+  .winners{ display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .winner-card{ border-radius: 12px; padding: 14px 10px; text-align:center; position: relative; transition: box-shadow .3s ease; }
+  .winner-card.first{ background: var(--gold); }
+  .winner-card.pigeon{ background: var(--cyan); }
+  .winner-card.mohar{ background: linear-gradient(135deg, #ffd76a, #ff9a3c); }
+  .winner-card.baby{ background: linear-gradient(135deg, #ffc2df, #ff6fb0); }
+  .winner-card.announced{ box-shadow: 0 0 0 2px rgba(255,255,255,0.7), 0 0 16px rgba(255,183,0,0.6); animation: winnerGlow 1.8s ease-in-out infinite; }
+  .winner-card.pigeon.announced{ box-shadow: 0 0 0 2px rgba(255,255,255,0.7), 0 0 16px rgba(0,200,255,0.6); animation: winnerGlowCyan 1.8s ease-in-out infinite; }
+  .winner-card.mohar.announced{ box-shadow: 0 0 0 2px rgba(255,255,255,0.7), 0 0 16px rgba(255,140,0,0.7); animation: winnerGlow 1.8s ease-in-out infinite; }
+  .winner-card.baby.announced{ box-shadow: 0 0 0 2px rgba(255,255,255,0.7), 0 0 16px rgba(255,111,176,0.7); animation: winnerGlowBaby 1.8s ease-in-out infinite; }
+  .winner-card.pending{ opacity: 0.55; box-shadow: none; }
+  .winner-card .trophy{ font-size: 18px; line-height:1; margin-bottom: 2px; }
+  @keyframes winnerGlow{
+    0%, 100%{ box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 0 10px rgba(255,183,0,0.45); }
+    50%{ box-shadow: 0 0 0 2px rgba(255,255,255,0.9), 0 0 22px rgba(255,183,0,0.85); }
+  }
+  @keyframes winnerGlowCyan{
+    0%, 100%{ box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 0 10px rgba(0,200,255,0.45); }
+    50%{ box-shadow: 0 0 0 2px rgba(255,255,255,0.9), 0 0 22px rgba(0,200,255,0.85); }
+  }
+  @keyframes winnerGlowBaby{
+    0%, 100%{ box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 0 10px rgba(255,111,176,0.45); }
+    50%{ box-shadow: 0 0 0 2px rgba(255,255,255,0.9), 0 0 22px rgba(255,111,176,0.85); }
+  }
+  .winner-card .lbl{ font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: rgba(0,0,0,0.65); margin-bottom: 4px; }
+  .winner-card .time{ font-size: 26px; font-weight: 700; color: #1a1a1a; }
+  .winner-card .wname{ font-size: 15px; margin-top: 2px; color: #1a1a1a; }
+  .winner-card .amt{ font-size: 13px; font-weight: 700; margin-top: 5px; color: #1a1a1a; opacity: 0.85; }
+
+  .daily-winners{ background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; }
+  .daily-winners-title{ font-size: 12.5px; font-weight: 700; margin-bottom: 8px; color: var(--text-dim); }
+  .daily-winner-row{ font-size: 13px; padding: 6px 0; border-top: 1px solid var(--line); }
+  .daily-winner-row:first-of-type{ border-top: none; }
+  .pending-lbl{ color: var(--text-dim); }
+  /* Search */
+  .search{
+    background: var(--card); border: 1px solid var(--line); border-radius: 30px;
+    padding: 11px 18px; margin-bottom: 16px; font-size: 14px; width: 100%;
+    text-align: right;
+  }
+  .search::placeholder{ color: var(--text-dim); }
+
+  /* Entry cards */
+  .entry{
+    background: var(--entry-bg); border-radius: var(--radius); padding: 14px;
+    margin-bottom: 12px;
+  }
+  .entry-top{ display:flex; align-items:center; gap: 10px; margin-bottom: 10px; }
+  .entry-total{ font-size: 24px; font-weight: 700; flex-shrink: 0; }
+  .entry-deduction{ font-size: 12px; color: var(--danger); font-weight: 600; }
+  .entry-name-wrap{ flex: 1; text-align: right; }
+  .entry-name{ font-size: 18px; font-weight: 600; }
+  .entry-club{ font-size: 11.5px; color: var(--text-dim); margin-top: 2px; }
+  .entry-note{ font-size: 12px; color: var(--danger); margin-top: 2px; }
+  .avatar-rank{ position: relative; flex-shrink: 0; }
+  .avatar{
+    width: 46px; height: 46px; border-radius: 50%; background: var(--green);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-weight: 700; font-size: 15px; overflow: hidden;
+  }
+  .avatar img{ width:100%; height:100%; object-fit: cover; }
+  .rank-badge{
+    position:absolute; bottom:-4px; right:-4px; width: 22px; height: 22px; border-radius: 50%;
+    display:flex; align-items:center; justify-content:center; font-size: 11px; font-weight: 700;
+    color: #fff; border: 2px solid var(--entry-bg);
+  }
+  .rank-badge.r1{ background: var(--gold); }
+  .rank-badge.r2{ background: var(--silver); }
+  .rank-badge.r3{ background: #C08A5A; }
+  .rank-badge.rn{ background: var(--text-dim); }
+
+  .checkpoints{ display:flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+  .chip{ background: #fff; border-radius: 8px; padding: 6px 8px; text-align:center; min-width: 52px; flex-shrink:0; }
+  .chip.mohar-chip{ background: linear-gradient(135deg, #fff6da, #ffe6b0); box-shadow: 0 0 0 2px var(--gold), 0 0 10px rgba(230,180,60,0.7); animation: winnerGlow 1.8s ease-in-out infinite; }
+  .chip.baby-chip{ background: linear-gradient(135deg, #ffe4f0, #ffc2df); box-shadow: 0 0 0 2px #ff6fb0, 0 0 10px rgba(255,111,176,0.7); animation: winnerGlowBaby 1.8s ease-in-out infinite; }
+  .chip .clabel{ font-size: 10px; color: var(--text-dim); }
+  .chip .ctime{ font-size: 13px; font-weight: 600; }
+  .chip .cday{ font-size: 9px; color: var(--gold); font-weight: 700; margin-top: 1px; }
+
+  .entry-dl-btn{
+    display:flex; align-items:center; justify-content:center; gap: 6px;
+    border: 1px solid var(--green); color: var(--green); background: #fff;
+    border-radius: 8px; padding: 7px; font-weight: 600; font-size: 12px;
+    margin-top: 10px; cursor: pointer; width: 100%;
+  }
+  .entry-dl-btn:hover{ background: var(--card); }
+  .entry-dl-btn:disabled{ opacity: 0.6; cursor: not-allowed; }
+
+  .loading{ padding: 60px 0; text-align:center; color: var(--text-dim); font-size: 13px; }
+  .error-box{ padding: 16px; border: 1px solid var(--danger); border-radius: 10px; color: var(--danger); font-size: 13px; margin: 20px 0; }
+
+  footer{ text-align:center; padding: 20px 0 0; display:flex; gap:10px; justify-content:center; }
+  footer a{
+    color: var(--green); text-decoration:none; border: 1px solid var(--green);
+    padding: 7px 16px; border-radius: 20px; font-size: 12.5px; font-weight: 600;
+  }
+
+  .card-title{ font-size: 16px; font-weight: 700; color: var(--green-dark); margin-bottom: 8px; text-align:center; }
+  .upcoming-badge{
+    display:flex; align-items:center; justify-content:center; gap: 8px;
+    background: rgba(230,180,60,0.1); border: 1px solid var(--gold); border-radius: 20px;
+    padding: 8px 14px; margin-bottom: 14px; font-weight:700; color: var(--gold); font-size: 14px;
+  }
+  .upcoming-badge .dot{
+    width: 10px; height: 10px; border-radius: 50%; background: var(--gold);
+    animation: pulseGold 1.4s infinite;
+  }
+  @keyframes pulseGold{
+    0%{ box-shadow: 0 0 0 0 rgba(230,180,60,0.6); }
+    70%{ box-shadow: 0 0 0 9px rgba(230,180,60,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(230,180,60,0); }
+  }
+  #shareCard{ background: var(--bg); padding: 4px 0 2px; }
+  .card-watermark{ text-align:center; font-size: 10.5px; color: var(--text-dim); margin-top: 6px; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="loading">Loading results…</div>
+</div>
+
+<script>
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function initials(name){
+  const parts = (name||'').trim().split(/\s+/);
+  return parts.slice(0,2).map(p=>p[0]).join('').toUpperCase();
+}
+
+function rankClass(i){
+  if(i===0) return 'r1';
+  if(i===1) return 'r2';
+  if(i===2) return 'r3';
+  return 'rn';
+}
+
+function migrateData(raw){
+  if(raw && Array.isArray(raw.clubs)) return raw;
+  const meta = (raw && raw.meta) ? raw.meta : {};
+  return {
+    clubs: [
+      {
+        id: 'club-1',
+        name: meta.club_name || 'Club',
+        tournaments: [
+          { id: 't-1', meta: meta, columns: (raw && raw.columns) || [], birds: (raw && raw.birds) || [] }
+        ]
+      }
+    ]
+  };
+}
+
+function qsParam(name){
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+// "total" strings look like "128:55" or "-06:00" (minutes:seconds, minutes can exceed 59)
+function totalToSeconds(str){
+  if(!str) return -Infinity;
+  const s = String(str).trim();
+  const neg = s.startsWith('-');
+  const clean = neg ? s.slice(1) : s;
+  const parts = clean.split(':').map(p => parseInt(p, 10));
+  if(parts.some(isNaN)) return -Infinity;
+  let secs = 0;
+  for(const p of parts) secs = secs * 60 + p;
+  return neg ? -secs : secs;
+}
+
+function sortBirdsByTotal(birds){
+  return birds.slice().sort((a, b) => totalToSeconds(b.total) - totalToSeconds(a.total));
+}
+
+// Multi-day bird.total looks like "Din 1: 29:15 · Din 2: 6:22". Single-day is just "29:15".
+function parseTotalBreakdown(str){
+  if(!str) return {};
+  const s = String(str).trim();
+  if(!/Din\s*\d+\s*:/.test(s)){
+    return { 1: totalToSeconds(s) };
+  }
+  const out = {};
+  s.split(' · ').forEach(part => {
+    const m = part.match(/Din\s*(\d+)\s*:\s*(.+)/);
+    if(m) out[parseInt(m[1], 10)] = totalToSeconds(m[2].trim());
+  });
+  return out;
+}
+
+function grandTotalSeconds(bird){
+  const vals = Object.values(parseTotalBreakdown(bird.total));
+  if(!vals.length) return -Infinity;
+  return vals.reduce((a,b) => a+b, 0);
+}
+
+function dayTotalSeconds(bird, day){
+  const bd = parseTotalBreakdown(bird.total);
+  return (day in bd) ? bd[day] : null;
+}
+
+function sortBirdsByGrandTotal(birds){
+  return birds.slice().sort((a, b) => grandTotalSeconds(b) - grandTotalSeconds(a));
+}
+
+function formatMinsPublic(mins){
+  if(mins === null || mins === undefined || isNaN(mins)) return '—';
+  const sign = mins < 0 ? '-' : '';
+  const abs = Math.abs(Math.round(mins));
+  return sign + Math.floor(abs/60) + ':' + String(abs%60).padStart(2,'0');
+}
+
+// Din ki date: agar admin ne is din ke liye manually date set ki hai (meta.day_dates[day])
+// to wahi use karte hain — khud guess/increment nahi karte, kyunke tournament ke din
+// zaroori nahi consecutive hon (e.g. 14 Aug ke baad seedha 16 Aug ho sakta hai).
+function dayTabLabel(day, meta){
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dd = (meta && meta.day_dates) || {};
+  const custom = dd[day];
+  if(custom){
+    const cd = new Date(custom);
+    if(!isNaN(cd.getTime())) return `${months[cd.getMonth()]} .${String(cd.getDate()).padStart(2,'0')}`;
+    return custom;
+  }
+  const base = new Date(meta && meta.date);
+  if(!isNaN(base.getTime())){
+    const d = new Date(base);
+    d.setDate(d.getDate() + (day - 1));
+    return `${months[d.getMonth()]} .${String(d.getDate()).padStart(2,'0')}`;
+  }
+  return `Din ${day}`;
+}
+
+let ALL_BIRDS = [];
+let COLUMNS = [];
+let CLUB_NAME = '';
+let CLUB_LOGO = '';
+let TOUR_META = {};
+let CURRENT_TAB = 'total';
+let CURRENT_TOUR = null;
+
+// Column ka apna "din" tag nikalte hain — pehle tour.column_days (jo admin ne
+// column banate waqt permanently save kiya) dekhte hain, warna kisi bhi bird
+// ke us column mein bhare hue waqt se din nikal lete hain (fallback).
+function getColumnDayPublic(tour, idx){
+  if(tour.column_days && tour.column_days[idx] != null) return Number(tour.column_days[idx]);
+  const filled = (tour.birds || []).find(b => b.times && b.times[idx]);
+  if(filled) return parseCp(filled.times[idx]).day;
+  return 1;
+}
+
+// Total tab => poore tournament ke aggregate stats (meta se, jo checkpoint
+// CELLS ke hisaab se calculate hote hain — birds × sab checkpoints). Kisi din
+// ka tab => sirf us din ke checkpoint columns ke hisaab se landed/flying
+// nikalte hain (birds × us din ke checkpoints = denominator, taake agar us
+// din ke sab checkpoints bhar chuke hon to 100% landed sahi dikhaye).
+function statsForTab(tour, tab){
+  const m = tour.meta;
+  const birds = tour.birds || [];
+  const lofts = Number(m.lofts) || birds.length;
+  if(tab === 'total'){
+    const pigeons = Number(m.pigeons) || (birds.length * (tour.columns || []).length);
+    return { flying: Number(m.flying) || 0, landed: Number(m.landed) || 0, pigeons, lofts };
+  }
+  const day = Number(tab);
+  const columns = tour.columns || [];
+  const dayColIdxs = columns.map((c,i) => i).filter(i => getColumnDayPublic(tour, i) === day);
+  const pigeons = birds.length * dayColIdxs.length;
+  let landed = 0;
+  birds.forEach(b => {
+    dayColIdxs.forEach(i => {
+      const raw = (b.times && b.times[i]) || '';
+      if(parseCp(raw).time) landed++;
+    });
+  });
+  const flying = Math.max(pigeons - landed, 0);
+  return { flying, landed, pigeons, lofts };
+}
+
+// Total tab => tournament ke overall declared winners (meta.first_winner_* / winner_pigeon_*).
+// Kisi din ka tab => usi din ke daily_winners entry se winner nikalte hain.
+function anyBirdHasDoubleMoharHighlight(tour){
+  return (tour.birds || []).some(b => (b.dm_cols || []).length > 0);
+}
+
+function anyBirdHasBabyWinnerHighlight(tour){
+  return (tour.birds || []).some(b => (b.baby_cols || []).length > 0);
+}
+
+// Position-wise amount (leaderboard #1, #2, #3...) — tour.position_amounts_by_tab
+// = { total: [...], "1": [...], "2": [...] } se, jis tab (Total ya Din X) mein
+// hain us ke hisaab se amount nikalte hain. Purana flat position_amounts format
+// (agar kabhi bacha ho) bhi handle karte hain.
+// Tournament "Upcoming" hai agar admin ne khud tick kiya ho, YA Date field
+// mein aaj se aage ki tareekh likhi ho.
+function isUpcoming(tour){
+  const m = tour && tour.meta;
+  if(!m) return false;
+  if(m.is_upcoming === true) return true;
+  if(!m.date) return false;
+  const d = new Date(m.date);
+  if(isNaN(d.getTime())) return false;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  d.setHours(0,0,0,0);
+  return d.getTime() > today.getTime();
+}
+
+function positionAmountFor(tour, idx, tab){
+  const byTab = tour.position_amounts_by_tab || (tour.position_amounts ? { total: tour.position_amounts } : {});
+  const list = byTab[tab] || byTab.total || [];
+  const entry = list[idx];
+  if(!entry) return '';
+  const isObj = entry && typeof entry === 'object';
+  const show = isObj ? (entry.show !== false) : true;
+  if(!show) return '';
+  return isObj ? (entry.amount || '') : (entry || '');
+}
+
+function winnersForTab(tour, tab){
+  const m = tour.meta;
+  if(tab === 'total'){
+    return {
+      first_winner_name: m.first_winner_name || '', first_winner_time: m.first_winner_time || '',
+      first_winner_amount: (m.first_winner_amount_show !== false) ? (m.first_winner_amount || '') : '',
+      winner_pigeon_name: m.winner_pigeon_name || '', winner_pigeon_time: m.winner_pigeon_time || '',
+      // "Best Average Total Days" mode mein Winner Pigeon dar-asal Total
+      // leaderboard ke #1 position wale bird jaisa hi hota hai (same grand
+      // total se rank hota hai) — isliye uska amount alag se likhne ki zaroorat
+      // nahi, Position-wise Amount ke 1st (Total tab) se khud-ba-khud le lete
+      // hain. Agar wo khali ho, tab hi manually likha hua "Winner Pigeon Total
+      // amount" field dikhta hai.
+      winner_pigeon_amount: (m.winner_pigeon_amount_show !== false)
+        ? (m.winner_pigeon_total_ready
+            ? (positionAmountFor(tour, 0, 'total') || m.winner_pigeon_amount || '')
+            : (m.winner_pigeon_amount || ''))
+        : '',
+      winner_pigeon_total_ready: !!m.winner_pigeon_total_ready,
+      double_mohar_name: m.double_mohar_name || '', double_mohar_time: m.double_mohar_time || '',
+      double_mohar_amount: (m.double_mohar_amount_show !== false) ? (m.double_mohar_amount || '') : '',
+      double_mohar_active: anyBirdHasDoubleMoharHighlight(tour),
+      baby_winner_name: m.baby_winner_name || '', baby_winner_time: m.baby_winner_time || '',
+      baby_winner_amount: (m.baby_winner_amount_show !== false) ? (m.baby_winner_amount || '') : '',
+      baby_winner_active: anyBirdHasBabyWinnerHighlight(tour)
+    };
+  }
+  const day = Number(tab);
+  const d = (m.daily_winners || []).find(x => Number(x.day) === day);
+  const dm = (m.daily_double_mohar || []).find(x => Number(x.day) === day);
+  const bw = (m.daily_baby_winner || []).find(x => Number(x.day) === day);
+  const da = (m.day_amounts && m.day_amounts[day]) || {};
+  const base = (!d || !d.ready)
+    ? { first_winner_name: '', first_winner_time: '', winner_pigeon_name: '', winner_pigeon_time: '' }
+    : {
+        first_winner_name: d.first_winner_name || '', first_winner_time: d.first_winner_time || '',
+        winner_pigeon_name: d.winner_pigeon_name || '', winner_pigeon_time: d.winner_pigeon_time || ''
+      };
+  return {
+    ...base,
+    first_winner_amount: da.fw || '',
+    winner_pigeon_amount: da.wp || '',
+    double_mohar_name: (dm && dm.ready) ? (dm.name || '') : '',
+    double_mohar_time: (dm && dm.ready) ? (dm.time || '') : '',
+    double_mohar_amount: da.dm || '',
+    double_mohar_active: !!(dm && dm.participating > 0),
+    baby_winner_name: (bw && bw.ready) ? (bw.name || '') : '',
+    baby_winner_time: (bw && bw.ready) ? (bw.time || '') : '',
+    baby_winner_amount: da.bw || '',
+    baby_winner_active: !!(bw && bw.participating > 0)
+  };
+}
+
+function statsWinnersHtml(tour, tab){
+  const s = statsForTab(tour, tab);
+  const w = winnersForTab(tour, tab);
+  const totalForPct = s.pigeons || (s.flying + s.landed) || 1;
+  const flyingPct = Math.round((s.flying / totalForPct) * 100);
+  const landedPct = 100 - flyingPct;
+  return `
+    <div class="stats">
+      <div class="stat flying"><div class="num">${s.flying}</div><div class="lbl">FLYING</div></div>
+      <div class="stat landed"><div class="num">${s.landed}</div><div class="lbl">LANDED</div></div>
+      <div class="stat"><div class="num">${s.pigeons}</div><div class="lbl">PIGEONS</div></div>
+      <div class="stat"><div class="num">${s.lofts}</div><div class="lbl">LOFTS</div></div>
+    </div>
+    <div class="progress">
+      <span class="landed-lbl">landed ${landedPct}%</span>
+      <div class="fill" style="width:${landedPct}%"></div>
+      <span class="flying-lbl">flying ${flyingPct}%</span>
+    </div>
+    <div class="winners">
+      <div class="winner-card first ${w.first_winner_name ? 'announced' : 'pending'}">
+        <div class="lbl">🥇 FIRST WINNER</div>
+        ${w.first_winner_name ? `
+          <div class="time">${escapeHtml(w.first_winner_time)}</div>
+          <div class="wname urdu">${escapeHtml(w.first_winner_name)}</div>
+          ${w.first_winner_amount ? `<div class="amt">💰 RS. ${escapeHtml(w.first_winner_amount)}</div>` : ''}
+        ` : `
+          <div class="wname urdu">ابھی اعلان نہیں ہوا</div>
+        `}
+      </div>
+      <div class="winner-card pigeon ${w.winner_pigeon_name ? 'announced' : 'pending'}">
+        <div class="lbl">🏆 ${w.winner_pigeon_total_ready ? 'BEST AVERAGE TOTAL DAYS' : 'WINNER PIGEON'}</div>
+        ${w.winner_pigeon_name ? `
+          <div class="time">${escapeHtml(w.winner_pigeon_time)}</div>
+          <div class="wname urdu">${escapeHtml(w.winner_pigeon_name)}</div>
+          ${w.winner_pigeon_amount ? `<div class="amt">💰 RS. ${escapeHtml(w.winner_pigeon_amount)}</div>` : ''}
+        ` : `
+          <div class="wname urdu">ابھی اعلان نہیں ہوا</div>
+        `}
+      </div>
+      ${w.double_mohar_active ? `
+      <div class="winner-card mohar ${w.double_mohar_name ? 'announced' : 'pending'}">
+        <div class="lbl">⭐ DOUBLE MOHAR</div>
+        ${w.double_mohar_name ? `
+          <div class="time">${escapeHtml(w.double_mohar_time)}</div>
+          <div class="wname urdu">${escapeHtml(w.double_mohar_name)}</div>
+          ${w.double_mohar_amount ? `<div class="amt">💰 RS. ${escapeHtml(w.double_mohar_amount)}</div>` : ''}
+        ` : `
+          <div class="wname urdu">ابھی اعلان نہیں ہوا</div>
+        `}
+      </div>` : ''}
+      ${w.baby_winner_active ? `
+      <div class="winner-card baby ${w.baby_winner_name ? 'announced' : 'pending'}">
+        <div class="lbl">🐣 BABY WINNER</div>
+        ${w.baby_winner_name ? `
+          <div class="time">${escapeHtml(w.baby_winner_time)}</div>
+          <div class="wname urdu">${escapeHtml(w.baby_winner_name)}</div>
+          ${w.baby_winner_amount ? `<div class="amt">💰 RS. ${escapeHtml(w.baby_winner_amount)}</div>` : ''}
+        ` : `
+          <div class="wname urdu">ابھی اعلان نہیں ہوا</div>
+        `}
+      </div>` : ''}
+    </div>`;
+}
+
+// Har checkpoint value "day/time" format mein store hoti hai (e.g. "2/12:23" = din 2, 12:23 baje).
+// Purani entries jinme sirf time ho unhein day 1 samjha jata hai.
+function parseCp(raw){
+  if(!raw) return { day: 1, time: '' };
+  const s = String(raw);
+  const slash = s.indexOf('/');
+  if(slash === -1) return { day: 1, time: s };
+  const day = parseInt(s.slice(0, slash), 10);
+  return { day: isNaN(day) ? 1 : day, time: s.slice(slash + 1) };
+}
+
+function renderDayTabs(){
+  const wrap = document.getElementById('dayTabs');
+  if(!wrap) return;
+  const durationDays = Number(TOUR_META.duration_days) || 1;
+  if(durationDays <= 1){
+    wrap.innerHTML = '';
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = '';
+  let html = `<button type="button" class="tab-btn${CURRENT_TAB === 'total' ? ' active' : ''}" onclick="switchDayTab('total')">Total</button>`;
+  for(let d = 1; d <= durationDays; d++){
+    html += `<button type="button" class="tab-btn${String(CURRENT_TAB) === String(d) ? ' active' : ''}" onclick="switchDayTab(${d})">${escapeHtml(dayTabLabel(d, TOUR_META))}</button>`;
+  }
+  wrap.innerHTML = html;
+}
+
+function switchDayTab(tab){
+  CURRENT_TAB = tab;
+  renderDayTabs();
+  const sw = document.getElementById('statsWinners');
+  if(sw && CURRENT_TOUR) sw.innerHTML = statsWinnersHtml(CURRENT_TOUR, tab);
+  const searchBox = document.getElementById('searchBox');
+  renderList(searchBox ? searchBox.value : '');
+}
+
+function renderList(filter){
+  const term = (filter||'').trim();
+  const list = document.getElementById('birdList');
+  const durationDays = Number(TOUR_META.duration_days) || 1;
+  const isDayTab = durationDays > 1 && CURRENT_TAB !== 'total';
+  const dayNum = isDayTab ? Number(CURRENT_TAB) : null;
+
+  let baseList;
+  if(isDayTab){
+    baseList = ALL_BIRDS.filter(b => dayTotalSeconds(b, dayNum) !== null);
+    baseList.sort((a,b) => dayTotalSeconds(b, dayNum) - dayTotalSeconds(a, dayNum));
+  } else if(durationDays > 1){
+    baseList = sortBirdsByGrandTotal(ALL_BIRDS);
+  } else {
+    baseList = ALL_BIRDS; // already sorted by total at render() time
+  }
+
+  const filtered = baseList.filter(b => !term || b.name.includes(term));
+  list.innerHTML = filtered.map((b, displayIdx)=>{
+    const realIdx = ALL_BIRDS.indexOf(b);
+    const avatarInner = b.image ? `<img src="${escapeHtml(b.image)}" alt="">` : escapeHtml(initials(b.name));
+    const dmCols = b.dm_cols || [];
+    const babyCols = b.baby_cols || [];
+    const chips = COLUMNS.map((c,i)=>{
+      const parsed = parseCp(b.times[i]);
+      if(isDayTab && parsed.day !== dayNum) return '';
+      const isDm = dmCols.includes(i);
+      const isBaby = babyCols.includes(i);
+      const cls = (isDm ? ' mohar-chip' : '') + (isBaby ? ' baby-chip' : '');
+      const marker = (isDm ? '⭐ ' : '') + (isBaby ? '🐣 ' : '');
+      return `<div class="chip${cls}"><div class="clabel">${marker}${escapeHtml(c)}</div><div class="ctime">${parsed.time ? escapeHtml(parsed.time) : '—'}</div>${(parsed.time && parsed.day > 1) ? `<div class="cday">Din ${parsed.day}</div>` : ''}</div>`;
+    }).join('');
+
+    let totalDisplay;
+    let breakdownRow = '';
+    if(isDayTab){
+      totalDisplay = formatMinsPublic(dayTotalSeconds(b, dayNum));
+    } else if(durationDays > 1){
+      const bd = parseTotalBreakdown(b.total);
+      const days = Object.keys(bd).map(Number).sort((x,y)=>x-y);
+      totalDisplay = formatMinsPublic(grandTotalSeconds(b));
+      if(days.length > 1){
+        breakdownRow = `<div class="day-breakdown">${days.map(d => `
+          <div class="chip"><div class="clabel">${escapeHtml(dayTabLabel(d, TOUR_META))}</div><div class="ctime">${escapeHtml(formatMinsPublic(bd[d]))}</div></div>
+        `).join('')}</div>`;
+      }
+    } else {
+      totalDisplay = escapeHtml(b.total);
+    }
+
+    return `
+      <div class="entry" data-idx="${realIdx}">
+        <div class="entry-top">
+          <div style="flex-shrink:0;">
+            <div class="entry-total">${totalDisplay}</div>
+            ${b.deduction ? `<div class="entry-deduction">${escapeHtml(b.deduction)}</div>` : ''}
+          </div>
+          <div class="entry-name-wrap">
+            <div class="entry-name urdu">${escapeHtml(b.name)}</div>
+            ${CLUB_NAME ? `<div class="entry-club urdu">${escapeHtml(CLUB_NAME)}</div>` : ''}
+            ${b.note ? `<div class="entry-note urdu">${escapeHtml(b.note)}</div>` : ''}
+          </div>
+          <div class="avatar-rank">
+            <div style="position:relative;">
+              <div class="avatar">${avatarInner}</div>
+              <div class="rank-badge ${rankClass(displayIdx)}">${displayIdx+1}</div>
+            </div>
+            ${(CURRENT_TOUR && positionAmountFor(CURRENT_TOUR, displayIdx, CURRENT_TAB)) ? `<div style="font-size:10.5px; font-weight:700; color:var(--green); text-align:center; margin-top:4px; white-space:nowrap;">💰 RS. ${escapeHtml(positionAmountFor(CURRENT_TOUR, displayIdx, CURRENT_TAB))}</div>` : ''}
+          </div>
+        </div>
+        ${breakdownRow}
+        <div class="checkpoints">${chips}</div>
+        <button class="entry-dl-btn" onclick="downloadEntry(${realIdx})">⬇ Is ka result download karein</button>
+      </div>`;
+  }).join('') || '<div class="loading">Koi result nahi mila</div>';
+}
+
+function render(raw){
+  const data = migrateData(raw);
+  const clubId = qsParam('club');
+  const club = data.clubs.find(c => String(c.id) === String(clubId)) || data.clubs[0];
+
+  if(!club){
+    document.getElementById('app').innerHTML = '<div class="error-box">Yeh club nahi mila.</div><footer><a href="clubs.html">← Clubs</a></footer>';
+    return;
+  }
+
+  const tournaments = club.tournaments || [];
+  if(tournaments.length === 0){
+    document.getElementById('app').innerHTML = `<div class="loading">${escapeHtml(club.name)} ka abhi koi tournament nahi hai</div><footer><a href="clubs.html">← Clubs</a></footer>`;
+    return;
+  }
+
+  const tId = qsParam('t');
+  let tour = tournaments.find(t => String(t.id) === String(tId));
+  if(!tour) tour = tournaments[tournaments.length - 1]; // default: most recent
+
+  const m = tour.meta;
+  ALL_BIRDS = sortBirdsByTotal(tour.birds || []);
+  TOUR_META = m;
+  CURRENT_TAB = 'total';
+  CURRENT_TOUR = tour;
+  COLUMNS = tour.columns || [];
+  CLUB_NAME = club.name || '';
+  CLUB_LOGO = club.logo || '';
+
+  const historyChips = tournaments.map(t => {
+    const active = String(t.id) === String(tour.id);
+    const label = t.name || t.meta.date || 'Tournament';
+    return `<a class="history-chip${active ? ' active' : ''}" href="club.html?club=${encodeURIComponent(club.id)}&t=${encodeURIComponent(t.id)}">${escapeHtml(label)}</a>`;
+  }).join('');
+
+  document.getElementById('app').innerHTML = `
+    <a class="back-link" href="clubs.html">← Clubs</a>
+    <div class="history">${historyChips}</div>
+    ${isUpcoming(tour) ? `<div class="upcoming-badge"><div class="dot"></div> 🔜 UPCOMING</div>` : ''}
+
+    <div id="shareCard">
+      <div class="card-title">${escapeHtml(club.name)}</div>
+      <div class="infobar">
+        <div class="line1">${tour.name ? escapeHtml(tour.name) + ' · ' : ''}${escapeHtml(m.date)} · Uraan time: ${escapeHtml(m.uraan_time)} · Aakhri time: ${escapeHtml(m.aakhri_time)}${(m.duration_days && Number(m.duration_days) > 1) ? ` · ${Number(m.duration_days)} din ka tournament` : ''}</div>
+        <div class="line2">🌅 Sunrise: ${escapeHtml(m.sunrise)} · 🕌 Sunset: ${escapeHtml(m.sunset)}</div>
+      </div>
+
+      <div id="statsWinners">${statsWinnersHtml(tour, 'total')}</div>
+      <div class="card-watermark">${escapeHtml(m.date)} · ${escapeHtml(club.name)}</div>
+    </div>
+
+    <div class="dl-row">
+      <button class="dl-btn" id="dlBtn" onclick="downloadCard()">Card 📷</button>
+      <button class="dl-btn" id="dlAllBtn" onclick="downloadAllPDF()">Sab Players ka PDF 📄</button>
+      ${(tour.gallery && tour.gallery.length) ? `<a class="dl-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;" href="gallery.html?club=${encodeURIComponent(club.id)}&t=${encodeURIComponent(tour.id)}">🖼 Gallery (${tour.gallery.length})</a>` : ''}
+    </div>
+
+    <div id="dayTabs" class="day-tabs"></div>
+
+    <input class="search" id="searchBox" placeholder="نام یا شہر تلاش کریں" oninput="renderList(this.value)">
+
+    <div id="birdList"></div>
+
+    <footer><a href="clubs.html">← Clubs</a></footer>
+  `;
+  renderDayTabs();
+  renderList('');
+}
+
+// Club ka logo (agar admin ne lagaya ho) canvas ke beech mein halka transparent
+// watermark ki tarah draw karte hain — download hone wali PNG/PDF dono par
+// yehi function use hota hai.
+function addWatermarkToCanvas(canvas, logoUrl){
+  return new Promise((resolve) => {
+    if(!logoUrl){ resolve(canvas); return; }
+    const img = new Image();
+    img.onload = () => {
+      const ctx = canvas.getContext('2d');
+      const maxW = canvas.width * 0.45;
+      const maxH = canvas.height * 0.45;
+      let w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+      const scale = Math.min(maxW / w, maxH / h, 1);
+      w *= scale; h *= scale;
+      const x = (canvas.width - w) / 2;
+      const y = (canvas.height - h) / 2;
+      ctx.save();
+      ctx.globalAlpha = 0.14;
+      ctx.drawImage(img, x, y, w, h);
+      ctx.restore();
+      resolve(canvas);
+    };
+    img.onerror = () => resolve(canvas);
+    img.src = logoUrl;
+  });
+}
+
+function downloadCard(){
+  const btn = document.getElementById('dlBtn');
+  const card = document.getElementById('shareCard');
+  btn.disabled = true;
+  const oldLabel = btn.textContent;
+  btn.textContent = 'Generating…';
+  html2canvas(card, { backgroundColor: '#F5F7F5', scale: 2 }).then(canvas => addWatermarkToCanvas(canvas, CLUB_LOGO)).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'results-card.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    btn.disabled = false;
+    btn.textContent = oldLabel;
+  }).catch(()=>{
+    btn.disabled = false;
+    btn.textContent = oldLabel;
+    alert('Card banane mein masla hua, dobara koshish karein.');
+  });
+}
+
+function safeFileName(name){
+  return (name||'result').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0,50) || 'result';
+}
+
+function downloadEntry(idx){
+  const el = document.querySelector(`.entry[data-idx="${idx}"]`);
+  if(!el) return;
+  const btn = el.querySelector('.entry-dl-btn');
+  const oldLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+  html2canvas(el, {
+    backgroundColor: '#F5F7F5', scale: 2,
+    ignoreElements: (node) => node.classList && node.classList.contains('entry-dl-btn')
+  }).then(canvas => addWatermarkToCanvas(canvas, CLUB_LOGO)).then(canvas => {
+    const bird = ALL_BIRDS[idx];
+    const link = document.createElement('a');
+    link.download = `${safeFileName(bird ? bird.name : 'result')}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    btn.disabled = false;
+    btn.textContent = oldLabel;
+  }).catch(()=>{
+    btn.disabled = false;
+    btn.textContent = oldLabel;
+    alert('Download mein masla hua, dobara koshish karein.');
+  });
+}
+
+async function downloadAllPDF(){
+  const btn = document.getElementById('dlAllBtn');
+  const oldLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+
+  const searchBox = document.getElementById('searchBox');
+  const oldSearchVal = searchBox ? searchBox.value : '';
+  renderList('');
+
+  try{
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 24;
+    const usableWidth = pageWidth - margin * 2;
+
+    const shareCanvas = await addWatermarkToCanvas(await html2canvas(document.getElementById('shareCard'), { backgroundColor: '#F5F7F5', scale: 2 }), CLUB_LOGO);
+    const shareImgH = usableWidth * shareCanvas.height / shareCanvas.width;
+    pdf.addImage(shareCanvas.toDataURL('image/png'), 'PNG', margin, margin, usableWidth, shareImgH);
+    let cursorY = margin + shareImgH + 14;
+
+    const entries = document.querySelectorAll('#birdList .entry');
+    for(const entryEl of entries){
+      const canvas = await addWatermarkToCanvas(await html2canvas(entryEl, {
+        backgroundColor: '#F5F7F5', scale: 2,
+        ignoreElements: (node) => node.classList && node.classList.contains('entry-dl-btn')
+      }), CLUB_LOGO);
+      const imgH = usableWidth * canvas.height / canvas.width;
+      if(cursorY + imgH > pageHeight - margin){
+        pdf.addPage();
+        cursorY = margin;
+      }
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin, cursorY, usableWidth, imgH);
+      cursorY += imgH + 10;
+    }
+
+    pdf.save('all-players-results.pdf');
+  } catch(err){
+    alert('PDF banane mein masla hua, dobara koshish karein.');
+  } finally {
+    if(searchBox){ searchBox.value = oldSearchVal; }
+    renderList(oldSearchVal);
+    btn.disabled = false;
+    btn.textContent = oldLabel;
+  }
+}
+
+fetch('./data.json?t=' + Date.now(), { cache: 'no-store' })
+  .then(r => { if(!r.ok) throw new Error('data.json not found'); return r.json(); })
+  .then(render)
+  .catch(err => {
+    document.getElementById('app').innerHTML =
+      '<div class="error-box">Couldn\'t load data.json — make sure it\'s uploaded in the same folder as this page. (' + err.message + ')</div>' +
+      '<footer><a href="clubs.html">← Clubs</a></footer>';
+  });
+</script>
+</body>
+</html>
