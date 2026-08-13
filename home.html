@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Tournament</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+  :root{
+    --green: #4C7A5E;
+    --green-dark: #3C6249;
+    --bg: #F5F7F5;
+    --card: #FFFFFF;
+    --entry-bg: #EAF5EC;
+    --gold: #F0A93A;
+    --gold-bg: #FFF6E4;
+    --cyan: #6FD8E8;
+    --text: #1E2622;
+    --text-dim: #5C6B62;
+    --line: #E2E8E3;
+    --danger: #D64545;
+    --silver: #B9BFBB;
+    --radius: 14px;
+  }
+  *{ box-sizing: border-box; }
+  body{ margin:0; background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', system-ui, sans-serif; }
+  .urdu{ font-family: 'Noto Nastaliq Urdu', serif; direction: rtl; unicode-bidi: embed; line-height: 1.9; }
+
+  .wrap{ max-width: 480px; margin: 0 auto; padding: 18px 14px 60px; }
+
+  .live-banner{
+    display:flex; align-items:center; gap: 8px; margin-bottom: 16px;
+  }
+  .live-dot{
+    width: 11px; height: 11px; border-radius: 50%; background: var(--danger);
+    animation: pulse 1.4s infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow: 0 0 0 0 rgba(214,69,69,0.55); }
+    70%{ box-shadow: 0 0 0 9px rgba(214,69,69,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(214,69,69,0); }
+  }
+  .live-banner .title{ font-size: 20px; font-weight: 700; color: var(--green-dark); }
+  .live-banner .sub{ font-size: 12px; color: var(--text-dim); margin-inline-start: auto; }
+  .upcoming-banner{
+    display:flex; align-items:center; gap: 8px; margin-bottom: 16px;
+  }
+  .upcoming-dot{
+    width: 11px; height: 11px; border-radius: 50%; background: var(--gold);
+    animation: pulseGold 1.4s infinite;
+  }
+  @keyframes pulseGold{
+    0%{ box-shadow: 0 0 0 0 rgba(230,180,60,0.6); }
+    70%{ box-shadow: 0 0 0 9px rgba(230,180,60,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(230,180,60,0); }
+  }
+  .upcoming-banner .title{ font-size: 20px; font-weight: 700; color: var(--gold); }
+
+  .club-title{ font-size: 17px; font-weight: 700; color: var(--green-dark); margin: 22px 0 8px; text-align:center; }
+  .club-title:first-of-type{ margin-top: 0; }
+
+  .infobar{
+    background: linear-gradient(160deg, var(--green), var(--green-dark));
+    color: #fff; border-radius: var(--radius);
+    padding: 14px 16px; font-size: 14px; line-height: 1.7;
+    margin-bottom: 14px;
+  }
+  .infobar .line1{ font-weight: 600; }
+  .infobar .line2{ opacity: 0.92; }
+
+  .stats{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+  .stat{
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 12px;
+    padding: 10px 4px; text-align:center;
+  }
+  .stat.flying{ border-color: var(--gold); }
+  .stat.landed{ border-color: var(--green); }
+  .stat .num{ font-size: 22px; font-weight: 700; }
+  .stat.flying .num{ color: var(--gold); }
+  .stat.landed .num{ color: var(--green); }
+  .stat .lbl{ font-size: 10.5px; color: var(--text-dim); letter-spacing: 0.5px; margin-top: 2px; }
+
+  .progress{
+    background: var(--gold-bg); border-radius: 20px; height: 34px; position: relative; overflow: hidden;
+    margin-bottom: 16px; display:flex; align-items:center;
+  }
+  .progress .fill{
+    position:absolute; left:0; top:0; bottom:0; background: var(--green); z-index: 1;
+    border-radius: 20px;
+  }
+  .progress .landed-lbl{ position:absolute; left: 10px; top:50%; transform: translateY(-50%); font-size: 11.5px; font-weight:600; color:#fff; text-shadow: 0 1px 2px rgba(0,0,0,0.45); z-index: 2; white-space: nowrap; }
+  .progress .flying-lbl{ position:absolute; right: 10px; top:50%; transform: translateY(-50%); font-size: 11.5px; font-weight:600; color:#fff; text-shadow: 0 1px 2px rgba(0,0,0,0.45); z-index: 2; white-space: nowrap; }
+
+  .winners{ display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .winner-card{ border-radius: 12px; padding: 14px 10px; text-align:center; position: relative; transition: box-shadow .3s ease; }
+  .winner-card.first{ background: var(--gold); }
+  .winner-card.pigeon{ background: var(--cyan); }
+  .winner-card.mohar{ background: linear-gradient(135deg, #ffd76a, #ff9a3c); }
+  .winner-card.baby{ background: linear-gradient(135deg, #ffc2df, #ff6fb0); }
+  .winner-card.announced{ box-shadow: 0 0 0 2px rgba(255,255,255,0.7), 0 0 16px rgba(255,183,0,0.6); animation: winnerGlow 1.8s ease-in-out infinite; }
+  .winner-card.pigeon.announced{ box-shadow: 0 0 0 2px rgba(255,255,255,0.7), 0 0 16px rgba(0,200,255,0.6); animation: winnerGlowCyan 1.8s ease-in-out infinite; }
+  .winner-card.mohar.announced{ box-shadow: 0 0 0 2px rgba(255,255,255,0.7), 0 0 16px rgba(255,140,0,0.7); animation: winnerGlow 1.8s ease-in-out infinite; }
+  .winner-card.baby.announced{ box-shadow: 0 0 0 2px rgba(255,255,255,0.7), 0 0 16px rgba(255,111,176,0.7); animation: winnerGlowBaby 1.8s ease-in-out infinite; }
+  .winner-card.pending{ opacity: 0.55; box-shadow: none; }
+  .winner-card .trophy{ font-size: 18px; line-height:1; margin-bottom: 2px; }
+  @keyframes winnerGlow{
+    0%, 100%{ box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 0 10px rgba(255,183,0,0.45); }
+    50%{ box-shadow: 0 0 0 2px rgba(255,255,255,0.9), 0 0 22px rgba(255,183,0,0.85); }
+  }
+  @keyframes winnerGlowCyan{
+    0%, 100%{ box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 0 10px rgba(0,200,255,0.45); }
+    50%{ box-shadow: 0 0 0 2px rgba(255,255,255,0.9), 0 0 22px rgba(0,200,255,0.85); }
+  }
+  @keyframes winnerGlowBaby{
+    0%, 100%{ box-shadow: 0 0 0 2px rgba(255,255,255,0.6), 0 0 10px rgba(255,111,176,0.45); }
+    50%{ box-shadow: 0 0 0 2px rgba(255,255,255,0.9), 0 0 22px rgba(255,111,176,0.85); }
+  }
+  .winner-card .lbl{ font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: rgba(0,0,0,0.65); margin-bottom: 4px; }
+  .winner-card .time{ font-size: 26px; font-weight: 700; color: #1a1a1a; }
+  .winner-card .wname{ font-size: 15px; margin-top: 2px; color: #1a1a1a; }
+  .winner-card .amt{ font-size: 13px; font-weight: 700; margin-top: 5px; color: #1a1a1a; opacity: 0.85; }
+
+  .entry{
+    background: var(--entry-bg); border-radius: var(--radius); padding: 14px;
+    margin-bottom: 12px;
+  }
+  .entry-top{ display:flex; align-items:center; gap: 10px; margin-bottom: 10px; }
+  .entry-total{ font-size: 22px; font-weight: 700; flex-shrink: 0; }
+  .entry-deduction{ font-size: 12px; color: var(--danger); font-weight: 600; }
+  .entry-name-wrap{ flex: 1; text-align: right; }
+  .entry-name{ font-size: 17px; font-weight: 600; }
+  .entry-note{ font-size: 12px; color: var(--danger); margin-top: 2px; }
+  .avatar-rank{ position: relative; flex-shrink: 0; }
+  .avatar{
+    width: 42px; height: 42px; border-radius: 50%; background: var(--green);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-weight: 700; font-size: 14px; overflow: hidden;
+  }
+  .avatar img{ width:100%; height:100%; object-fit: cover; }
+  .rank-badge{
+    position:absolute; bottom:-4px; right:-4px; width: 20px; height: 20px; border-radius: 50%;
+    display:flex; align-items:center; justify-content:center; font-size: 10.5px; font-weight: 700;
+    color: #fff; border: 2px solid var(--entry-bg);
+  }
+  .rank-badge.r1{ background: var(--gold); }
+  .rank-badge.r2{ background: var(--silver); }
+  .rank-badge.r3{ background: #C08A5A; }
+  .rank-badge.rn{ background: var(--text-dim); }
+
+  .checkpoints{ display:flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+  .chip{ background: #fff; border-radius: 8px; padding: 6px 8px; text-align:center; min-width: 52px; flex-shrink:0; }
+  .chip .clabel{ font-size: 10px; color: var(--text-dim); }
+  .chip .ctime{ font-size: 13px; font-weight: 600; }
+  .chip .cday{ font-size: 9px; color: var(--gold); font-weight: 700; margin-top: 1px; }
+  .chip.mohar-chip{ background: linear-gradient(135deg, #fff6da, #ffe6b0); box-shadow: 0 0 0 2px var(--gold), 0 0 10px rgba(230,180,60,0.7); animation: winnerGlow 1.8s ease-in-out infinite; }
+  .chip.baby-chip{ background: linear-gradient(135deg, #ffe4f0, #ffc2df); box-shadow: 0 0 0 2px #ff6fb0, 0 0 10px rgba(255,111,176,0.7); animation: winnerGlowBaby 1.8s ease-in-out infinite; }
+
+  .view-full{ display:block; text-align:center; font-size: 12.5px; font-weight:600; color: var(--green); text-decoration:none; margin: 4px 0 4px; }
+
+  .gallery-preview{ margin-bottom: 16px; }
+  .gallery-preview-title{ font-size: 13px; font-weight: 700; color: var(--green-dark); margin-bottom: 8px; display:flex; align-items:center; justify-content:space-between; }
+  .gallery-preview-title a{ color: var(--green); font-size: 12.5px; font-weight: 600; text-decoration:none; }
+  .gallery-preview-strip{ display:flex; gap: 8px; overflow-x:auto; padding-bottom: 2px; }
+  .gallery-preview-strip img{
+    width: 84px; height: 84px; object-fit: cover; border-radius: 10px; flex-shrink:0;
+    border: 1px solid var(--line);
+  }
+
+  .empty-box{
+    text-align:center; padding: 70px 18px; color: var(--text-dim);
+  }
+  .empty-box .big{ font-size: 42px; margin-bottom: 10px; }
+  .empty-box .msg{ font-size: 14.5px; }
+  .empty-box .refresh-note{ font-size: 11.5px; margin-top: 10px; color: var(--text-dim); }
+
+  .loading{ padding: 60px 0; text-align:center; color: var(--text-dim); font-size: 13px; }
+  .error-box{ padding: 16px; border: 1px solid var(--danger); border-radius: 10px; color: var(--danger); font-size: 13px; margin: 20px 0; }
+
+  footer{ text-align:center; padding: 20px 0 0; }
+  footer a{
+    color: var(--green); text-decoration:none; border: 1px solid var(--green);
+    padding: 7px 16px; border-radius: 20px; font-size: 12.5px; font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="loading">Loading…</div>
+</div>
+
+<script>
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function youtubeId(url){
+  const m = String(url || '').match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+function youtubeThumb(url){
+  const id = youtubeId(url);
+  return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
+}
+function initials(name){
+  const parts = (name||'').trim().split(/\s+/);
+  return parts.slice(0,2).map(p=>p[0]).join('').toUpperCase();
+}
+function rankClass(i){
+  if(i===0) return 'r1';
+  if(i===1) return 'r2';
+  if(i===2) return 'r3';
+  return 'rn';
+}
+
+function migrateData(raw){
+  if(raw && Array.isArray(raw.clubs)) return raw;
+  const meta = (raw && raw.meta) ? raw.meta : {};
+  return {
+    clubs: [
+      {
+        id: 'club-1',
+        name: meta.club_name || 'Club',
+        tournaments: [
+          { id: 't-1', meta: meta, columns: (raw && raw.columns) || [], birds: (raw && raw.birds) || [] }
+        ]
+      }
+    ]
+  };
+}
+
+// Tournament "Live" hai agar admin ne khud tick kiya ho, YA kisi checkpoint
+// mein time bhara ja chuka ho, YA aaj ki tareekh tournament ke date-range
+// (Date se le kar Date + duration_days - 1 tak) ke andar ho — is se Upcoming
+// khud-ba-khud Live mein badal jata hai jis din uska date aa jaye, admin ko
+// khud kuch tick nahi karna padta.
+// Home page ke "Live Tournament" section mein sirf tabhi dikhega jab admin ne
+// khud "🔴 Yeh tournament LIVE hai" checkbox tick kiya ho — flying count ya
+// date se automatic nahi hota, taake admin ke pas poora control rahe ke
+// kab tournament public "live" dikhna shuru ho aur kab band ho jaye.
+function isLive(tour){
+  const m = tour && tour.meta;
+  if(!m) return false;
+  return m.is_live === true;
+}
+
+// Tournament "Upcoming" tab hai agar admin ne khud tick kiya ho, YA Date field
+// mein aaj se aage ki tareekh likhi ho.
+// "Upcoming" bhi sirf tabhi dikhega jab admin ne khud "🔜 Yeh tournament
+// UPCOMING hai" checkbox tick kiya ho — date se automatic nahi.
+function isUpcoming(tour){
+  const m = tour && tour.meta;
+  if(!m) return false;
+  return m.is_upcoming === true;
+}
+
+// Har checkpoint value "day/time" format mein store hoti hai (e.g. "2/12:23" = din 2, 12:23 baje).
+// Purani entries jinme sirf time ho unhein day 1 samjha jata hai.
+function parseCp(raw){
+  if(!raw) return { day: 1, time: '' };
+  const s = String(raw);
+  const slash = s.indexOf('/');
+  if(slash === -1) return { day: 1, time: s };
+  const day = parseInt(s.slice(0, slash), 10);
+  return { day: isNaN(day) ? 1 : day, time: s.slice(slash + 1) };
+}
+
+// "total" strings look like "128:55" or "-06:00" (minutes:seconds, minutes can exceed 59)
+function totalToSeconds(str){
+  if(!str) return -Infinity;
+  const s = String(str).trim();
+  const neg = s.startsWith('-');
+  const clean = neg ? s.slice(1) : s;
+  const parts = clean.split(':').map(p => parseInt(p, 10));
+  if(parts.some(isNaN)) return -Infinity;
+  let secs = 0;
+  for(const p of parts) secs = secs * 60 + p;
+  return neg ? -secs : secs;
+}
+
+// Multi-day bird.total looks like "Din 1: 29:15 · Din 2: 6:22". Single-day is just "29:15".
+function parseTotalBreakdown(str){
+  if(!str) return {};
+  const s = String(str).trim();
+  if(!/Din\s*\d+\s*:/.test(s)){
+    return { 1: totalToSeconds(s) };
+  }
+  const out = {};
+  s.split(' · ').forEach(part => {
+    const m = part.match(/Din\s*(\d+)\s*:\s*(.+)/);
+    if(m) out[parseInt(m[1], 10)] = totalToSeconds(m[2].trim());
+  });
+  return out;
+}
+
+function grandTotalSeconds(bird){
+  const vals = Object.values(parseTotalBreakdown(bird.total));
+  if(!vals.length) return -Infinity;
+  return vals.reduce((a,b) => a+b, 0);
+}
+
+function formatMinsPublic(mins){
+  if(mins === null || mins === undefined || isNaN(mins)) return '—';
+  const sign = mins < 0 ? '-' : '';
+  const abs = Math.abs(Math.round(mins));
+  return sign + Math.floor(abs/60) + ':' + String(abs%60).padStart(2,'0');
+}
+
+// Din ki date: agar admin ne is din ke liye manually date set ki hai (meta.day_dates[day])
+// to wahi use karte hain — khud guess/increment nahi karte.
+function dayTabLabel(day, meta){
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dd = (meta && meta.day_dates) || {};
+  const custom = dd[day];
+  if(custom){
+    const cd = new Date(custom);
+    if(!isNaN(cd.getTime())) return `${months[cd.getMonth()]} .${String(cd.getDate()).padStart(2,'0')}`;
+    return custom;
+  }
+  const base = new Date(meta && meta.date);
+  if(!isNaN(base.getTime())){
+    const d = new Date(base);
+    d.setDate(d.getDate() + (day - 1));
+    return `${months[d.getMonth()]} .${String(d.getDate()).padStart(2,'0')}`;
+  }
+  return `Din ${day}`;
+}
+
+function sortBirdsByTotal(birds, durationDays){
+  if(durationDays > 1){
+    return birds.slice().sort((a, b) => grandTotalSeconds(b) - grandTotalSeconds(a));
+  }
+  return birds.slice().sort((a, b) => totalToSeconds(b.total) - totalToSeconds(a.total));
+}
+
+// Position-wise amount (leaderboard #1, #2, #3...) — home.html mein koi din
+// tabs nahi hote, isliye hamesha "total" wala list use karte hain.
+function positionAmountFor(tour, idx){
+  const byTab = tour.position_amounts_by_tab || (tour.position_amounts ? { total: tour.position_amounts } : {});
+  const list = byTab.total || [];
+  const entry = list[idx];
+  if(!entry) return '';
+  const isObj = entry && typeof entry === 'object';
+  const show = isObj ? (entry.show !== false) : true;
+  if(!show) return '';
+  return isObj ? (entry.amount || '') : (entry || '');
+}
+
+function entriesHtml(club, tour){
+  const durationDays = Number(tour.meta && tour.meta.duration_days) || 1;
+  const birds = sortBirdsByTotal(tour.birds || [], durationDays);
+  const cols = tour.columns || [];
+  return birds.map((b, idx) => {
+    const avatarInner = b.image ? `<img src="${escapeHtml(b.image)}" alt="">` : escapeHtml(initials(b.name));
+    const dmCols = b.dm_cols || [];
+    const babyCols = b.baby_cols || [];
+    const chips = cols.map((c,i)=>{
+      const parsed = parseCp(b.times[i]);
+      const isDm = dmCols.includes(i);
+      const isBaby = babyCols.includes(i);
+      const cls = (isDm ? ' mohar-chip' : '') + (isBaby ? ' baby-chip' : '');
+      const marker = (isDm ? '⭐ ' : '') + (isBaby ? '🐣 ' : '');
+      return `<div class="chip${cls}"><div class="clabel">${marker}${escapeHtml(c)}</div><div class="ctime">${parsed.time ? escapeHtml(parsed.time) : '—'}</div>${(parsed.time && parsed.day > 1) ? `<div class="cday">Din ${parsed.day}</div>` : ''}</div>`;
+    }).join('');
+
+    let breakdownRow = '';
+    if(durationDays > 1){
+      const bd = parseTotalBreakdown(b.total);
+      const days = Object.keys(bd).map(Number).sort((x,y)=>x-y);
+      if(days.length > 1){
+        breakdownRow = `<div class="checkpoints" style="margin-bottom:8px;">${days.map(d => `
+          <div class="chip"><div class="clabel">${escapeHtml(dayTabLabel(d, tour.meta))}</div><div class="ctime">${escapeHtml(formatMinsPublic(bd[d]))}</div></div>
+        `).join('')}</div>`;
+      }
+    }
+
+    return `
+      <div class="entry">
+        <div class="entry-top">
+          <div style="flex-shrink:0;">
+            <div class="entry-total">${durationDays > 1 ? escapeHtml(formatMinsPublic(grandTotalSeconds(b))) : escapeHtml(b.total)}</div>
+            ${b.deduction ? `<div class="entry-deduction">${escapeHtml(b.deduction)}</div>` : ''}
+          </div>
+          <div class="entry-name-wrap">
+            <div class="entry-name urdu">${escapeHtml(b.name)}</div>
+            ${b.note ? `<div class="entry-note urdu">${escapeHtml(b.note)}</div>` : ''}
+          </div>
+          <div class="avatar-rank">
+            <div style="position:relative;">
+              <div class="avatar">${avatarInner}</div>
+              <div class="rank-badge ${rankClass(idx)}">${idx+1}</div>
+            </div>
+            ${positionAmountFor(tour, idx) ? `<div style="font-size:10.5px; font-weight:700; color:var(--green); text-align:center; margin-top:4px; white-space:nowrap;">💰 RS. ${escapeHtml(positionAmountFor(tour, idx))}</div>` : ''}
+          </div>
+        </div>
+        ${breakdownRow}
+        <div class="checkpoints">${chips}</div>
+      </div>`;
+  }).join('') || '<div class="loading">Abhi koi bird result nahi</div>';
+}
+
+function clubBlockHtml(club, tour){
+  const m = tour.meta;
+  const total = m.pigeons || (Number(m.flying) + Number(m.landed)) || 1;
+  const flyingPct = Math.round((Number(m.flying) / total) * 100);
+  const landedPct = 100 - flyingPct;
+  return `
+    <div class="club-title">🕊️ ${escapeHtml(club.name)}</div>
+    <div class="infobar">
+      <div class="line1">${tour.name ? escapeHtml(tour.name) + ' · ' : ''}${escapeHtml(m.date)} · Uraan time: ${escapeHtml(m.uraan_time)} · Aakhri time: ${escapeHtml(m.aakhri_time)}${(m.duration_days && Number(m.duration_days) > 1) ? ` · ${Number(m.duration_days)} din ka tournament` : ''}</div>
+      <div class="line2">🌅 Sunrise: ${escapeHtml(m.sunrise)} · 🕌 Sunset: ${escapeHtml(m.sunset)}</div>
+    </div>
+    <div class="stats">
+      <div class="stat flying"><div class="num">${m.flying}</div><div class="lbl">FLYING</div></div>
+      <div class="stat landed"><div class="num">${m.landed}</div><div class="lbl">LANDED</div></div>
+      <div class="stat"><div class="num">${m.pigeons}</div><div class="lbl">PIGEONS</div></div>
+      <div class="stat"><div class="num">${m.lofts}</div><div class="lbl">LOFTS</div></div>
+    </div>
+    <div class="progress">
+      <span class="landed-lbl">landed ${landedPct}%</span>
+      <div class="fill" style="width:${landedPct}%"></div>
+      <span class="flying-lbl">flying ${flyingPct}%</span>
+    </div>
+    <div class="winners">
+      <div class="winner-card first ${m.first_winner_name ? 'announced' : 'pending'}">
+        <div class="lbl">🥇 FIRST WINNER</div>
+        ${m.first_winner_name ? `
+          <div class="time">${escapeHtml(m.first_winner_time)}</div>
+          <div class="wname urdu">${escapeHtml(m.first_winner_name)}</div>
+          ${(m.first_winner_amount && m.first_winner_amount_show !== false) ? `<div class="amt">💰 RS. ${escapeHtml(m.first_winner_amount)}</div>` : ''}
+        ` : `
+          <div class="wname urdu">ابھی اعلان نہیں ہوا</div>
+        `}
+      </div>
+      <div class="winner-card pigeon ${m.winner_pigeon_name ? 'announced' : 'pending'}">
+        <div class="lbl">🏆 ${m.winner_pigeon_total_ready ? 'BEST AVERAGE TOTAL DAYS' : 'WINNER PIGEON'}</div>
+        ${m.winner_pigeon_name ? `
+          <div class="time">${escapeHtml(m.winner_pigeon_time)}</div>
+          <div class="wname urdu">${escapeHtml(m.winner_pigeon_name)}</div>
+          ${(m.winner_pigeon_amount_show !== false) ? (() => {
+            // "Best Average Total Days" mode mein Winner Pigeon dar-asal
+            // Total leaderboard ke #1 position wale bird jaisa hi hota hai —
+            // isliye uska amount Position-wise Amount ke 1st (Total) se
+            // khud-ba-khud le lete hain, manually likhne ki zaroorat nahi.
+            const amt = m.winner_pigeon_total_ready
+              ? (positionAmountFor(tour, 0) || m.winner_pigeon_amount || '')
+              : (m.winner_pigeon_amount || '');
+            return amt ? `<div class="amt">💰 RS. ${escapeHtml(amt)}</div>` : '';
+          })() : ''}
+        ` : `
+          <div class="wname urdu">ابھی اعلان نہیں ہوا</div>
+        `}
+      </div>
+      ${(tour.birds || []).some(b => (b.dm_cols || []).length > 0) ? `
+      <div class="winner-card mohar ${m.double_mohar_name ? 'announced' : 'pending'}">
+        <div class="lbl">⭐ DOUBLE MOHAR</div>
+        ${m.double_mohar_name ? `
+          <div class="time">${escapeHtml(m.double_mohar_time)}</div>
+          <div class="wname urdu">${escapeHtml(m.double_mohar_name)}</div>
+          ${(m.double_mohar_amount && m.double_mohar_amount_show !== false) ? `<div class="amt">💰 RS. ${escapeHtml(m.double_mohar_amount)}</div>` : ''}
+        ` : `
+          <div class="wname urdu">ابھی اعلان نہیں ہوا</div>
+        `}
+      </div>` : ''}
+      ${(tour.birds || []).some(b => (b.baby_cols || []).length > 0) ? `
+      <div class="winner-card baby ${m.baby_winner_name ? 'announced' : 'pending'}">
+        <div class="lbl">🐣 BABY WINNER</div>
+        ${m.baby_winner_name ? `
+          <div class="time">${escapeHtml(m.baby_winner_time)}</div>
+          <div class="wname urdu">${escapeHtml(m.baby_winner_name)}</div>
+          ${(m.baby_winner_amount && m.baby_winner_amount_show !== false) ? `<div class="amt">💰 RS. ${escapeHtml(m.baby_winner_amount)}</div>` : ''}
+        ` : `
+          <div class="wname urdu">ابھی اعلان نہیں ہوا</div>
+        `}
+      </div>` : ''}
+    </div>
+    ${(tour.gallery && tour.gallery.length) ? `
+      <div class="gallery-preview">
+        <div class="gallery-preview-title">
+          <span>🖼️ ${escapeHtml(club.name)} — is tournament ki tasveerein (${tour.gallery.length})</span>
+          <a href="gallery.html?club=${encodeURIComponent(club.id)}&t=${encodeURIComponent(tour.id)}">Sab dekhein →</a>
+        </div>
+        <div class="gallery-preview-strip">
+          ${tour.gallery.slice(0, 8).map(g => {
+            const isVideo = g.type === 'video';
+            const thumb = isVideo ? youtubeThumb(g.image) : g.image;
+            return thumb
+              ? `<div style="position:relative; flex-shrink:0;"><img src="${escapeHtml(thumb)}" alt="" style="${isVideo ? 'opacity:0.8;' : ''}">${isVideo ? `<div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:20px;">▶️</div>` : ''}</div>`
+              : `<div style="width:72px; height:72px; flex-shrink:0; border-radius:10px; background:#000; display:flex; align-items:center; justify-content:center; font-size:20px;">🎬</div>`;
+          }).join('')}
+        </div>
+      </div>
+    ` : ''}
+    <a class="view-full" href="club.html?club=${encodeURIComponent(club.id)}&t=${encodeURIComponent(tour.id)}">Pura result dekhein →</a>
+    ${entriesHtml(club, tour)}
+  `;
+}
+
+function upcomingCardHtml(club, tour){
+  const m = tour.meta;
+  return `
+    <div class="card-mini" style="background: rgba(230,180,60,0.08); border: 1px solid var(--gold); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;">
+      <div style="font-weight:700; font-size:15px; color:var(--gold);">${tour.name ? escapeHtml(tour.name) + ' · ' : ''}${escapeHtml(club.name)}</div>
+      <div style="font-size:13px; color:var(--text-dim); margin-top:2px;">${escapeHtml(m.date || '')}${m.uraan_time ? ` · Uraan time: ${escapeHtml(m.uraan_time)}` : ''}</div>
+      <a class="view-full" style="margin-top:6px; display:inline-block;" href="club.html?club=${encodeURIComponent(club.id)}&t=${encodeURIComponent(tour.id)}">Tafseel dekhein →</a>
+    </div>`;
+}
+
+function render(raw){
+  const data = migrateData(raw);
+  const clubs = data.clubs || [];
+
+  const liveList = [];
+  const upcomingList = [];
+  clubs.forEach(club => {
+    const tournaments = club.tournaments || [];
+    const latest = tournaments[tournaments.length - 1];
+    if(!latest) return;
+    if(isLive(latest)) liveList.push({ club, tour: latest });
+    else if(isUpcoming(latest)) upcomingList.push({ club, tour: latest });
+  });
+
+  const upcomingSection = upcomingList.length ? `
+    <div class="upcoming-banner">
+      <div class="upcoming-dot"></div>
+      <div class="title">🔜 Upcoming Tournament</div>
+    </div>
+    ${upcomingList.map(x => upcomingCardHtml(x.club, x.tour)).join('')}
+  ` : '';
+
+  if(liveList.length === 0){
+    document.getElementById('app').innerHTML = `
+      <div class="live-banner">
+        <div class="title">🔴 Live Tournament</div>
+      </div>
+      <div class="empty-box">
+        <div class="big">🕊️</div>
+        <div class="msg">Abhi koi tournament live nahi hai</div>
+        <div class="refresh-note">Yeh page har 30 second baad khud check karta hai</div>
+      </div>
+      ${upcomingSection}
+      <footer><a href="clubs.html">← Sab Clubs dekhein</a></footer>
+    `;
+    return;
+  }
+
+  const blocks = liveList.map(x => clubBlockHtml(x.club, x.tour)).join('<div style="height:8px;"></div>');
+
+  document.getElementById('app').innerHTML = `
+    <div class="live-banner">
+      <div class="live-dot"></div>
+      <div class="title">Live Tournament</div>
+      <div class="sub">${liveList.length} club${liveList.length===1?'':'s'} live</div>
+    </div>
+    ${blocks}
+    ${upcomingSection}
+    <footer><a href="clubs.html">← Sab Clubs dekhein</a></footer>
+  `;
+}
+
+function loadData(){
+  fetch('./data.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => { if(!r.ok) throw new Error('data.json not found'); return r.json(); })
+    .then(render)
+    .catch(err => {
+      document.getElementById('app').innerHTML =
+        '<div class="error-box">Couldn\'t load data.json — make sure it\'s uploaded in the same folder as this page. (' + err.message + ')</div>' +
+        '<footer><a href="clubs.html">← Clubs</a></footer>';
+    });
+}
+
+loadData();
+setInterval(loadData, 30000);
+</script>
+</body>
+</html>
