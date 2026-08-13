@@ -17,10 +17,10 @@
             "duration_days": 1,
             "sunrise": "05:26",
             "sunset": "18:47",
-            "flying": 45,
+            "flying": 50,
             "landed": 0,
-            "pigeons": 45,
-            "lofts": 9,
+            "pigeons": 50,
+            "lofts": 10,
             "is_live": true,
             "first_winner_time": "",
             "first_winner_name": "",
@@ -192,6 +192,22 @@
             },
             {
               "name": "استاد سیفی گجر چھت ناظر جٹ",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد عامر کھرل چھت زین جٹ شامکے",
               "image": "",
               "total": "0:00",
               "deduction": "",
