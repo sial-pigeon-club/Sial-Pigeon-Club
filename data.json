@@ -62,8 +62,8 @@
             "winner_pigeon_amount_show": true,
             "double_mohar_amount_show": true,
             "baby_winner_amount_show": true,
-            "first_winner_amount": "",
-            "winner_pigeon_amount": "",
+            "first_winner_amount": "2,500",
+            "winner_pigeon_amount": "5,000",
             "double_mohar_amount": "",
             "baby_winner_time": "",
             "baby_winner_name": "",
@@ -241,7 +241,24 @@
           ],
           "gallery": [],
           "position_amounts_by_tab": {
-            "total": []
+            "total": [
+              {
+                "amount": "40,000",
+                "show": true
+              },
+              {
+                "amount": "25,000",
+                "show": true
+              },
+              {
+                "amount": "15,000",
+                "show": true
+              },
+              {
+                "amount": "10,000",
+                "show": true
+              }
+            ]
           },
           "column_days": {
             "3": 1,
