@@ -1,0 +1,2806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Tournament Results</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg: #10142A; --bg-panel: #171D3A; --bg-panel-2: #1D2547;
+    --line: #2B3364; --gold: #D7AE55; --gold-soft: #C8994A;
+    --teal: #5FA8A0; --text: #ECE9DF; --text-dim: #9AA1C4; --text-faint: #6A7099;
+    --danger: #D97C7C; --up: #6FBF8B; --radius: 10px;
+  }
+  *{ box-sizing: border-box; }
+  body{ margin:0; background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', system-ui, sans-serif; }
+  .wrap{ max-width: 980px; margin: 0 auto; padding: 28px 20px 100px; }
+  h1{ font-family:'Fraunces', serif; font-size: 26px; margin: 0 0 4px; }
+  .sub{ color: var(--text-faint); font-size: 13.5px; margin: 0 0 24px; }
+
+  .panel{ background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
+  .panel h2{ font-family:'Fraunces', serif; font-size: 17px; margin: 0 0 16px; font-weight:600; color: var(--gold); display:flex; align-items:center; gap:8px; }
+
+  label{ display:block; font-size: 12px; color: var(--text-faint); margin-bottom: 5px; font-family:'IBM Plex Mono', monospace; letter-spacing: .3px; }
+  input, textarea, select{
+    width: 100%; background: var(--bg-panel-2); border: 1px solid var(--line); color: var(--text);
+    border-radius: 6px; padding: 9px 11px; font-size: 13.5px; font-family: inherit; margin-bottom: 14px;
+  }
+  input:dir(rtl), textarea:dir(rtl){ text-align: right; }
+  input:focus, textarea:focus{ outline: none; border-color: var(--gold-soft); }
+
+  .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  .grid4{ display:grid; grid-template-columns: repeat(4,1fr); gap: 0 16px; }
+  @media (max-width: 640px){ .grid2, .grid4{ grid-template-columns: 1fr 1fr; } }
+
+  .row-card{ background: var(--bg-panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 14px 14px 2px; margin-bottom: 12px; position: relative; }
+  .row-card .rm{ position:absolute; top: 10px; right: 10px; background: none; border: 1px solid var(--danger); color: var(--danger); border-radius: 6px; font-size: 11px; padding: 4px 9px; cursor:pointer; font-family:'IBM Plex Mono', monospace; }
+  .row-card .rm:hover{ background: rgba(217,124,124,0.12); }
+  .row-fields{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 0 14px; }
+  @media (max-width: 640px){ .row-fields{ grid-template-columns: 1fr 1fr; } }
+  .row-fields-cp{ display:grid; grid-template-columns: repeat(6, 1fr); gap: 0 10px; }
+  @media (max-width: 640px){ .row-fields-cp{ grid-template-columns: repeat(3, 1fr); } }
+
+  .btn{ display:inline-flex; align-items:center; gap: 8px; cursor:pointer; border: none; font-family:'IBM Plex Mono', monospace; font-size: 12.5px; letter-spacing: .5px; padding: 10px 16px; border-radius: 7px; text-transform: uppercase; }
+  .btn-gold{ background: var(--gold); color: #1a1408; font-weight: 600; }
+  .btn-gold:hover{ background: var(--gold-soft); }
+  .btn-ghost{ background: transparent; border: 1px solid var(--line); color: var(--text-dim); }
+  .btn-ghost:hover{ border-color: var(--teal); color: var(--teal); }
+  .btn:disabled{ opacity: 0.5; cursor: not-allowed; }
+
+  .actions{ display:flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; align-items:center; }
+
+  .note{ font-size: 12.5px; color: var(--text-faint); background: var(--bg-panel-2); border: 1px dashed var(--line); border-radius: 8px; padding: 12px 14px; margin-bottom: 20px; line-height: 1.6; }
+  .note b{ color: var(--gold); }
+  .note ol{ margin: 6px 0 0 18px; padding: 0; }
+
+  .status-line{ display:flex; align-items:center; gap: 8px; font-size: 13px; margin-bottom: 6px; }
+  .status-dot{ width: 8px; height: 8px; border-radius: 50%; background: var(--text-faint); }
+  .status-dot.ok{ background: var(--up); }
+
+  .toast{
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--gold); color: #1a1408; padding: 12px 20px; border-radius: 8px;
+    font-size: 13.5px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .25s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4); max-width: 90vw; text-align:center;
+  }
+  .toast.show{ opacity: 1; }
+  .toast.bad{ background: var(--danger); color: #2a0d0d; }
+
+  details.setup{ background: var(--bg-panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; }
+  details.setup summary{ cursor: pointer; font-size: 13.5px; color: var(--teal); font-weight: 600; }
+  details.setup .steps{ margin-top: 12px; font-size: 13px; color: var(--text-dim); line-height: 1.7; }
+  details.setup .steps ol{ margin: 6px 0 0 18px; padding: 0; }
+  details.setup code{ background: var(--bg); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--gold); }
+
+  #lockScreen{ min-height: 100vh; display:flex; align-items:center; justify-content:center; padding: 20px; }
+  .lock-box{ max-width: 420px; width:100%; background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px 24px; text-align:center; }
+  .lock-box h1{ font-size: 20px; margin: 0 0 6px; }
+  .lock-box .sub{ margin-bottom: 20px; }
+  #gsiBtnHolder{ display:flex; justify-content:center; margin: 16px 0 4px; min-height: 44px; }
+  .lock-err{ color: var(--danger); font-size: 13px; margin-top: 10px; display:none; }
+  .lock-setup-link{ color: var(--teal); font-size: 12.5px; cursor:pointer; margin-top: 18px; display:inline-block; text-decoration: underline; }
+  .topbar{ display:flex; justify-content:flex-end; margin-bottom: -8px; }
+  .btn-logout{ background: transparent; border: 1px solid var(--line); color: var(--text-faint); font-family:'IBM Plex Mono', monospace; font-size: 11px; padding: 6px 12px; border-radius: 6px; cursor:pointer; }
+  .btn-logout:hover{ border-color: var(--danger); color: var(--danger); }
+
+  .img-field{ display:flex; align-items:center; gap: 10px; margin-bottom: 14px; }
+  .img-preview{ width: 42px; height: 42px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); overflow:hidden; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size: 9px; color: var(--text-faint); text-align:center; line-height:1.2; }
+  .img-preview img{ width:100%; height:100%; object-fit:cover; }
+  .img-field-btns{ display:flex; gap: 8px; flex-wrap:wrap; }
+  .btn-sm{ padding: 6px 10px; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div id="lockScreen">
+  <div class="lock-box" id="lockBoxSetup" style="display:none;">
+    <h1>🔐 Google Sign-In Setup</h1>
+    <p class="sub">Ek dafa ka kaam — apna Google OAuth Client ID aur allowed Gmail accounts daal kar save karein.</p>
+    <label style="text-align:left;">Google OAuth Client ID</label>
+    <input id="cfg_client_id" placeholder="xxxxxxxxxx-xxxxxxxxxxxxxxxx.apps.googleusercontent.com">
+    <label style="text-align:left;">Allowed Gmail accounts (comma se separate karein)</label>
+    <input id="cfg_emails" placeholder="you@gmail.com, partner@gmail.com">
+    <div class="actions" style="justify-content:center;">
+      <button class="btn btn-gold" onclick="saveGoogleConfig()">Save & continue</button>
+    </div>
+    <details class="setup" style="text-align:left; margin-top:16px;">
+      <summary>Client ID kaise banayein?</summary>
+      <div class="steps">
+        <ol>
+          <li><a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--gold)">Google Cloud Console → Credentials</a> par jayein (naya project bana lein agar nahi hai)</li>
+          <li><b>OAuth consent screen</b> configure karein — User type: <code>External</code>, apna Gmail add karein bas</li>
+          <li><b>Create Credentials → OAuth client ID</b> → Application type: <code>Web application</code></li>
+          <li><b>Authorized JavaScript origins</b> mein apni site ka URL daalein (jahan yeh admin.html host hogi, e.g. <code>https://username.github.io</code>)</li>
+          <li>Client ID copy karein, upar paste kar ke Save karein</li>
+        </ol>
+      </div>
+    </details>
+  </div>
+
+  <div class="lock-box" id="lockBoxSignin" style="display:none;">
+    <h1>🕊️ Admin Panel</h1>
+    <p class="sub">Sirf allowed Gmail accounts hi is panel ko access kar sakte hain.</p>
+    <div id="gsiBtnHolder"></div>
+    <div class="lock-err" id="lockErr"></div>
+    <span class="lock-setup-link" onclick="showSetup()">Google sign-in settings change karein</span>
+  </div>
+</div>
+
+<div class="wrap" id="adminContent" style="display:none;">
+  <div class="topbar">
+    <button class="btn-logout" id="liveSiteBtn" onclick="goToLiveSite()" style="margin-right:8px;">🌐 Go to Live Site</button>
+    <button class="btn-logout" onclick="googleLogout()">Sign out</button>
+  </div>
+
+  <h1>🕊️ Results Admin Panel</h1>
+  <p class="sub">Edit tournament info and bird results — click Publish and it goes live on the homepage.</p>
+
+  <div class="panel">
+    <h2>🔗 Connect to GitHub</h2>
+    <div class="status-line"><span class="status-dot" id="connDot"></span><span id="connText">Not connected yet — fill in the fields below</span></div>
+    <div class="grid2">
+      <div><label>GitHub username</label><input id="gh_owner" placeholder="e.g. quaidhighschoolksk"></div>
+      <div><label>Repository name</label><input id="gh_repo" placeholder="e.g. Sial-Pigeon-Club"></div>
+      <div><label>Branch</label><input id="gh_branch" value="main"></div>
+      <div><label>Personal access token</label><input id="gh_token" type="password" placeholder="github_pat_..."></div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="saveConnection()">Save connection</button>
+    </div>
+    <details class="setup">
+      <summary>Token kaise banayein? (ek dafa ka kaam)</summary>
+      <div class="steps">
+        <ol>
+          <li>GitHub par login karein → profile picture → <b>Settings</b></li>
+          <li>Neeche <b>Developer settings</b></li>
+          <li><b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b></li>
+          <li>Naam de dein, Expiration set karein</li>
+          <li><b>Repository access</b> → apni repo select karein</li>
+          <li><b>Permissions</b> → <b>Contents</b> → "Read and write"</li>
+          <li>Token copy kar ke upar paste karein</li>
+        </ol>
+      </div>
+    </details>
+  </div>
+
+  <div class="panel">
+    <h2>🏷️ Club</h2>
+    <div class="grid2">
+      <div>
+        <label>Select club</label>
+        <select id="clubSelect" onchange="onClubChange()"></select>
+      </div>
+      <div>
+        <label>Club name (shown everywhere for this club)</label>
+        <input id="club_name_field" placeholder="Sial Pigeon Club">
+      </div>
+    </div>
+    <div class="grid2">
+      <div>
+        <label>City (homepage par weather dikhane ke liye)</label>
+        <div style="display:flex; gap:8px;">
+          <input id="club_city_field" placeholder="Faisalabad" style="flex:1;">
+          <button type="button" class="btn btn-ghost btn-sm" style="white-space:nowrap; height:38px; margin-top:0;" onclick="lookupCityCoords()">📍 Confirm</button>
+        </div>
+        <div id="cityStatus" style="font-size:11.5px; color:var(--text-faint); margin:-10px 0 14px;"></div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div>
+        <label>🖼️ Club Logo (result downloads par watermark ki tarah lagta hai)</label>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div id="clubLogoPreview" style="width:56px; height:56px; border-radius:10px; background: rgba(255,255,255,0.05); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+            <span style="font-size:10px; color:var(--text-faint);">No logo</span>
+          </div>
+          <div>
+            <input type="file" accept="image/*" id="clubLogoInput" class="f-image-file" style="display:none;" onchange="processClubLogo(this)">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('clubLogoInput').click()">Logo choose karein</button>
+            <button type="button" class="btn btn-ghost btn-sm" style="border-color:var(--danger); color:var(--danger);" onclick="removeClubLogo()">Hatayein</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="addClub()">+ Naya club</button>
+      <button class="btn btn-ghost" onclick="deleteClub(this)" style="border-color:var(--danger); color:var(--danger);">🗑 Yeh club delete karein</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>🏆 Tournament (is club ki history)</h2>
+    <div class="grid2">
+      <div>
+        <label>Select tournament (naam ya date se pehchana jata hai)</label>
+        <select id="tourSelect" onchange="onTourChange()"></select>
+      </div>
+      <div>
+        <label>✏️ Tournament ka naam (apni marzi se — yehi dropdown mein dikhega)</label>
+        <input id="m_tour_name" placeholder="e.g. Spring Derby / بہار کپ" oninput="renameCurrentTournamentLive()">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="addTournament()">+ Naya tournament (nayi date)</button>
+      <button class="btn btn-ghost" onclick="deleteTournament(this)" style="border-color:var(--danger); color:var(--danger);">🗑 Yeh tournament delete karein</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Tournament info</h2>
+    <div class="note" style="background: rgba(111,191,139,0.08); border-color: var(--up); margin-bottom:10px;">
+      <label style="display:flex; align-items:center; gap:10px; cursor:pointer; margin:0;">
+        <input type="checkbox" id="m_is_live" style="width:auto; margin:0;" onchange="save()">
+        <span style="color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:14px; text-transform:none; letter-spacing:0;"><b style="color:var(--up);">🔴 Yeh tournament LIVE hai</b> — tick karein to homepage par "LIVE TOURNAMENT" section mein turant dikhne lagega (Flying count se koi farq nahi padta)</span>
+      </label>
+    </div>
+    <div class="note" style="background: rgba(230,180,60,0.08); border-color: var(--gold); margin-bottom:18px;">
+      <label style="display:flex; align-items:center; gap:10px; cursor:pointer; margin:0;">
+        <input type="checkbox" id="m_is_upcoming" style="width:auto; margin:0;" onchange="save()">
+        <span style="color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:14px; text-transform:none; letter-spacing:0;"><b style="color:var(--gold);">🔜 Yeh tournament UPCOMING hai</b> — tick karein to homepage aur is tournament ke result page par "UPCOMING" wala blinking badge dikhega. Untick karein to kahin nahi dikhega — ye poori tarah manual control hai, Date field se koi automatic farq nahi padta.</span>
+      </label>
+    </div>
+    <div><label>💵 Entry Fee (optional — public page par tournament info ke sath dikhega)</label><input id="m_entry_fee" placeholder="e.g. Rs 500 per bird"></div>
+    <div><label>📝 Tournament Note (optional, Urdu) — public page par sab ko dikhega</label><input id="m_tour_note" dir="rtl" placeholder="e.g. Ye tournament date change ho sakti hai"></div>
+    <div class="grid4">
+      <div><label>Date</label><input id="m_date" placeholder="13 Jun 2026"></div>
+      <div><label>Uraan time</label><input id="m_uraan" placeholder="05:00"></div>
+      <div><label>Aakhri time</label><input id="m_aakhri" placeholder="20:30"></div>
+      <div><label>Tournament Duration (days)</label><input id="m_duration_days" type="number" min="1" step="1" placeholder="1"></div>
+      <div><label>Sunrise (auto: date aur club ki city ke hisaab se)</label><input id="m_sunrise" readonly style="opacity:0.75; cursor:not-allowed;" placeholder="04:55"></div>
+      <div><label>Sunset (auto: date aur club ki city ke hisaab se)</label><input id="m_sunset" readonly style="opacity:0.75; cursor:not-allowed;" placeholder="19:41"></div>
+      <div style="grid-column: span 2; font-size:11.5px; color:var(--text-faint); margin-top:-10px;" id="sunStatus"></div>
+      <div><label>Flying (auto: Total − Landed)</label><input id="m_flying" type="number" readonly style="opacity:0.75; cursor:not-allowed;"></div>
+      <div><label>Landed (auto: checkpoints filled in)</label><input id="m_landed" type="number" readonly style="opacity:0.75; cursor:not-allowed;"></div>
+      <div><label>Total pigeons (auto: birds × checkpoints)</label><input id="m_pigeons" type="number" readonly style="opacity:0.75; cursor:not-allowed;"></div>
+      <div><label>Lofts (auto: 1 loft per bird result)</label><input id="m_lofts" type="number" readonly style="opacity:0.75; cursor:not-allowed;"></div>
+    </div>
+    <div id="entryDayWrap" style="display:none; margin-top:12px; padding:12px; border:1.5px solid var(--gold); border-radius:10px; background: rgba(230,180,60,0.08);">
+      <label style="font-weight:700;">📅 Abhi aap kis din ka result likh rahe hain?</label>
+      <p class="sub" style="margin: 2px 0 8px;">Din select karein, phir neeche "+ Naya checkpoint" dabayein — ek naya checkpoint column ban jayega jo isi din ke saath tag hoga. Purane checkpoints (#1, #2...) pehle wale din ke hi rahenge, unhein dobara mat likhein.</p>
+      <select id="entryDaySelect" onchange="onEntryDayChange()"></select>
+      <div style="margin-top:10px;">
+        <label>Is din ki asal date (public page pe yehi dikhegi — khud guess nahi hoti, non-consecutive bhi chal jayegi jaise 14 Aug, 16 Aug, 18 Aug)</label>
+        <input id="entryDayDate" type="text" placeholder="e.g. 15 Aug 2026" oninput="onEntryDayDateChange()">
+        <button type="button" class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="saveEntryDayDate()">💾 Is din ki date save karein</button>
+        <div id="dayDateStatus" style="margin-top:6px; font-size:12.5px;"></div>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="addColumn()">+ Is din ke liye naya checkpoint add karein</button>
+    </div>
+    <div class="grid2">
+      <div><label>First Winner — time (auto: sab ke pehle checkpoint mein sab se zyada time)</label><input id="m_fw_time" readonly style="opacity:0.75; cursor:not-allowed;"></div>
+      <div><label>First Winner — name (auto-calculated)</label><input id="m_fw_name" dir="rtl" readonly style="opacity:0.75; cursor:not-allowed;"></div>
+      <div style="grid-column: span 2; display:flex; align-items:flex-end; gap:10px;">
+        <div style="flex:1;"><label>🥇 First Winner — Total amount (optional)</label><input id="m_fw_amount" placeholder="e.g. 5000 ya Rs 5000"></div>
+        <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; white-space:nowrap; margin-bottom:10px;"><input type="checkbox" id="m_fw_amount_show" checked style="width:auto;"> Public par dikhayein</label>
+      </div>
+      <div style="grid-column: span 2; font-size:12.5px;" id="fwStatus"></div>
+      <div><label>Winner Pigeon — time (auto: har bird ka aakhri bhara hua checkpoint, jis mein sab se zyada time)</label><input id="m_wp_time" readonly style="opacity:0.75; cursor:not-allowed;"></div>
+      <div><label>Winner Pigeon — name (auto-calculated)</label><input id="m_wp_name" dir="rtl" readonly style="opacity:0.75; cursor:not-allowed;"></div>
+      <div style="grid-column: span 2; display:flex; align-items:flex-end; gap:10px;">
+        <div style="flex:1;"><label>🏆 Winner Pigeon — Total amount (optional)</label><input id="m_wp_amount" placeholder="e.g. 5000 ya Rs 5000"></div>
+        <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; white-space:nowrap; margin-bottom:10px;"><input type="checkbox" id="m_wp_amount_show" checked style="width:auto;"> Public par dikhayein</label>
+      </div>
+      <div style="grid-column: span 2; font-size:12.5px;" id="wpStatus"></div>
+      <div><label>⭐ Double Mohar — time (auto: neeche har bird ke result mein jo checkpoint(s) ⭐ highlight kiye gaye hon, unmein jis bird ka time sab se zyada ho)</label><input id="m_dm_time" readonly style="opacity:0.75; cursor:not-allowed;"></div>
+      <div><label>⭐ Double Mohar — name (auto-calculated)</label><input id="m_dm_name" dir="rtl" readonly style="opacity:0.75; cursor:not-allowed;"></div>
+      <div style="grid-column: span 2; display:flex; align-items:flex-end; gap:10px;">
+        <div style="flex:1;"><label>⭐ Double Mohar — Total amount (optional)</label><input id="m_dm_amount" placeholder="e.g. 5000 ya Rs 5000"></div>
+        <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; white-space:nowrap; margin-bottom:10px;"><input type="checkbox" id="m_dm_amount_show" checked style="width:auto;"> Public par dikhayein</label>
+      </div>
+      <div style="grid-column: span 2; font-size:12.5px;" id="dmStatus"></div>
+      <div><label>🐣 Baby Winner — time (auto: neeche har bird ke result mein jo checkpoint(s) 🐣 highlight kiye gaye hon, unmein jis bird ka time sab se zyada ho)</label><input id="m_bw_time" readonly style="opacity:0.75; cursor:not-allowed;"></div>
+      <div><label>🐣 Baby Winner — name (auto-calculated)</label><input id="m_bw_name" dir="rtl" readonly style="opacity:0.75; cursor:not-allowed;"></div>
+      <div style="grid-column: span 2; display:flex; align-items:flex-end; gap:10px;">
+        <div style="flex:1;"><label>🐣 Baby Winner — Total amount (optional)</label><input id="m_bw_amount" placeholder="e.g. 5000 ya Rs 5000"></div>
+        <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; white-space:nowrap; margin-bottom:10px;"><input type="checkbox" id="m_bw_amount_show" checked style="width:auto;"> Public par dikhayein</label>
+      </div>
+      <div style="grid-column: span 2; font-size:12.5px;" id="bwStatus"></div>
+    </div>
+    <div id="dailyWinnersWrap" style="margin-top:14px;"></div>
+    <div id="dailyDoubleMoharWrap" style="margin-top:14px;"></div>
+    <div id="dailyBabyWinnerWrap" style="margin-top:14px;"></div>
+    <div id="dayAmountsWrap" style="margin-top:14px;"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Checkpoint labels</h2>
+    <p class="sub" style="margin-bottom:10px;">In display order left-to-right (e.g. #6, #5, #4, #3, #2, #1) — add or remove as needed, birds update automatically</p>
+    <div class="row-fields-cp" id="colLabels"></div>
+    <button class="btn btn-ghost" onclick="addColumn()">+ Add checkpoint</button>
+  </div>
+
+  <div class="panel">
+    <h2>💰 Position-wise Amount (Inaam)</h2>
+    <p class="sub" style="margin-bottom:10px;">Har din (aur Total) ke liye alag alag position (1st, 2nd, 3rd...) amount likhein — public page par us tab ki ranking ke sath yehi amount dikhega. Khali chhod dein agar us position ke liye koi amount nahi.</p>
+    <div id="posAmountTabWrap" style="margin-bottom:12px; display:none;">
+      <label>Kis tab ke liye amount set kar rahe hain?</label>
+      <select id="posAmountTabSelect" onchange="onPosAmountTabChange()"></select>
+    </div>
+    <div id="positionAmounts" style="display:flex; flex-direction:column; gap:8px;"></div>
+    <button type="button" class="btn" style="margin-top:12px;" onclick="savePositionAmountsManual()">💾 Position Amounts Save Karein</button>
+  </div>
+
+  <div class="panel">
+    <h2>Bird results</h2>
+    <div style="margin-bottom:14px;">
+      <label>🔍 Parinda talaash karein (naam se) — sirf usi ka record/checkpoints upar aa jayenge</label>
+      <div style="display:flex; gap:8px;">
+        <input id="birdSearchBox" dir="rtl" placeholder="Parinde ka naam likhein..." oninput="onBirdSearchInput(this.value)" style="flex:1;">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('birdSearchBox').value=''; filterBirdRows('');" style="flex-shrink:0;">✕ Saaf karein</button>
+      </div>
+      <div id="birdSearchStatus" class="sub" style="margin-top:6px; display:none;"></div>
+    </div>
+    <div style="margin-bottom:14px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background: rgba(255,255,255,0.03);">
+      <label style="font-weight:700; display:block; margin-bottom:8px;">Checkpoint long-press mode — neeche checkpoint dabaye rakhte (long-press) waqt ye tay karta hai kis award ke liye highlight ho:</label>
+      <div style="display:flex; gap:8px;">
+        <button type="button" id="modeBtnMohar" class="btn btn-sm" onclick="setHighlightMode('mohar')" style="border:1.5px solid var(--gold); background:var(--gold); color:#1a1408; font-weight:700;">⭐ Double Mohar</button>
+        <button type="button" id="modeBtnBaby" class="btn btn-sm btn-ghost" onclick="setHighlightMode('baby')" style="border:1.5px solid #ff6fb0;">🐣 Baby Winner</button>
+      </div>
+    </div>
+    <div id="rows"></div>
+    <button class="btn btn-ghost" onclick="addRow()">+ Add bird</button>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-gold" id="publishBtn" onclick="publish()">🚀 Publish — go live now</button>
+    <button class="btn btn-ghost" onclick="downloadJson()">⬇ Download data.json</button>
+    <button class="btn btn-ghost" onclick="resetAll()">Reset to sample data</button>
+  </div>
+
+  <div class="panel">
+    <h2>🗄 Backup &amp; Restore</h2>
+    <p class="sub" style="margin-bottom:10px;">Har baar Publish karne se pehle purana data khud-ba-khud backup ho jata hai (kabhi khud delete nahi hota, jab tak aap khud GitHub se delete na karein). Yahan se koi bhi purani backup wapas load kar sakte hain.</p>
+    <button class="btn btn-ghost" onclick="loadBackupsList()">🔄 Backups dekhein</button>
+    <div id="backupsList" style="margin-top:12px;"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+</div>
+
+<script>
+const GCFG_KEY = 'pigeon_admin_google_cfg_v1';
+const GSESSION_KEY = 'pigeon_admin_google_session_v1';
+
+function getGoogleConfig(){
+  try{ return JSON.parse(localStorage.getItem(GCFG_KEY)) || null; }catch(e){ return null; }
+}
+
+function showSetup(){
+  document.getElementById('lockBoxSignin').style.display = 'none';
+  const cfg = getGoogleConfig();
+  if(cfg){
+    document.getElementById('cfg_client_id').value = cfg.clientId || '';
+    document.getElementById('cfg_emails').value = (cfg.emails || []).join(', ');
+  }
+  document.getElementById('lockBoxSetup').style.display = 'block';
+}
+
+function saveGoogleConfig(){
+  const clientId = document.getElementById('cfg_client_id').value.trim();
+  const emails = document.getElementById('cfg_emails').value.split(',').map(e=>e.trim().toLowerCase()).filter(Boolean);
+  if(!clientId || emails.length === 0){
+    alert('Client ID aur kam se kam ek Gmail account zaroori hai.');
+    return;
+  }
+  localStorage.setItem(GCFG_KEY, JSON.stringify({ clientId, emails }));
+  sessionStorage.removeItem(GSESSION_KEY);
+  initSignIn();
+}
+
+function decodeJwt(token){
+  const payload = token.split('.')[1];
+  const json = decodeURIComponent(atob(payload.replace(/-/g,'+').replace(/_/g,'/')).split('').map(c=>
+    '%' + ('00'+c.charCodeAt(0).toString(16)).slice(-2)
+  ).join(''));
+  return JSON.parse(json);
+}
+
+function handleCredentialResponse(response){
+  const cfg = getGoogleConfig();
+  const errEl = document.getElementById('lockErr');
+  try{
+    const payload = decodeJwt(response.credential);
+    const email = (payload.email || '').toLowerCase();
+    if(payload.email_verified !== true && payload.email_verified !== 'true'){
+      throw new Error('Email verified nahi hai');
+    }
+    if(!cfg.emails.includes(email)){
+      errEl.textContent = `❌ ${payload.email} allowed list mein nahi hai.`;
+      errEl.style.display = 'block';
+      return;
+    }
+    sessionStorage.setItem(GSESSION_KEY, JSON.stringify({ email, exp: payload.exp }));
+    errEl.style.display = 'none';
+    unlockAdmin();
+  }catch(e){
+    errEl.textContent = '❌ Sign-in fail hui, dobara try karein.';
+    errEl.style.display = 'block';
+  }
+}
+
+function unlockAdmin(){
+  document.getElementById('lockScreen').style.display = 'none';
+  document.getElementById('adminContent').style.display = 'block';
+}
+
+function googleLogout(){
+  sessionStorage.removeItem(GSESSION_KEY);
+  location.reload();
+}
+
+function initSignIn(){
+  const cfg = getGoogleConfig();
+  if(!cfg){ showSetup(); return; }
+
+  document.getElementById('lockBoxSetup').style.display = 'none';
+  document.getElementById('lockBoxSignin').style.display = 'block';
+
+  // Already-valid session this browser tab?
+  try{
+    const sess = JSON.parse(sessionStorage.getItem(GSESSION_KEY));
+    if(sess && sess.exp && sess.exp * 1000 > Date.now() && cfg.emails.includes(sess.email)){
+      unlockAdmin();
+      return;
+    }
+  }catch(e){}
+
+  if(!window.google || !google.accounts || !google.accounts.id){
+    // Google script not loaded yet — retry shortly
+    setTimeout(initSignIn, 300);
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: cfg.clientId,
+    callback: handleCredentialResponse
+  });
+  const holder = document.getElementById('gsiBtnHolder');
+  holder.innerHTML = '';
+  google.accounts.id.renderButton(holder, { theme: 'filled_black', size: 'large', text: 'signin_with' });
+}
+
+initSignIn();
+</script>
+
+<script>
+const STORAGE_KEY = 'pigeon_admin_data_v3';
+const CONN_KEY = 'pigeon_admin_conn_v1';
+
+const SAMPLE = {
+  clubs: [
+    {
+      id: 'sample-club-1',
+      name: 'Sohni Dharti Pigeon Club',
+      city: "",
+      lat: null,
+      lon: null,
+      tournaments: [
+        {
+          id: 'sample-t-1',
+          name: "",
+          meta: {
+            date: "13 Jun 2026", uraan_time: "05:00", aakhri_time: "20:30",
+            sunrise: "04:55", sunset: "19:41",
+            flying: 21, landed: 111, pigeons: 132, lofts: 12,
+            first_winner_time: "14:14", first_winner_name: "استاد گلنواز",
+            winner_pigeon_time: "20:01", winner_pigeon_name: "پیر فواد عظیم"
+          },
+          columns: ["#6","#5","#4","#3","#2","#1"],
+          birds: [
+            { name:"پیر فواد عظیم امرا", image:"", total:"128:55", deduction:"", note:"", times:["09:46","17:32","17:19","16:42","13:57","13:56"] },
+            { name:"احسان جٹ دہم", image:"", total:"122:55", deduction:"-06:00", note:"کبوتر صبح 5:01 پر آرائے تھے", times:["05:00","16:00","15:01","14:57","14:03","12:28"] },
+            { name:"رانا وسیم", image:"", total:"118:40", deduction:"", note:"", times:["10:20","17:10","16:55","16:20","13:40","13:20"] }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function escapeHtmlAdmin(s){ return (s||'').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function currentEntryDay(){
+  const durationDays = Number(document.getElementById('m_duration_days').value) || 1;
+  if(durationDays <= 1) return 1;
+  const sel = document.getElementById('entryDaySelect');
+  return sel ? (Number(sel.value) || 1) : 1;
+}
+
+// Har din ki apni asal date manually save hoti hai (tour.meta.day_dates[day]) — kisi
+// pehle din ki date se agla din khud guess nahi kiya jata, kyunke tournament ke din
+// zaroori nahi consecutive hon.
+function loadEntryDayDate(){
+  const dateEl = document.getElementById('entryDayDate');
+  if(!dateEl) return;
+  const tour = currentTournament();
+  const day = currentEntryDay();
+  const dd = (tour.meta.day_dates) || {};
+  dateEl.value = dd[day] || '';
+}
+
+function onEntryDayDateChange(){
+  const dateEl = document.getElementById('entryDayDate');
+  if(!dateEl) return;
+  const tour = currentTournament();
+  const day = currentEntryDay();
+  if(!tour.meta.day_dates) tour.meta.day_dates = {};
+  tour.meta.day_dates[day] = dateEl.value.trim();
+  save();
+  refreshDayDateStatus();
+}
+
+// "Edit and Save" button — dates non-consecutive bhi ho sakti hain (14 Aug, 16 Aug, 18 Aug),
+// isliye har din ki date yahan se clearly save + confirm hoti hai (typing se bhi auto-save
+// ho jata hai, yeh button sirf ek clear confirmation deta hai).
+function saveEntryDayDate(){
+  const dateEl = document.getElementById('entryDayDate');
+  const statusEl = document.getElementById('dayDateStatus');
+  if(!dateEl) return;
+  const tour = currentTournament();
+  const day = currentEntryDay();
+  const val = dateEl.value.trim();
+  if(!tour.meta.day_dates) tour.meta.day_dates = {};
+  tour.meta.day_dates[day] = val;
+  save();
+  if(statusEl){
+    statusEl.textContent = val ? `✅ Din ${day} ki date save ho gayi: ${val}` : `⚠️ Din ${day} ki date khaali save hui — koi date nahi likhi.`;
+    statusEl.style.color = val ? 'var(--up, #1a7f37)' : 'var(--danger)';
+  }
+  showToast(val ? `✅ Din ${day} ki date save ho gayi` : 'Din ki date khaali hai');
+}
+
+function renderEntryDaySelector(){
+  const durationDays = Number(document.getElementById('m_duration_days').value) || 1;
+  const wrap = document.getElementById('entryDayWrap');
+  const sel = document.getElementById('entryDaySelect');
+  if(!wrap || !sel) return;
+  if(durationDays <= 1){
+    wrap.style.display = 'none';
+    return;
+  }
+  const prevVal = sel.value;
+  sel.innerHTML = Array.from({ length: durationDays }, (_, i) => i + 1)
+    .map(d => `<option value="${d}">Din ${d}</option>`)
+    .join('');
+  sel.value = (prevVal && Number(prevVal) <= durationDays) ? prevVal : '1';
+  wrap.style.display = '';
+}
+
+function refreshDayDateStatus(){
+  const statusEl = document.getElementById('dayDateStatus');
+  const dateEl = document.getElementById('entryDayDate');
+  if(!statusEl || !dateEl) return;
+  const day = currentEntryDay();
+  if(dateEl.value.trim()){
+    statusEl.textContent = `📌 Din ${day} ki pehle se saved date: ${dateEl.value.trim()}`;
+  } else {
+    statusEl.textContent = `⚠️ Din ${day} ki abhi tak koi date save nahi hui.`;
+  }
+  statusEl.style.color = 'var(--text-dim)';
+}
+
+function onEntryDayChange(){
+  // Column ka din ab uske bante waqt hi fix ho jata hai — yahan se ab kisi bhi
+  // khaali checkpoint field ko retag nahi karte (pehle yeh sab birds ke abhi tak
+  // khaali fields ko naye selected din mein badal deta tha, chahe woh kisi bhi
+  // column/din ke liye bana ho — jo galat data-day tag ka sabab ban raha tha).
+  loadEntryDayDate();
+  renderCols();
+
+  // Status message ab is din ke hisaab se refresh hota hai — pehle purane din
+  // ka "save ho gayi" message naye din pe switch karne ke baad bhi dikhta rehta
+  // tha, jo confusing tha.
+  refreshDayDateStatus();
+}
+
+// Har checkpoint value "day/time" format mein store hota hai (e.g. "2/12:23" = din 2, 12:23 baje).
+// Purani entries jinme sirf time ho (bagair day ke) unhein day 1 samjha jata hai.
+function parseCp(raw){
+  if(!raw) return { day: 1, time: '' };
+  const s = String(raw);
+  const slash = s.indexOf('/');
+  if(slash === -1) return { day: 1, time: s };
+  const day = parseInt(s.slice(0, slash), 10);
+  return { day: isNaN(day) ? 1 : day, time: s.slice(slash + 1) };
+}
+function makeCp(day, time){
+  if(!time) return '';
+  return `${parseInt(day,10) || 1}/${time}`;
+}
+
+function blankTournament(cols){
+  return {
+    id: uid(),
+    name: "",
+    meta: {
+      date:"", uraan_time:"05:00", aakhri_time:"20:30", duration_days:1, sunrise:"", sunset:"",
+      flying:0, landed:0, pigeons:0, lofts:0, is_live:false, is_upcoming:false,
+      first_winner_time:"", first_winner_name:"", winner_pigeon_time:"", winner_pigeon_name:"",
+      double_mohar_col:null, double_mohar_time:"", double_mohar_name:""
+    },
+    columns: cols ? [...cols] : ["#1","#2","#3"],
+    birds: [],
+    gallery: [],
+    position_amounts: []
+  };
+}
+
+function blankClub(name){
+  return { id: uid(), name: name || 'Naya Club', city: "", lat: null, lon: null, logo: "", tournaments: [ blankTournament() ] };
+}
+
+// Converts old single-tournament data.json (meta/columns/birds) into the new
+// clubs -> tournaments structure. Already-migrated data is returned as-is.
+function migrateData(raw){
+  if(raw && Array.isArray(raw.clubs)) return raw;
+  const meta = (raw && raw.meta) ? raw.meta : {};
+  return {
+    clubs: [
+      {
+        id: uid(),
+        name: meta.club_name || 'Club',
+        city: "",
+        lat: null,
+        lon: null,
+        tournaments: [
+          {
+            id: uid(),
+            name: meta.tour_name || "",
+            meta: {
+              date: meta.date||"", uraan_time: meta.uraan_time||"05:00", aakhri_time: meta.aakhri_time||"20:30",
+              duration_days: meta.duration_days||1, sunrise: meta.sunrise||"", sunset: meta.sunset||"",
+              flying: meta.flying||0, landed: meta.landed||0, pigeons: meta.pigeons||0, lofts: meta.lofts||0,
+              first_winner_time: meta.first_winner_time||"", first_winner_name: meta.first_winner_name||"",
+              winner_pigeon_time: meta.winner_pigeon_time||"", winner_pigeon_name: meta.winner_pigeon_name||""
+            },
+            columns: (raw && raw.columns) || ["#1","#2","#3"],
+            birds: (raw && raw.birds) || [],
+            gallery: [],
+            position_amounts: []
+          }
+        ]
+      }
+    ]
+  };
+}
+
+let data = JSON.parse(JSON.stringify(SAMPLE));
+let currentClubIdx = 0;
+let currentTourIdx = 0;
+let conn = { owner:'', repo:'', branch:'main', token:'' };
+
+function currentTournament(){
+  return data.clubs[currentClubIdx].tournaments[currentTourIdx];
+}
+function currentClub(){
+  return data.clubs[currentClubIdx];
+}
+
+function loadConn(){
+  const saved = localStorage.getItem(CONN_KEY);
+  if(saved){ try{ conn = JSON.parse(saved); }catch(e){} }
+  document.getElementById('gh_owner').value = conn.owner || '';
+  document.getElementById('gh_repo').value = conn.repo || '';
+  document.getElementById('gh_branch').value = conn.branch || 'main';
+  document.getElementById('gh_token').value = conn.token || '';
+  updateConnStatus();
+}
+function saveConnection(){
+  conn.owner = document.getElementById('gh_owner').value.trim();
+  conn.repo = document.getElementById('gh_repo').value.trim();
+  conn.branch = document.getElementById('gh_branch').value.trim() || 'main';
+  conn.token = document.getElementById('gh_token').value.trim();
+  localStorage.setItem(CONN_KEY, JSON.stringify(conn));
+  updateConnStatus();
+  showToast('Connection saved in this browser');
+}
+function updateConnStatus(){
+  const dot = document.getElementById('connDot');
+  const text = document.getElementById('connText');
+  if(conn.owner && conn.repo && conn.token){
+    dot.className = 'status-dot ok';
+    text.textContent = `Ready to publish to ${conn.owner}/${conn.repo} (${conn.branch})`;
+  } else {
+    dot.className = 'status-dot';
+    text.textContent = 'Not connected yet — fill in the fields above and click Save connection';
+  }
+}
+
+const METAFIELDS = ['m_date','m_uraan','m_aakhri','m_duration_days','m_sunrise','m_sunset','m_flying','m_landed','m_pigeons','m_lofts','m_entry_fee','m_tour_note','m_fw_time','m_fw_name','m_fw_amount','m_wp_time','m_wp_name','m_wp_amount','m_dm_time','m_dm_name','m_dm_amount','m_bw_time','m_bw_name','m_bw_amount'];
+const METAKEYS = ['date','uraan_time','aakhri_time','duration_days','sunrise','sunset','flying','landed','pigeons','lofts','entry_fee','tour_note','first_winner_time','first_winner_name','first_winner_amount','winner_pigeon_time','winner_pigeon_name','winner_pigeon_amount','double_mohar_time','double_mohar_name','double_mohar_amount','baby_winner_time','baby_winner_name','baby_winner_amount'];
+
+// Checkpoint long-press mode: kis award ('mohar' ya 'baby') ke liye highlight
+// ho raha hai, ye tay karta hai. Sirf admin panel ki UI state hai, save nahi
+// hoti (har bar 'mohar' se shuru hoti hai).
+let HIGHLIGHT_MODE = 'mohar';
+function getHighlightMode(){ return HIGHLIGHT_MODE; }
+function setHighlightMode(mode){
+  HIGHLIGHT_MODE = mode;
+  const moharBtn = document.getElementById('modeBtnMohar');
+  const babyBtn = document.getElementById('modeBtnBaby');
+  if(moharBtn && babyBtn){
+    if(mode === 'baby'){
+      babyBtn.style.background = '#ff6fb0'; babyBtn.style.color = '#3a0d20'; babyBtn.style.fontWeight = '700';
+      moharBtn.style.background = 'transparent'; moharBtn.style.color = ''; moharBtn.style.fontWeight = '';
+    } else {
+      moharBtn.style.background = 'var(--gold)'; moharBtn.style.color = '#1a1408'; moharBtn.style.fontWeight = '700';
+      babyBtn.style.background = 'transparent'; babyBtn.style.color = ''; babyBtn.style.fontWeight = '';
+    }
+  }
+}
+
+function allCheckpointsFilled(){
+  const cps = document.querySelectorAll('.f-cp');
+  if(!cps.length) return false;
+  return Array.from(cps).every(i => i.value.trim());
+}
+
+// Sirf ek din (day) ke checkpoints ka fill-check — jis bird ka us din koi
+// checkpoint hi nahi (kabhi is din shamil nahi hua), use skip karte hain, warna
+// us bird ke us din ke SAB checkpoints bhare hone chahiye.
+function allCheckpointsFilledForDay(day){
+  const cards = document.querySelectorAll('.row-card.bird');
+  if(cards.length === 0) return false;
+  return Array.from(cards).every(card => {
+    const dayCps = Array.from(card.querySelectorAll('.f-cp')).filter(el => (parseInt(el.dataset.day, 10) || 1) === day);
+    if(dayCps.length === 0) return true;
+    return dayCps.every(el => el.value.trim());
+  });
+}
+
+// Winner Pigeon: jab tak tournament chal raha hai (sab checkpoints fill
+// nahi hue aur aakhri time bhi nahi guzra), is box mein sab se aakhri
+// COMPLETE hue din ka apna day-wise Winner Pigeon dikhate hain — taake box
+// khaali na rahe aur user ko progress dikhta rahe. Jaise hi tournament poora
+// ho jata hai (SAB birds ke SAB checkpoints fill, YA aakhri time guzar
+// jaye), ye box "overall best" mein badal jata hai: jis bird ka GRAND TOTAL
+// (sab dinon ka total jama — wahi jo players list mein #1 position par hota
+// hai) sab se zyada hai, uska naam aur uska total time yahan final show
+// hota hai.
+
+// Bird ka grand total (jaisa players list ki total field mein hota hai): har
+// din ka apna alag total (us din ke Uraan time se, us din ke sab bhare hue
+// checkpoints jama karke), phir sab din ka total mila dete hain.
+function birdGrandTotalMinutes(card, start){
+  const cpEls = Array.from(card.querySelectorAll('.f-cp'));
+  const times = cpEls.map(i => i.value.trim());
+  const days = cpEls.map(i => parseInt(i.dataset.day, 10) || 1);
+  const ded = parseHM(card.querySelector('.f-deduction').value);
+  const filledIdx = times.map((v,i) => v ? i : -1).filter(i => i !== -1);
+  if(filledIdx.length === 0) return null;
+  const byDay = {};
+  filledIdx.forEach(i => {
+    const day = days[i];
+    const cp = parseHM(times[i]);
+    let diff = cp - start;
+    if(diff < 0) diff += 1440;
+    byDay[day] = (byDay[day] || 0) + diff;
+  });
+  let total = 0;
+  Object.keys(byDay).forEach(d => { total += byDay[d] + ded; });
+  return total;
+}
+
+// Kisi din 'day' ka (abhi tak ka) Winner Pigeon: us din tagged checkpoints
+// mein se har bird ka us din ka AAKHRI bhara hua checkpoint dekhte hain, jis
+// bird ka wo time (Uraan se) sab se zyada ho wohi us din ka pigeon winner.
+function dayWinnerPigeon(day, start){
+  let bestDiff = null;
+  let winners = [];
+  document.querySelectorAll('.row-card.bird').forEach(card => {
+    if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
+    const timeEls = Array.from(card.querySelectorAll('.f-cp'));
+    const name = card.querySelector('.f-name').value.trim();
+    let lastIdx = -1;
+    for(let i = timeEls.length - 1; i >= 0; i--){
+      const dayI = parseInt(timeEls[i].dataset.day, 10) || 1;
+      if(dayI === day && timeEls[i].value.trim()){ lastIdx = i; break; }
+    }
+    if(lastIdx === -1) return;
+    const raw = timeEls[lastIdx].value.trim();
+    let diff = parseHM(raw) - start;
+    if(diff < 0) diff += 1440;
+    if(bestDiff === null || diff > bestDiff){
+      bestDiff = diff;
+      winners = [{ name, time: raw }];
+    } else if(diff === bestDiff){
+      winners.push({ name, time: raw });
+    }
+  });
+  return winners;
+}
+
+function recalcWinnerPigeon(){
+  const start = parseHM(document.getElementById('m_uraan').value);
+  const durationDays = Number(document.getElementById('m_duration_days').value) || 1;
+  const statusEl = document.getElementById('wpStatus');
+  const allFilled = allCheckpointsFilled();
+  const deadlinePassed = aakhriTimeGuzarGaya();
+  const ready = allFilled || deadlinePassed;
+
+  if(durationDays <= 1){
+    // Single-day tournament: hamesha se jaisa tha waisa hi — har bird ka
+    // aakhri bhara hua checkpoint, uska time uraan se nikal ke jis bird ka
+    // sab se zyada ho wohi Winner Pigeon. Grand-total/day-wise switching
+    // (neeche wala naya behaviour) sirf multi-day mein hota hai.
+    const winners = dayWinnerPigeon(1, start);
+    document.getElementById('m_wp_time').value = ready ? (winners.length ? winners[0].time : '') : '';
+    document.getElementById('m_wp_name').value = ready ? (winners.length ? winners.map(w => w.name).join(' & ') : '') : '';
+    currentTournament().meta.winner_pigeon_total_ready = false;
+
+    if(!statusEl) return;
+    if(ready){
+      statusEl.textContent = allFilled
+        ? '✅ Sab checkpoints fill ho chuke — Winner Pigeon announce ho gaya.'
+        : '✅ Aakhri time guzar chuka — Winner Pigeon announce ho gaya.';
+      statusEl.style.color = 'var(--up, #1a7f37)';
+    } else {
+      statusEl.textContent = '⏳ Abhi announce nahi hoga — sab checkpoints fill hone ya aakhri time guzarne ka intezar hai.';
+      statusEl.style.color = 'var(--text-dim)';
+    }
+    return;
+  }
+
+  // Multi-day tournament se neeche wala naya behaviour hi chalta hai.
+  if(ready){
+    // Tournament poora ho chuka — ab overall best (grand total) hi Winner
+    // Pigeon hai, jaisa players list mein #1 position hota hai.
+    let bestVal = null;
+    let winners = [];
+    document.querySelectorAll('.row-card.bird').forEach(card => {
+      if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
+      const total = birdGrandTotalMinutes(card, start);
+      if(total === null) return;
+      const name = card.querySelector('.f-name').value.trim();
+      if(bestVal === null || total > bestVal){
+        bestVal = total;
+        winners = [{ name, time: formatMinutes(total) }];
+      } else if(total === bestVal){
+        winners.push({ name, time: formatMinutes(total) });
+      }
+    });
+
+    document.getElementById('m_wp_time').value = winners.length ? winners[0].time : '';
+    document.getElementById('m_wp_name').value = winners.length ? winners.map(w => w.name).join(' & ') : '';
+    // Ye flag public page ko batata hai ke box ab "Best Average Total Days"
+    // (overall best) mode mein hai, taake wahan label bhi badal jaye.
+    currentTournament().meta.winner_pigeon_total_ready = winners.length > 0;
+
+    if(!statusEl) return;
+    statusEl.textContent = allFilled
+      ? '✅ Sab checkpoints fill ho chuke — Winner Pigeon (overall best) announce ho gaya.'
+      : '✅ Aakhri time guzar chuka — Winner Pigeon (overall best) announce ho gaya.';
+    statusEl.style.color = 'var(--up, #1a7f37)';
+    return;
+  }
+
+  // Abhi tournament chal raha hai — sab se aakhri complete hue din (jis din
+  // ke sab checkpoints fill ho chuke ya us din ka time guzar chuka) ka
+  // day-wise Winner Pigeon yahan dikhate hain.
+  let shownDay = null, winners = [];
+  for(let d = durationDays; d >= 1; d--){
+    if(!(allCheckpointsFilledForDay(d) || dayDeadlinePassed(d))) continue;
+    const w = dayWinnerPigeon(d, start);
+    if(w.length){ shownDay = d; winners = w; break; }
+  }
+
+  document.getElementById('m_wp_time').value = winners.length ? winners[0].time : '';
+  document.getElementById('m_wp_name').value = winners.length ? winners.map(w => w.name).join(' & ') : '';
+  // Din 1 tak Total tab abhi bhi sirf ek din ka raw figure hai, isliye
+  // "Winner Pigeon" hi rehta hai. Din 2 se aage badhte hi (chahe tournament
+  // poora na bhi hua ho) label "Best Average Total Days" ho jata hai.
+  currentTournament().meta.winner_pigeon_total_ready = !!(shownDay && shownDay > 1);
+
+  if(!statusEl) return;
+  if(winners.length){
+    statusEl.textContent = `⏳ Abhi Din ${shownDay} ka Winner Pigeon dikhaya ja raha hai — tournament poora hone par yahan overall best (sab dinon ka total) show hoga.`;
+    statusEl.style.color = 'var(--text-dim)';
+  } else {
+    statusEl.textContent = '⏳ Abhi announce nahi hoga — sab checkpoints fill hone ya aakhri time guzarne ka intezar hai.';
+    statusEl.style.color = 'var(--text-dim)';
+  }
+}
+
+function dayDeadlinePassed(dayNum){
+  const dateStr = (document.getElementById('m_date').value || '').trim();
+  const aakhriStr = (document.getElementById('m_aakhri').value || '').trim();
+  if(!dateStr || !aakhriStr) return false;
+  const deadline = new Date(`${dateStr} ${aakhriStr}`);
+  if(isNaN(deadline.getTime())) return false;
+  deadline.setDate(deadline.getDate() + (dayNum - 1));
+  return Date.now() >= deadline.getTime();
+}
+
+// Har din ka apna alag First Winner aur Winner Pigeon: har checkpoint ke sath
+// uska "din" (day) tag hota hai (input ke sath chhota Day box). Us din ke
+// checkpoints mein se hi us din ka First Winner (position #1) aur Winner
+// Pigeon (aakhri bhara hua checkpoint) nikala jata hai.
+function recalcDailyWinners(){
+  const durationDays = Number(document.getElementById('m_duration_days').value) || 1;
+  const start = parseHM(document.getElementById('m_uraan').value);
+  const results = [];
+
+  for(let d = 1; d <= durationDays; d++){
+    let bestFirstDiff = null;
+    let firstWinners = [];
+    let bestPigeonDiff = null;
+    let pigeonWinners = [];
+
+    document.querySelectorAll('.row-card.bird').forEach(card => {
+      if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
+      const timeEls = Array.from(card.querySelectorAll('.f-cp'));
+      const name = card.querySelector('.f-name').value.trim();
+
+      // Is bird ka DIN d ka pehla checkpoint dhoondo (column index ke hisaab se pehla
+      // jo isi din tagged ho) — sirf overall column #1 (jo hamesha Din 1 ka hota hai) mat check karo.
+      let firstIdxForDay = -1;
+      for(let i = 0; i < timeEls.length; i++){
+        const dayI = parseInt(timeEls[i].dataset.day, 10) || 1;
+        if(dayI === d && timeEls[i].value.trim()){ firstIdxForDay = i; break; }
+      }
+      if(firstIdxForDay !== -1){
+        const raw = timeEls[firstIdxForDay].value.trim();
+        let diff = parseHM(raw) - start;
+        if(diff < 0) diff += 1440;
+        if(bestFirstDiff === null || diff > bestFirstDiff){
+          bestFirstDiff = diff;
+          firstWinners = [{ name, time: raw }];
+        } else if(diff === bestFirstDiff){
+          firstWinners.push({ name, time: raw });
+        }
+      }
+
+      // Is bird ka DIN d ka aakhri checkpoint dhoondo (jo isi din tagged ho) — sirf
+      // card ka overall aakhri filled checkpoint mat lo, woh kisi baad wale din ka ho sakta hai.
+      let lastIdx = -1;
+      for(let i = timeEls.length - 1; i >= 0; i--){
+        const dayI = parseInt(timeEls[i].dataset.day, 10) || 1;
+        if(dayI === d && timeEls[i].value.trim()){ lastIdx = i; break; }
+      }
+      if(lastIdx !== -1){
+        const raw = timeEls[lastIdx].value.trim();
+        let diff = parseHM(raw) - start;
+        if(diff < 0) diff += 1440;
+        if(bestPigeonDiff === null || diff > bestPigeonDiff){
+          bestPigeonDiff = diff;
+          pigeonWinners = [{ name, time: raw }];
+        } else if(diff === bestPigeonDiff){
+          pigeonWinners.push({ name, time: raw });
+        }
+      }
+    });
+
+    const allFilled = allCheckpointsFilledForDay(d);
+    const ready = allFilled || dayDeadlinePassed(d);
+    results.push({
+      day: d,
+      first_winner_name: (ready && firstWinners.length) ? firstWinners.map(w => w.name).join(' & ') : '',
+      first_winner_time: (ready && firstWinners.length) ? firstWinners[0].time : '',
+      winner_pigeon_name: (ready && pigeonWinners.length) ? pigeonWinners.map(w => w.name).join(' & ') : '',
+      winner_pigeon_time: (ready && pigeonWinners.length) ? pigeonWinners[0].time : '',
+      ready
+    });
+  }
+
+  currentTournament().meta.daily_winners = results;
+  renderDailyWinnersBox(results);
+}
+
+function renderDailyWinnersBox(results){
+  const wrap = document.getElementById('dailyWinnersWrap');
+  if(!wrap) return;
+  if(!results || results.length <= 1){
+    wrap.innerHTML = '';
+    return;
+  }
+  wrap.innerHTML = `
+    <label>Din-wise Winners (auto-calculated)</label>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${results.map(r => `
+        <div style="background: rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:13px;">
+          <b>Din ${r.day}:</b>
+          ${r.ready ? `
+            🥇 First Winner: ${r.first_winner_name ? `${escapeHtmlAdmin(r.first_winner_name)} (${escapeHtmlAdmin(r.first_winner_time)})` : '<span style="color:var(--text-dim);">koi entry nahi is din</span>'}
+            &nbsp;·&nbsp;
+            🏆 Winner Pigeon: ${r.winner_pigeon_name ? `${escapeHtmlAdmin(r.winner_pigeon_name)} (${escapeHtmlAdmin(r.winner_pigeon_time)})` : '<span style="color:var(--text-dim);">koi entry nahi is din</span>'}
+          ` : `<span style="color:var(--text-dim);">⏳ abhi announce nahi hoga</span>`}
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function recalcMetaCounts(){
+  const allCards = Array.from(document.querySelectorAll('.row-card.bird'));
+  const activeCards = allCards.filter(c => c.dataset.excluded !== 'true');
+  const birdCount = activeCards.length;
+  const colCount = document.querySelectorAll('.f-collabel').length;
+  const total = birdCount * colCount;
+  const activeCps = activeCards.flatMap(c => Array.from(c.querySelectorAll('.f-cp')));
+  const filledCount = activeCps.filter(i => i.value.trim()).length;
+  const landed = filledCount;
+  const flying = total - landed;
+  document.getElementById('m_pigeons').value = total;
+  document.getElementById('m_landed').value = landed;
+  document.getElementById('m_flying').value = flying;
+  document.getElementById('m_lofts').value = birdCount;
+  recalcFirstWinner();
+  recalcWinnerPigeon();
+  recalcDoubleMohar();
+  recalcBabyWinner();
+  recalcDailyWinners();
+  recalcDailyDoubleMohar();
+  recalcDailyBabyWinner();
+}
+
+// 1st Winner = jis participant ke pehle checkpoint (position #1) ne uraan time se
+// hisab kitab mein sab se zyada time liya ho, sirf pehla parinda compare hota hai,
+// total time se nahi.
+// Lekin ye tab tak announce nahi hota jab tak:
+//  (a) sab birds ka pehla checkpoint fill na ho jaye, YA
+//  (b) tournament ka "aakhri time" guzar na jaye (asal waqt ke hisaab se)
+function allFirstCheckpointsFilled(){
+  const cards = document.querySelectorAll('.row-card.bird');
+  if(cards.length === 0) return false;
+  return Array.from(cards).every(card => {
+    const cps = card.querySelectorAll('.f-cp');
+    return cps.length && cps[0].value.trim();
+  });
+}
+
+function aakhriTimeGuzarGaya(){
+  const dateStr = (document.getElementById('m_date').value || '').trim();
+  const aakhriStr = (document.getElementById('m_aakhri').value || '').trim();
+  if(!dateStr || !aakhriStr) return false;
+  const deadline = new Date(`${dateStr} ${aakhriStr}`);
+  if(isNaN(deadline.getTime())) return false;
+  const durationDays = Number(document.getElementById('m_duration_days').value) || 1;
+  if(durationDays > 1){
+    deadline.setDate(deadline.getDate() + (durationDays - 1)); // aakhri time hamesha tournament ke AAKHRI din par hoti hai
+  }
+  return Date.now() >= deadline.getTime();
+}
+
+// Double Mohar (Total): har bird ke apne highlighted checkpoint(s) (bird.dm_cols)
+// dekhte hain. Jis bird ka koi checkpoint highlight nahi, wo is calculation
+// mein shamil nahi hota. Single-day tournament mein: har shamil bird ke
+// highlighted checkpoints mein se jis mein sab se zyada time (uraan se
+// elapsed) bane, wahi us bird ka number hai. Multi-day tournament mein: har
+// din ke apne highlighted checkpoints mein se us din ka best nikal ke, phir
+// sab din ka total JAMA karte hain (Winner Pigeon ki tarah) — Total tab ka
+// Double Mohar Din 1 tak mehdood nahi rehta, sab din shamil hote hain. Announce
+// tab hota hai jab: (a) har shamil bird ka kam az kam ek highlighted checkpoint
+// fill ho chuka ho, YA (b) aakhri time guzar chuka ho.
+function recalcDoubleMohar(){
+  const tour = currentTournament();
+  const timeEl = document.getElementById('m_dm_time');
+  const nameEl = document.getElementById('m_dm_name');
+  const statusEl = document.getElementById('dmStatus');
+  if(!timeEl || !nameEl) return;
+
+  const start = parseHM(document.getElementById('m_uraan').value);
+  const durationDays = Number(document.getElementById('m_duration_days').value) || 1;
+  let bestVal = null;
+  let winners = [];
+  let participating = 0, readyParticipants = 0;
+
+  document.querySelectorAll('.row-card.bird').forEach((card, bIdx) => {
+    if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
+    const bird = tour.birds[bIdx];
+    const dmCols = (bird && bird.dm_cols) || [];
+    if(dmCols.length === 0) return;
+    participating++;
+    const timeEls = Array.from(card.querySelectorAll('.f-cp'));
+    const name = card.querySelector('.f-name').value.trim();
+
+    if(durationDays <= 1){
+      let birdBest = null;
+      dmCols.forEach(idx => {
+        if(idx >= timeEls.length) return;
+        const raw = timeEls[idx].value.trim();
+        if(!raw) return;
+        let diff = parseHM(raw) - start;
+        if(diff < 0) diff += 1440;
+        if(birdBest === null || diff > birdBest.diff) birdBest = { diff, raw };
+      });
+      if(birdBest === null) return;
+      readyParticipants++;
+      if(bestVal === null || birdBest.diff > bestVal){
+        bestVal = birdBest.diff;
+        winners = [{ name, time: birdBest.raw }];
+      } else if(birdBest.diff === bestVal){
+        winners.push({ name, time: birdBest.raw });
+      }
+      return;
+    }
+
+    // Multi-day: har din ka apna best highlighted checkpoint nikal ke, sab
+    // din jama karte hain.
+    let sum = 0, participatedAnyDay = false;
+    for(let d = 1; d <= durationDays; d++){
+      let dayBest = null;
+      dmCols.forEach(idx => {
+        if(idx >= timeEls.length) return;
+        const dayI = parseInt(timeEls[idx].dataset.day, 10) || 1;
+        if(dayI !== d) return;
+        const raw = timeEls[idx].value.trim();
+        if(!raw) return;
+        let diff = parseHM(raw) - start;
+        if(diff < 0) diff += 1440;
+        if(dayBest === null || diff > dayBest) dayBest = diff;
+      });
+      if(dayBest !== null){ sum += dayBest; participatedAnyDay = true; }
+    }
+    if(!participatedAnyDay) return;
+    readyParticipants++;
+    if(bestVal === null || sum > bestVal){
+      bestVal = sum;
+      winners = [{ name, time: formatMinutes(sum) }];
+    } else if(sum === bestVal){
+      winners.push({ name, time: formatMinutes(sum) });
+    }
+  });
+
+  if(participating === 0){
+    timeEl.value = ''; nameEl.value = '';
+    if(statusEl){
+      statusEl.textContent = '⭐ Abhi kisi bird ka koi checkpoint "Double Mohar" ke liye highlight nahi kiya gaya — neeche kisi bhi bird ke checkpoint field ko dabaye rakhein (long-press).';
+      statusEl.style.color = 'var(--text-dim)';
+    }
+    return;
+  }
+
+  const allFilled = readyParticipants === participating;
+  const deadlinePassed = aakhriTimeGuzarGaya();
+  const ready = winners.length > 0 && (allFilled || deadlinePassed);
+
+  timeEl.value = ready ? winners[0].time : '';
+  nameEl.value = ready ? winners.map(w => w.name).join(' & ') : '';
+
+  if(!statusEl) return;
+  if(ready){
+    statusEl.textContent = allFilled
+      ? `✅ Highlight kiye gaye sab checkpoints fill ho chuke — ⭐ Double Mohar announce ho gaya.`
+      : `✅ Aakhri time guzar chuka — ⭐ Double Mohar announce ho gaya.`;
+    statusEl.style.color = 'var(--up, #1a7f37)';
+  } else {
+    statusEl.textContent = `⏳ Abhi announce nahi hoga — highlight kiye gaye checkpoints fill hone ya aakhri time guzarne ka intezar hai.`;
+    statusEl.style.color = 'var(--text-dim)';
+  }
+}
+
+// Din-wise Double Mohar: har din ka apna alag Double Mohar winner. Har bird
+// ke highlighted checkpoints (bird.dm_cols) mein se sirf wahi checkpoints is
+// din d ke liye gine jate hain jo checkpoint khud isi din (d) ke saath tagged
+// hon (dataset.day). Baaki calculation upar wale overall Double Mohar jaisi hi
+// hai — bird ke us din ke highlighted checkpoints mein se sab se zyada time,
+// phir sab birds mein se sab se zyada time wala us din ka Double Mohar winner.
+function recalcDailyDoubleMohar(){
+  const durationDays = Number(document.getElementById('m_duration_days').value) || 1;
+  const tour = currentTournament();
+  const start = parseHM(document.getElementById('m_uraan').value);
+  const results = [];
+
+  for(let d = 1; d <= durationDays; d++){
+    let bestDiff = null;
+    let winners = [];
+    let participating = 0, readyParticipants = 0;
+
+    document.querySelectorAll('.row-card.bird').forEach((card, bIdx) => {
+      if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
+      const bird = tour.birds[bIdx];
+      const dmCols = (bird && bird.dm_cols) || [];
+      const timeEls = Array.from(card.querySelectorAll('.f-cp'));
+      const dmColsForDay = dmCols.filter(idx => {
+        if(idx >= timeEls.length) return false;
+        const dayI = parseInt(timeEls[idx].dataset.day, 10) || 1;
+        return dayI === d;
+      });
+      if(dmColsForDay.length === 0) return;
+      participating++;
+      const name = card.querySelector('.f-name').value.trim();
+      let birdBest = null;
+      dmColsForDay.forEach(idx => {
+        const raw = timeEls[idx].value.trim();
+        if(!raw) return;
+        let diff = parseHM(raw) - start;
+        if(diff < 0) diff += 1440;
+        if(birdBest === null || diff > birdBest.diff) birdBest = { diff, raw };
+      });
+      if(birdBest === null) return;
+      readyParticipants++;
+      if(bestDiff === null || birdBest.diff > bestDiff){
+        bestDiff = birdBest.diff;
+        winners = [{ name, time: birdBest.raw }];
+      } else if(birdBest.diff === bestDiff){
+        winners.push({ name, time: birdBest.raw });
+      }
+    });
+
+    const allFilled = participating > 0 && readyParticipants === participating;
+    const deadlinePassed = dayDeadlinePassed(d);
+    const ready = winners.length > 0 && (allFilled || deadlinePassed);
+
+    results.push({
+      day: d,
+      participating,
+      name: ready ? winners.map(w => w.name).join(' & ') : '',
+      time: ready ? winners[0].time : '',
+      ready
+    });
+  }
+
+  currentTournament().meta.daily_double_mohar = results;
+  renderDailyDoubleMoharBox(results);
+}
+
+function renderDailyDoubleMoharBox(results){
+  const wrap = document.getElementById('dailyDoubleMoharWrap');
+  if(!wrap) return;
+  if(!results || results.length <= 1){
+    wrap.innerHTML = '';
+    return;
+  }
+  wrap.innerHTML = `
+    <label>⭐ Din-wise Double Mohar (auto-calculated)</label>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${results.map(r => `
+        <div style="background: rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:13px;">
+          <b>Din ${r.day}:</b>
+          ${r.participating === 0
+            ? '<span style="color:var(--text-dim);">is din koi checkpoint highlight nahi kiya gaya</span>'
+            : (r.ready
+              ? `⭐ Double Mohar: ${r.name ? `${escapeHtmlAdmin(r.name)} (${escapeHtmlAdmin(r.time)})` : '<span style="color:var(--text-dim);">koi entry nahi</span>'}`
+              : '<span style="color:var(--text-dim);">⏳ abhi announce nahi hoga</span>')}
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// 🐣 Baby Winner (Total): bilkul Double Mohar jaisa hi — bird.baby_cols
+// (Double Mohar se mustaqil/alag list) dekhte hain. Single-day tournament
+// mein: har shamil bird ke highlighted checkpoints mein se jis mein sab se
+// zyada time bane, wahi us bird ka number hai. Multi-day tournament mein: har
+// din ke apne highlighted checkpoints mein se us din ka best nikal ke, phir
+// sab din ka total JAMA karte hain. Announce tab hota hai jab: (a) har shamil
+// bird ka kam az kam ek highlighted checkpoint fill ho chuka ho, YA (b) aakhri
+// time guzar chuka ho.
+function recalcBabyWinner(){
+  const tour = currentTournament();
+  const timeEl = document.getElementById('m_bw_time');
+  const nameEl = document.getElementById('m_bw_name');
+  const statusEl = document.getElementById('bwStatus');
+  if(!timeEl || !nameEl) return;
+
+  const start = parseHM(document.getElementById('m_uraan').value);
+  const durationDays = Number(document.getElementById('m_duration_days').value) || 1;
+  let bestVal = null;
+  let winners = [];
+  let participating = 0, readyParticipants = 0;
+
+  document.querySelectorAll('.row-card.bird').forEach((card, bIdx) => {
+    if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
+    const bird = tour.birds[bIdx];
+    const babyCols = (bird && bird.baby_cols) || [];
+    if(babyCols.length === 0) return;
+    participating++;
+    const timeEls = Array.from(card.querySelectorAll('.f-cp'));
+    const name = card.querySelector('.f-name').value.trim();
+
+    if(durationDays <= 1){
+      let birdBest = null;
+      babyCols.forEach(idx => {
+        if(idx >= timeEls.length) return;
+        const raw = timeEls[idx].value.trim();
+        if(!raw) return;
+        let diff = parseHM(raw) - start;
+        if(diff < 0) diff += 1440;
+        if(birdBest === null || diff > birdBest.diff) birdBest = { diff, raw };
+      });
+      if(birdBest === null) return;
+      readyParticipants++;
+      if(bestVal === null || birdBest.diff > bestVal){
+        bestVal = birdBest.diff;
+        winners = [{ name, time: birdBest.raw }];
+      } else if(birdBest.diff === bestVal){
+        winners.push({ name, time: birdBest.raw });
+      }
+      return;
+    }
+
+    let sum = 0, participatedAnyDay = false;
+    for(let d = 1; d <= durationDays; d++){
+      let dayBest = null;
+      babyCols.forEach(idx => {
+        if(idx >= timeEls.length) return;
+        const dayI = parseInt(timeEls[idx].dataset.day, 10) || 1;
+        if(dayI !== d) return;
+        const raw = timeEls[idx].value.trim();
+        if(!raw) return;
+        let diff = parseHM(raw) - start;
+        if(diff < 0) diff += 1440;
+        if(dayBest === null || diff > dayBest) dayBest = diff;
+      });
+      if(dayBest !== null){ sum += dayBest; participatedAnyDay = true; }
+    }
+    if(!participatedAnyDay) return;
+    readyParticipants++;
+    if(bestVal === null || sum > bestVal){
+      bestVal = sum;
+      winners = [{ name, time: formatMinutes(sum) }];
+    } else if(sum === bestVal){
+      winners.push({ name, time: formatMinutes(sum) });
+    }
+  });
+
+  if(participating === 0){
+    timeEl.value = ''; nameEl.value = '';
+    if(statusEl){
+      statusEl.textContent = '🐣 Abhi kisi bird ka koi checkpoint "Baby Winner" ke liye highlight nahi kiya gaya — upar mode ko 🐣 Baby Winner par switch karke neeche kisi bhi bird ke checkpoint field ko dabaye rakhein (long-press).';
+      statusEl.style.color = 'var(--text-dim)';
+    }
+    return;
+  }
+
+  const allFilled = readyParticipants === participating;
+  const deadlinePassed = aakhriTimeGuzarGaya();
+  const ready = winners.length > 0 && (allFilled || deadlinePassed);
+
+  timeEl.value = ready ? winners[0].time : '';
+  nameEl.value = ready ? winners.map(w => w.name).join(' & ') : '';
+
+  if(!statusEl) return;
+  if(ready){
+    statusEl.textContent = allFilled
+      ? `✅ Highlight kiye gaye sab checkpoints fill ho chuke — 🐣 Baby Winner announce ho gaya.`
+      : `✅ Aakhri time guzar chuka — 🐣 Baby Winner announce ho gaya.`;
+    statusEl.style.color = 'var(--up, #1a7f37)';
+  } else {
+    statusEl.textContent = `⏳ Abhi announce nahi hoga — highlight kiye gaye checkpoints fill hone ya aakhri time guzarne ka intezar hai.`;
+    statusEl.style.color = 'var(--text-dim)';
+  }
+}
+
+// Din-wise Baby Winner: bilkul Din-wise Double Mohar jaisa hi, bird.baby_cols
+// se.
+function recalcDailyBabyWinner(){
+  const durationDays = Number(document.getElementById('m_duration_days').value) || 1;
+  const tour = currentTournament();
+  const start = parseHM(document.getElementById('m_uraan').value);
+  const results = [];
+
+  for(let d = 1; d <= durationDays; d++){
+    let bestDiff = null;
+    let winners = [];
+    let participating = 0, readyParticipants = 0;
+
+    document.querySelectorAll('.row-card.bird').forEach((card, bIdx) => {
+      if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
+      const bird = tour.birds[bIdx];
+      const babyCols = (bird && bird.baby_cols) || [];
+      const timeEls = Array.from(card.querySelectorAll('.f-cp'));
+      const babyColsForDay = babyCols.filter(idx => {
+        if(idx >= timeEls.length) return false;
+        const dayI = parseInt(timeEls[idx].dataset.day, 10) || 1;
+        return dayI === d;
+      });
+      if(babyColsForDay.length === 0) return;
+      participating++;
+      const name = card.querySelector('.f-name').value.trim();
+      let birdBest = null;
+      babyColsForDay.forEach(idx => {
+        const raw = timeEls[idx].value.trim();
+        if(!raw) return;
+        let diff = parseHM(raw) - start;
+        if(diff < 0) diff += 1440;
+        if(birdBest === null || diff > birdBest.diff) birdBest = { diff, raw };
+      });
+      if(birdBest === null) return;
+      readyParticipants++;
+      if(bestDiff === null || birdBest.diff > bestDiff){
+        bestDiff = birdBest.diff;
+        winners = [{ name, time: birdBest.raw }];
+      } else if(birdBest.diff === bestDiff){
+        winners.push({ name, time: birdBest.raw });
+      }
+    });
+
+    const allFilled = participating > 0 && readyParticipants === participating;
+    const deadlinePassed = dayDeadlinePassed(d);
+    const ready = winners.length > 0 && (allFilled || deadlinePassed);
+
+    results.push({
+      day: d,
+      participating,
+      name: ready ? winners.map(w => w.name).join(' & ') : '',
+      time: ready ? winners[0].time : '',
+      ready
+    });
+  }
+
+  currentTournament().meta.daily_baby_winner = results;
+  renderDailyBabyWinnerBox(results);
+}
+
+function renderDailyBabyWinnerBox(results){
+  const wrap = document.getElementById('dailyBabyWinnerWrap');
+  if(!wrap) return;
+  if(!results || results.length <= 1){
+    wrap.innerHTML = '';
+    return;
+  }
+  wrap.innerHTML = `
+    <label>🐣 Din-wise Baby Winner (auto-calculated)</label>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${results.map(r => `
+        <div style="background: rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:13px;">
+          <b>Din ${r.day}:</b>
+          ${r.participating === 0
+            ? '<span style="color:var(--text-dim);">is din koi checkpoint highlight nahi kiya gaya</span>'
+            : (r.ready
+              ? `🐣 Baby Winner: ${r.name ? `${escapeHtmlAdmin(r.name)} (${escapeHtmlAdmin(r.time)})` : '<span style="color:var(--text-dim);">koi entry nahi</span>'}`
+              : '<span style="color:var(--text-dim);">⏳ abhi announce nahi hoga</span>')}
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// First Winner (Total): single-day tournament mein sirf pehla checkpoint (jo
+// hamesha column #1 hota hai) use hota hai — pehle jaisa hi. Multi-day
+// tournament mein Total tab Din 1 tak mehdood nahi rehta: har din ka apna
+// pehla checkpoint (jo us din tagged ho) nikal ke, sab din ka total JAMA
+// karte hain (Winner Pigeon/Double Mohar ki tarah) — usi combined total se
+// Total tab ka 1st Winner nikalta hai.
+function recalcFirstWinner(){
+  const start = parseHM(document.getElementById('m_uraan').value);
+  const durationDays = Number(document.getElementById('m_duration_days').value) || 1;
+  let bestVal = null;
+  let winners = [];
+  document.querySelectorAll('.row-card.bird').forEach(card => {
+    if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
+    const timeEls = Array.from(card.querySelectorAll('.f-cp'));
+    if(!timeEls.length) return;
+    const name = card.querySelector('.f-name').value.trim();
+
+    if(durationDays <= 1){
+      const raw = timeEls[0].value.trim();
+      if(!raw) return;
+      let diff = parseHM(raw) - start; // us din ke Uraan time se elapsed — day offset nahi jodhte
+      if(diff < 0) diff += 1440; // agla din / midnight ke baad wala checkpoint
+      if(bestVal === null || diff > bestVal){
+        bestVal = diff;
+        winners = [{ name, time: raw }];
+      } else if(diff === bestVal){
+        winners.push({ name, time: raw });
+      }
+      return;
+    }
+
+    let sum = 0, participatedAnyDay = false;
+    for(let d = 1; d <= durationDays; d++){
+      let idxForDay = -1;
+      for(let i = 0; i < timeEls.length; i++){
+        const dayI = parseInt(timeEls[i].dataset.day, 10) || 1;
+        if(dayI === d && timeEls[i].value.trim()){ idxForDay = i; break; }
+      }
+      if(idxForDay === -1) continue;
+      const raw = timeEls[idxForDay].value.trim();
+      let diff = parseHM(raw) - start;
+      if(diff < 0) diff += 1440;
+      sum += diff;
+      participatedAnyDay = true;
+    }
+    if(!participatedAnyDay) return;
+    if(bestVal === null || sum > bestVal){
+      bestVal = sum;
+      winners = [{ name, time: formatMinutes(sum) }];
+    } else if(sum === bestVal){
+      winners.push({ name, time: formatMinutes(sum) });
+    }
+  });
+
+  const statusEl = document.getElementById('fwStatus');
+  const allFilled = durationDays <= 1 ? allFirstCheckpointsFilled() : allCheckpointsFilled();
+  const deadlinePassed = aakhriTimeGuzarGaya();
+  const ready = winners.length > 0 && (allFilled || deadlinePassed);
+
+  document.getElementById('m_fw_time').value = ready ? winners[0].time : '';
+  document.getElementById('m_fw_name').value = ready ? winners.map(w => w.name).join(' & ') : '';
+
+  if(!statusEl) return;
+  if(ready){
+    statusEl.textContent = allFilled
+      ? '✅ Sab birds ka pehla checkpoint fill ho chuka — 1st Winner announce ho gaya.'
+      : '✅ Aakhri time guzar chuka — 1st Winner announce ho gaya.';
+    statusEl.style.color = 'var(--up, #1a7f37)';
+  } else {
+    statusEl.textContent = '⏳ Abhi announce nahi hoga — sab birds ka pehla checkpoint fill hone ya aakhri time guzarne ka intezar hai.';
+    statusEl.style.color = 'var(--text-dim)';
+  }
+}
+
+function populateClubSelect(){
+  const sel = document.getElementById('clubSelect');
+  sel.innerHTML = data.clubs.map((c,i)=>`<option value="${i}">${escapeHtmlAdmin(c.name)}</option>`).join('');
+  sel.value = currentClubIdx;
+}
+
+function populateTourSelect(){
+  const club = data.clubs[currentClubIdx];
+  const sel = document.getElementById('tourSelect');
+  sel.innerHTML = club.tournaments.map((t,i)=>{
+    const label = t.name ? t.name : (t.meta.date ? t.meta.date : `Tournament ${i+1}`);
+    return `<option value="${i}">${escapeHtmlAdmin(label)}</option>`;
+  }).join('');
+  sel.value = currentTourIdx;
+}
+
+function loadCurrentIntoForm(){
+  const club = data.clubs[currentClubIdx];
+  const tour = currentTournament();
+  document.getElementById('club_name_field').value = club.name || '';
+  document.getElementById('club_city_field').value = club.city || '';
+  renderClubLogoPreview();
+  const cityStatusEl = document.getElementById('cityStatus');
+  if(club.lat != null && club.lon != null){
+    cityStatusEl.textContent = `✅ Location confirmed — ${club.city}`;
+    cityStatusEl.style.color = 'var(--up)';
+  } else {
+    cityStatusEl.textContent = club.city ? '⚠️ Confirm karna baaki hai' : '';
+    cityStatusEl.style.color = 'var(--text-faint)';
+  }
+  document.getElementById('m_tour_name').value = tour.name || '';
+  document.getElementById('m_is_live').checked = !!tour.meta.is_live;
+  document.getElementById('m_is_upcoming').checked = !!tour.meta.is_upcoming;
+  document.getElementById('m_fw_amount_show').checked = tour.meta.first_winner_amount_show !== false;
+  document.getElementById('m_wp_amount_show').checked = tour.meta.winner_pigeon_amount_show !== false;
+  document.getElementById('m_dm_amount_show').checked = tour.meta.double_mohar_amount_show !== false;
+  document.getElementById('m_bw_amount_show').checked = tour.meta.baby_winner_amount_show !== false;
+  METAFIELDS.forEach((id,i)=>{ document.getElementById(id).value = tour.meta[METAKEYS[i]] ?? ''; });
+  document.getElementById('m_duration_days').value = tour.meta.duration_days || 1;
+  renderEntryDaySelector();
+  loadEntryDayDate();
+  refreshDayDateStatus();
+  renderCols();
+  renderRows();
+  renderPositionAmounts();
+  renderDayAmounts();
+  recalcMetaCounts();
+  if(!document.getElementById('m_sunrise').value.trim()) autoFetchSunriseSunset();
+}
+
+function onClubChange(){
+  save();
+  currentClubIdx = Number(document.getElementById('clubSelect').value);
+  currentTourIdx = 0;
+  populateTourSelect();
+  loadCurrentIntoForm();
+  save();
+}
+
+function onTourChange(){
+  save();
+  currentTourIdx = Number(document.getElementById('tourSelect').value);
+  loadCurrentIntoForm();
+  save();
+}
+
+// Tournament ka naam field mein type karte hi turant dropdown ke option
+// label mein bhi update ho jata hai — taake pata chale ke sahi tournament
+// rename ho raha hai, list se save karne tak intezar na karna pade.
+function renameCurrentTournamentLive(){
+  const tour = currentTournament();
+  tour.name = document.getElementById('m_tour_name').value;
+  const sel = document.getElementById('tourSelect');
+  const opt = sel.options[currentTourIdx];
+  if(opt){
+    const label = tour.name ? tour.name : (tour.meta.date ? tour.meta.date : `Tournament ${currentTourIdx + 1}`);
+    opt.textContent = label;
+  }
+  save();
+}
+
+function addClub(){
+  save();
+  const name = prompt('Naye club ka naam likhein:', 'Naya Club');
+  if(name === null) return;
+  data.clubs.push(blankClub(name.trim() || 'Naya Club'));
+  currentClubIdx = data.clubs.length - 1;
+  currentTourIdx = 0;
+  populateClubSelect();
+  populateTourSelect();
+  loadCurrentIntoForm();
+  save();
+  showToast('✅ Naya club add ho gaya');
+}
+
+function deleteClub(btn){
+  currentClubIdx = Number(document.getElementById('clubSelect').value);
+  if(data.clubs.length <= 1){ showToast('Kam se kam ek club hona zaroori hai', true); return; }
+  if(btn && btn.dataset.confirming !== 'true'){
+    btn.dataset.confirming = 'true';
+    const original = btn.textContent;
+    btn.textContent = '⚠️ Pakka delete karna hai? Dobara tap karein';
+    btn.style.background = 'rgba(217,124,124,0.15)';
+    setTimeout(() => {
+      if(btn.dataset.confirming === 'true'){
+        btn.dataset.confirming = 'false';
+        btn.textContent = original;
+        btn.style.background = '';
+      }
+    }, 4000);
+    return;
+  }
+  if(btn){ btn.dataset.confirming = 'false'; btn.style.background = ''; }
+  const club = data.clubs[currentClubIdx];
+  const deletedName = club.name;
+  data.clubs.splice(currentClubIdx, 1);
+  currentClubIdx = 0;
+  currentTourIdx = 0;
+  populateClubSelect();
+  populateTourSelect();
+  loadCurrentIntoForm();
+  save();
+  showToast(`"${deletedName}" delete ho gaya`);
+}
+
+function addTournament(){
+  save();
+  const club = data.clubs[currentClubIdx];
+  const t = blankTournament(currentTournament().columns);
+  club.tournaments.push(t);
+  currentTourIdx = club.tournaments.length - 1;
+  populateTourSelect();
+  loadCurrentIntoForm();
+  save();
+  showToast('✅ Naya tournament add ho gaya — is club ki history mein shamil ho gaya');
+}
+
+function deleteTournament(btn){
+  currentClubIdx = Number(document.getElementById('clubSelect').value);
+  currentTourIdx = Number(document.getElementById('tourSelect').value);
+  const club = data.clubs[currentClubIdx];
+  if(club.tournaments.length <= 1){ showToast('Har club ke pass kam se kam ek tournament hona zaroori hai', true); return; }
+  if(btn && btn.dataset.confirming !== 'true'){
+    btn.dataset.confirming = 'true';
+    const original = btn.textContent;
+    btn.textContent = '⚠️ Pakka delete karna hai? Dobara tap karein';
+    btn.style.background = 'rgba(217,124,124,0.15)';
+    setTimeout(() => {
+      if(btn.dataset.confirming === 'true'){
+        btn.dataset.confirming = 'false';
+        btn.textContent = original;
+        btn.style.background = '';
+      }
+    }, 4000);
+    return;
+  }
+  if(btn){ btn.dataset.confirming = 'false'; btn.style.background = ''; }
+  club.tournaments.splice(currentTourIdx, 1);
+  currentTourIdx = 0;
+  populateTourSelect();
+  loadCurrentIntoForm();
+  save();
+  showToast('Tournament delete ho gaya');
+}
+
+async function load(){
+  loadConn();
+  let loadedFromRemote = false;
+
+  if(conn.owner && conn.repo){
+    try{
+      const apiUrl = `https://api.github.com/repos/${conn.owner}/${conn.repo}/contents/data.json?ref=${encodeURIComponent(conn.branch || 'main')}`;
+      const headers = conn.token
+        ? { 'Authorization': `Bearer ${conn.token}`, 'Accept': 'application/vnd.github+json' }
+        : { 'Accept': 'application/vnd.github+json' };
+      const res = await fetch(apiUrl, { headers });
+      if(res.status === 200){
+        const json = await res.json();
+        const parsed = JSON.parse(b64DecodeUnicode(json.content || ''));
+        data = migrateData(parsed);
+        loadedFromRemote = true;
+      }
+    }catch(e){ /* network issue — fall back to local cache below */ }
+  }
+
+  let selection = { clubIdx: 0, tourIdx: 0 };
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(saved){
+    try{
+      const parsed = JSON.parse(saved);
+      if(!loadedFromRemote){ data = migrateData(parsed.data !== undefined ? parsed.data : parsed); }
+      if(parsed.clubIdx !== undefined) selection = { clubIdx: parsed.clubIdx, tourIdx: parsed.tourIdx || 0 };
+    }catch(e){ if(!loadedFromRemote){ data = JSON.parse(JSON.stringify(SAMPLE)); } }
+  } else if(!loadedFromRemote){
+    data = JSON.parse(JSON.stringify(SAMPLE));
+  }
+
+  currentClubIdx = Math.min(selection.clubIdx, data.clubs.length - 1);
+  currentTourIdx = Math.min(selection.tourIdx, data.clubs[currentClubIdx].tournaments.length - 1);
+  populateClubSelect();
+  populateTourSelect();
+  loadCurrentIntoForm();
+}
+
+function save(){
+  recalcMetaCounts();
+  const club = data.clubs[currentClubIdx];
+  const tour = currentTournament();
+  club.name = document.getElementById('club_name_field').value;
+  tour.name = document.getElementById('m_tour_name').value;
+  tour.meta.is_live = document.getElementById('m_is_live').checked;
+  tour.meta.is_upcoming = document.getElementById('m_is_upcoming').checked;
+  tour.meta.first_winner_amount_show = document.getElementById('m_fw_amount_show').checked;
+  tour.meta.winner_pigeon_amount_show = document.getElementById('m_wp_amount_show').checked;
+  tour.meta.double_mohar_amount_show = document.getElementById('m_dm_amount_show').checked;
+  tour.meta.baby_winner_amount_show = document.getElementById('m_bw_amount_show').checked;
+  METAFIELDS.forEach((id,i)=>{
+    const el = document.getElementById(id);
+    const val = el.type === 'number' ? Number(el.value) : el.value;
+    tour.meta[METAKEYS[i]] = val;
+  });
+  tour.columns = Array.from(document.querySelectorAll('.f-collabel')).map(i=>i.value);
+  const posAmountsByTab = migratePositionAmounts(tour);
+  const allPosAmtEls = Array.from(document.querySelectorAll('.f-posamt'));
+  const allPosShowEls = Array.from(document.querySelectorAll('.f-posamt-show'));
+  const posTabKeys = [...new Set(allPosAmtEls.map(el => el.dataset.tab))];
+  posTabKeys.forEach(tabKey => {
+    const amtEls = allPosAmtEls.filter(el => el.dataset.tab === tabKey);
+    const showEls = allPosShowEls.filter(el => el.dataset.tab === tabKey);
+    posAmountsByTab[tabKey] = amtEls.map((el, i) => ({ amount: el.value, show: showEls[i] ? showEls[i].checked : true }));
+  });
+  tour.position_amounts_by_tab = posAmountsByTab;
+  delete tour.position_amounts; // purana flat format ab by_tab.total mein migrate ho chuka
+  const dayAmounts = {};
+  document.querySelectorAll('.f-day-amt').forEach(el => {
+    const day = el.dataset.day;
+    const cat = el.dataset.cat;
+    if(!dayAmounts[day]) dayAmounts[day] = {};
+    dayAmounts[day][cat] = el.value;
+  });
+  if(Object.keys(dayAmounts).length) tour.meta.day_amounts = dayAmounts;
+  const existingBirds = tour.birds || [];
+  tour.birds = Array.from(document.querySelectorAll('.row-card.bird')).map((card, idx)=>{
+    return {
+      name: card.querySelector('.f-name').value,
+      image: card.querySelector('.f-image').value,
+      total: card.querySelector('.f-total').value,
+      deduction: card.querySelector('.f-deduction').value,
+      note: card.querySelector('.f-note').value,
+      // dm_cols (⭐ Double Mohar ke liye highlight kiye gaye checkpoints) DOM
+      // mein nahi hote (sirf ek border style), isliye purani tour.birds se
+      // index ke hisaab se carry forward karte hain — warna har save() par
+      // (jo har keystroke par autosave se chalta hai) sab highlights zaya ho
+      // jate the.
+      dm_cols: (existingBirds[idx] && existingBirds[idx].dm_cols) ? existingBirds[idx].dm_cols.slice() : [],
+      baby_cols: (existingBirds[idx] && existingBirds[idx].baby_cols) ? existingBirds[idx].baby_cols.slice() : [],
+      // excluded bhi DOM mein nahi hota (button click se hi set hota hai),
+      // isliye wahi carry-forward tareeqa.
+      excluded: !!(existingBirds[idx] && existingBirds[idx].excluded),
+      times: Array.from(card.querySelectorAll('.f-cp')).map(el =>
+        makeCp(el.dataset.day, el.value)
+      )
+    };
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ data, clubIdx: currentClubIdx, tourIdx: currentTourIdx }));
+}
+
+// Har checkpoint COLUMN ka din uske banते waqt hamesha ke liye fix ho jata hai
+// (tour.column_days[idx]) — baad mein entry-day selector kahin bhi switch ho,
+// is column ka din nahi badalta. Purani tournaments jinme yeh field na ho unke
+// liye, jis bird mein woh checkpoint bhara hua hai uski day tag se andaza lagate hain.
+function getColumnDay(tour, idx){
+  if(tour.column_days && tour.column_days[idx] != null) return Number(tour.column_days[idx]);
+  const filledBird = tour.birds.find(b => b.times[idx]);
+  if(filledBird) return parseCp(filledBird.times[idx]).day;
+  return 1;
+}
+
+function renderCols(){
+  const wrap = document.getElementById('colLabels');
+  const tour = currentTournament();
+  const cols = tour.columns;
+  const durationDays = Number(document.getElementById('m_duration_days')?.value) || 1;
+  wrap.innerHTML = cols.map((c,idx)=>{
+    let dayBadge = '';
+    if(durationDays > 1){
+      const day = getColumnDay(tour, idx);
+      dayBadge = `<div style="font-size:10.5px; color: var(--gold); text-align:center; margin-bottom:2px;">Din ${day}</div>`;
+    }
+    return `
+    <div style="position:relative;">
+      ${dayBadge}
+      <input class="f-collabel" value="${c}">
+      <button type="button" onclick="removeColumn(${idx})" style="position:absolute; top:-6px; right:-6px; background:var(--danger); color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:11px; line-height:1; cursor:pointer;">×</button>
+    </div>`;
+  }).join('');
+  attachAutoSave();
+}
+
+// Position-wise Amount (Inaam): har ranking position (1st, 2nd, 3rd...) ke
+// liye ek amount likh sakte hain. Public page par har bird ke apni ranking
+// position ke sath yehi amount dikhta hai. tour.position_amounts[0] = 1st
+// position ka amount, [1] = 2nd, wagera.
+// Din-wise Amount: multi-day tournaments mein har din ke liye First
+// Winner/Winner Pigeon/Double Mohar/Baby Winner ka amount alag likha ja sakta
+// hai (tour.meta.day_amounts[day] = {fw, wp, dm, bw}). Total tab hamesha upar
+// wale "Total amount" field use karta hai; kisi din ke tab par yeh din-wise
+// amount dikhta hai (agar likha ho), warna khali rehta hai.
+function renderDayAmounts(){
+  const wrap = document.getElementById('dayAmountsWrap');
+  if(!wrap) return;
+  const durationDays = Number(document.getElementById('m_duration_days')?.value) || 1;
+  if(durationDays <= 1){ wrap.innerHTML = ''; return; }
+  const tour = currentTournament();
+  const da = tour.meta.day_amounts || {};
+  const fwTotal = document.getElementById('m_fw_amount')?.value || '';
+  const wpTotal = document.getElementById('m_wp_amount')?.value || '';
+  const dmTotal = document.getElementById('m_dm_amount')?.value || '';
+  const bwTotal = document.getElementById('m_bw_amount')?.value || '';
+  wrap.innerHTML = `
+    <label>📅 Din-wise Amount (har din ke liye alag amount, optional)</label>
+    <p class="sub" style="margin-bottom:10px;">Khali chhod dein to us din ke tab par upar wala "Total amount" hi dikhega.</p>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      ${Array.from({ length: durationDays }, (_, i) => i + 1).map(d => {
+        const v = da[d] || {};
+        return `
+        <div style="border:1px solid var(--line); border-radius:10px; padding:10px;">
+          <div style="font-weight:700; color:var(--gold); margin-bottom:8px;">Din ${d}</div>
+          <div class="row-fields" style="grid-template-columns: repeat(2,1fr);">
+            <div><label style="font-size:11.5px;">🥇 First Winner</label><input class="f-day-amt" data-day="${d}" data-cat="fw" value="${escapeHtmlAdmin(v.fw || '')}" placeholder="amount"></div>
+            <div><label style="font-size:11.5px;">🏆 Winner Pigeon</label><input class="f-day-amt" data-day="${d}" data-cat="wp" value="${escapeHtmlAdmin(v.wp || '')}" placeholder="amount"></div>
+            <div><label style="font-size:11.5px;">⭐ Double Mohar</label><input class="f-day-amt" data-day="${d}" data-cat="dm" value="${escapeHtmlAdmin(v.dm || '')}" placeholder="amount"></div>
+            <div><label style="font-size:11.5px;">🐣 Baby Winner</label><input class="f-day-amt" data-day="${d}" data-cat="bw" value="${escapeHtmlAdmin(v.bw || '')}" placeholder="amount"></div>
+          </div>
+        </div>`;
+      }).join('')}
+      <div style="border:1.5px solid var(--gold); border-radius:10px; padding:10px;">
+        <div style="font-weight:700; color:var(--gold); margin-bottom:8px;">Total</div>
+        <p class="sub" style="margin:-4px 0 8px;">Ye wahi "Total amount" fields hain jo upar hain — yahan se bhi edit kar sakte hain, dono jagah sync rehte hain.</p>
+        <div class="row-fields" style="grid-template-columns: repeat(2,1fr);">
+          <div><label style="font-size:11.5px;">🥇 First Winner</label><input class="f-total-amt-mirror" data-target="m_fw_amount" value="${escapeHtmlAdmin(fwTotal)}" placeholder="amount"></div>
+          <div><label style="font-size:11.5px;">🏆 Winner Pigeon</label><input class="f-total-amt-mirror" data-target="m_wp_amount" value="${escapeHtmlAdmin(wpTotal)}" placeholder="amount"></div>
+          <div><label style="font-size:11.5px;">⭐ Double Mohar</label><input class="f-total-amt-mirror" data-target="m_dm_amount" value="${escapeHtmlAdmin(dmTotal)}" placeholder="amount"></div>
+          <div><label style="font-size:11.5px;">🐣 Baby Winner</label><input class="f-total-amt-mirror" data-target="m_bw_amount" value="${escapeHtmlAdmin(bwTotal)}" placeholder="amount"></div>
+        </div>
+      </div>
+    </div>
+  `;
+  attachAutoSave();
+}
+
+// Position-wise amounts ab tab ke hisaab se alag ho sakte hain (Total, Din 1,
+// Din 2...) — tour.position_amounts_by_tab = { total: [...], "1": [...], ... }.
+// Purana data (single flat tour.position_amounts array) migrate karke "total"
+// tab ban jata hai, taake purani saved tournaments na tootein.
+let POS_AMOUNT_TAB = 'total';
+
+function migratePositionAmounts(tour){
+  if(!tour.position_amounts_by_tab){
+    tour.position_amounts_by_tab = { total: tour.position_amounts || [] };
+  }
+  return tour.position_amounts_by_tab;
+}
+
+function renderPosAmountTabSelector(){
+  const wrap = document.getElementById('posAmountTabWrap');
+  const sel = document.getElementById('posAmountTabSelect');
+  if(!wrap || !sel) return;
+  const durationDays = Number(document.getElementById('m_duration_days')?.value) || 1;
+  if(durationDays <= 1){
+    wrap.style.display = 'none';
+    POS_AMOUNT_TAB = 'total';
+    return;
+  }
+  wrap.style.display = '';
+  const prevVal = sel.value || POS_AMOUNT_TAB;
+  sel.innerHTML = `<option value="total">Total</option>` +
+    Array.from({ length: durationDays }, (_, i) => i + 1).map(d => `<option value="${d}">Din ${d}</option>`).join('');
+  sel.value = Array.from(sel.options).some(o => o.value === prevVal) ? prevVal : 'total';
+  POS_AMOUNT_TAB = sel.value;
+}
+
+function onPosAmountTabChange(){
+  const sel = document.getElementById('posAmountTabSelect');
+  POS_AMOUNT_TAB = sel ? sel.value : 'total';
+  renderPositionAmounts();
+}
+
+function renderPositionAmounts(){
+  const wrap = document.getElementById('positionAmounts');
+  if(!wrap) return;
+  const tabWrap = document.getElementById('posAmountTabWrap');
+  if(tabWrap) tabWrap.style.display = 'none'; // ab dropdown ki zaroorat nahi — sab tabs ek sath dikhte hain
+  const tour = currentTournament();
+  const byTab = migratePositionAmounts(tour);
+  const durationDays = Number(document.getElementById('m_duration_days')?.value) || 1;
+  const tabKeys = durationDays > 1
+    ? [...Array.from({ length: durationDays }, (_, i) => String(i + 1)), 'total']
+    : ['total'];
+
+  wrap.innerHTML = tabKeys.map(tabKey => {
+    const isTotal = tabKey === 'total';
+    const label = isTotal ? 'Total' : `Din ${tabKey}`;
+    const amounts = byTab[tabKey] || [];
+    const rowsHtml = amounts.length
+      ? amounts.map((entry, idx) => {
+          // Purane data mein position_amounts[idx] sirf ek string hota tha (amount).
+          // Ab har entry {amount, show} object hai.
+          const isObj = entry && typeof entry === 'object';
+          const amt = isObj ? (entry.amount || '') : (entry || '');
+          const show = isObj ? (entry.show !== false) : true;
+          return `
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+            <div style="min-width:56px; font-weight:700; color: var(--gold);">${idx+1}${ordinalSuffix(idx+1)}</div>
+            <input class="f-posamt" data-tab="${tabKey}" placeholder="e.g. 5000 ya Rs 5000" value="${escapeHtmlAdmin(amt)}" style="flex:1;">
+            <label style="display:flex; align-items:center; gap:6px; font-size:12px; white-space:nowrap;"><input type="checkbox" class="f-posamt-show" data-tab="${tabKey}" ${show ? 'checked' : ''} style="width:auto;"> Dikhayein</label>
+            <button type="button" onclick="removePositionAmount('${tabKey}', ${idx})" style="background:var(--danger); color:#fff; border:none; border-radius:50%; width:24px; height:24px; font-size:13px; line-height:1; cursor:pointer; flex-shrink:0;">×</button>
+          </div>`;
+        }).join('')
+      : `<p class="sub" style="margin-bottom:8px;">Abhi is ${isTotal ? 'Total' : 'din'} ke liye koi position amount nahi likha gaya.</p>`;
+    return `
+      <div style="border:${isTotal ? '1.5px solid var(--gold)' : '1px solid var(--line)'}; border-radius:10px; padding:10px;">
+        <div style="font-weight:700; color:var(--gold); margin-bottom:8px;">${label}</div>
+        ${rowsHtml}
+        <button type="button" class="btn btn-ghost" onclick="addPositionAmount('${tabKey}')">+ Position add karein</button>
+      </div>`;
+  }).join('');
+  attachAutoSave();
+}
+function ordinalSuffix(n){
+  const j = n % 10, k = n % 100;
+  if(j === 1 && k !== 11) return 'st';
+  if(j === 2 && k !== 12) return 'nd';
+  if(j === 3 && k !== 13) return 'rd';
+  return 'th';
+}
+function addPositionAmount(tabKey){
+  save();
+  const tour = currentTournament();
+  const byTab = migratePositionAmounts(tour);
+  if(!byTab[tabKey]) byTab[tabKey] = [];
+  byTab[tabKey].push({ amount: '', show: true });
+  renderPositionAmounts();
+  save();
+}
+function removePositionAmount(tabKey, idx){
+  save();
+  const tour = currentTournament();
+  const byTab = migratePositionAmounts(tour);
+  byTab[tabKey].splice(idx, 1);
+  renderPositionAmounts();
+  save();
+}
+function savePositionAmountsManual(){
+  save();
+  showToast('Position amounts save ho gaye ✓');
+}
+
+// Double Mohar: har bird ke apne result mein admin jo checkpoint(s) chahe
+// highlight kar sakta hai (1, 2, ya sab) — koi do birds ka highlighted
+// checkpoint milna zaroori nahi. Har bird ke liye uske apne highlighted
+// checkpoints mein se jis mein sab se zyada time bane wo us bird ka number
+// banta hai, phir sab birds mein se sab se zyada time wala Double Mohar
+// winner announce hota hai.
+function toggleBirdDoubleMoharCol(birdIdx, cpIdx){
+  save();
+  const tour = currentTournament();
+  const bird = tour.birds[birdIdx];
+  if(!bird) return;
+  if(!bird.dm_cols) bird.dm_cols = [];
+  const pos = bird.dm_cols.indexOf(cpIdx);
+  if(pos === -1) bird.dm_cols.push(cpIdx);
+  else bird.dm_cols.splice(pos, 1);
+  renderRows();
+  recalcDoubleMohar();
+  recalcDailyDoubleMohar();
+  save();
+}
+
+// 🐣 Baby Winner: bilkul Double Mohar jaisa hi tareeqa — har bird ke result
+// mein admin jo checkpoint(s) chahe highlight kar sakta hai (1, 2, ya sab),
+// har bird ke highlighted checkpoints mein se jis mein sab se zyada time bane
+// wo us bird ka number banta hai, phir sab birds mein se sab se zyada time
+// wala Baby Winner announce hota hai. Ye Double Mohar se bilkul alag/mustaqil
+// hai — ek checkpoint dono ke liye bhi highlight ho sakta hai (koi restriction
+// nahi).
+function toggleBirdBabyWinnerCol(birdIdx, cpIdx){
+  save();
+  const tour = currentTournament();
+  const bird = tour.birds[birdIdx];
+  if(!bird) return;
+  if(!bird.baby_cols) bird.baby_cols = [];
+  const pos = bird.baby_cols.indexOf(cpIdx);
+  if(pos === -1) bird.baby_cols.push(cpIdx);
+  else bird.baby_cols.splice(pos, 1);
+  renderRows();
+  recalcBabyWinner();
+  recalcDailyBabyWinner();
+  save();
+}
+
+// Purani tournaments jinme ek hi global checkpoint (tour.meta.double_mohar_col)
+// "Double Mohar" ke liye select hui thi, unhein naye per-bird tareeqe mein
+// migrate karte hain (ek hi baar) taake purana highlight data zaya na ho.
+function migrateDoubleMoharToPerBird(tour){
+  if(tour.meta && tour.meta.double_mohar_col != null){
+    (tour.birds || []).forEach(b => {
+      if(!b.dm_cols) b.dm_cols = [tour.meta.double_mohar_col];
+    });
+    tour.meta.double_mohar_col = null;
+  }
+}
+
+function addColumn(){
+  save();
+  const tour = currentTournament();
+  const n = tour.columns.length + 1;
+  const newIdx = tour.columns.length;
+  tour.columns.push('#' + n);
+  tour.birds.forEach(b => b.times.push(''));
+  if(!tour.column_days) tour.column_days = {};
+  tour.column_days[newIdx] = currentEntryDay(); // is column ka din hamesha ke liye fix
+  renderCols(); renderRows(); recalcMetaCounts(); save();
+}
+
+function removeColumn(idx){
+  save();
+  const tour = currentTournament();
+  if(tour.columns.length <= 1){ showToast('Kam se kam ek checkpoint chahiye', true); return; }
+  tour.columns.splice(idx,1);
+  tour.birds.forEach(b => {
+    b.times.splice(idx,1);
+    if(b.dm_cols){
+      b.dm_cols = b.dm_cols
+        .filter(i => i !== idx)
+        .map(i => i > idx ? i - 1 : i);
+    }
+    if(b.baby_cols){
+      b.baby_cols = b.baby_cols
+        .filter(i => i !== idx)
+        .map(i => i > idx ? i - 1 : i);
+    }
+  });
+  renderCols(); renderRows(); recalcMetaCounts(); recalcDoubleMohar(); recalcBabyWinner(); save();
+}
+
+function parseHM(str){
+  if(!str) return 0;
+  const m = String(str).trim().match(/^(-)?(\d+):(\d{1,2})$/);
+  if(!m) return 0;
+  const sign = m[1] ? -1 : 1;
+  return sign * (parseInt(m[2],10)*60 + parseInt(m[3],10));
+}
+
+function formatMinutes(total){
+  const sign = total < 0 ? '-' : '';
+  total = Math.abs(Math.round(total));
+  const h = Math.floor(total/60);
+  const mm = String(total%60).padStart(2,'0');
+  return `${sign}${h}:${mm}`;
+}
+
+function recalcCardTotal(card){
+  const cpEls = Array.from(card.querySelectorAll('.f-cp'));
+  const times = cpEls.map(i => i.value.trim());
+  const days = cpEls.map(i => parseInt(i.dataset.day, 10) || 1);
+  const ded = parseHM(card.querySelector('.f-deduction').value);
+  const filledIdx = times.map((v,i) => v ? i : -1).filter(i => i !== -1);
+  if(filledIdx.length === 0){
+    card.querySelector('.f-total').value = formatMinutes(ded);
+    return;
+  }
+  const uraanStr = document.getElementById('m_uraan').value;
+  const start = parseHM(uraanStr);
+
+  // Har din ka apna alag total hota hai — pichle din ka waqt agle din mein
+  // jama nahi hota, har din apne uraan time se hi calculate hota hai.
+  const byDay = {};
+  filledIdx.forEach(i => {
+    const day = days[i];
+    const cp = parseHM(times[i]);
+    let diff = cp - start;
+    if(diff < 0) diff += 1440; // checkpoint agle din/midnight ke baad
+    byDay[day] = (byDay[day] || 0) + diff;
+  });
+  const dayNums = Object.keys(byDay).map(Number).sort((a,b) => a - b);
+
+  if(dayNums.length <= 1){
+    const totalMinutes = (byDay[dayNums[0]] || 0) + ded;
+    card.querySelector('.f-total').value = formatMinutes(totalMinutes);
+  } else {
+    card.querySelector('.f-total').value = dayNums
+      .map(d => `Din ${d}: ${formatMinutes(byDay[d] + ded)}`)
+      .join(' · ');
+  }
+}
+
+function renderRows(){
+  const wrap = document.getElementById('rows');
+  const tour = currentTournament();
+  migrateDoubleMoharToPerBird(tour);
+  wrap.innerHTML = '';
+  tour.birds.forEach((b, idx)=>{
+    const div = document.createElement('div');
+    div.className = 'row-card bird';
+    div.dataset.name = b.name || '';
+    if(b.excluded) div.dataset.excluded = 'true';
+    div.innerHTML = `
+      <button class="rm" onclick="removeRow(${idx})">Remove</button>
+      <button type="button" class="rm" style="right:92px; background: ${b.excluded ? 'var(--danger)' : 'transparent'}; color: ${b.excluded ? '#fff' : 'var(--danger)'}; border:1px solid var(--danger);" onclick="toggleBirdExcluded(${idx})">${b.excluded ? '❌ Excluded' : '❌ Mark not-flying'}</button>
+      <div class="row-fields" style="${b.excluded ? 'opacity:0.55;' : ''}">
+        <div><label>Name (Urdu)</label><input class="f-name" dir="rtl" value="${b.name}"></div>
+        <div>
+          <label>Bird photo (optional)</label>
+          <div class="img-field">
+            <div class="img-preview">${b.image ? `<img src="${b.image}" alt="">` : 'No photo'}</div>
+            <div class="img-field-btns">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="this.closest('.img-field').querySelector('.f-image-file').click()">Choose file</button>
+              <button type="button" class="btn btn-ghost btn-sm" style="${b.image ? '' : 'display:none'}" onclick="clearImage(this)">Remove</button>
+            </div>
+            <input type="file" accept="image/*" class="f-image-file" style="display:none" onchange="processImageFile(this)">
+            <input type="hidden" class="f-image" value="${b.image||''}">
+          </div>
+        </div>
+        <div><label>Total time (auto-calculated)</label><input class="f-total" value="${b.total}" readonly style="opacity:0.75; cursor:not-allowed;"></div>
+      </div>
+      ${b.excluded ? `<p class="sub" style="color:var(--danger); margin: -6px 0 10px;">❌ Ye bird is tournament ke calculations (Flying/Landed, First Winner, Winner Pigeon, Double Mohar, Baby Winner, leaderboard) mein bilkul shamil nahi hoga — result page par bhi cross ke sath "nahi ud raha" dikhega.</p>` : ''}
+      <div class="row-fields">
+        <div><label>Deduction (optional, e.g. -06:00)</label><input class="f-deduction" value="${b.deduction||''}"></div>
+        <div style="grid-column: span 2;"><label>Note (optional, Urdu)</label><input class="f-note" dir="rtl" value="${b.note||''}"></div>
+      </div>
+      <label>Checkpoint times (matching labels above) — is bird ke jis checkpoint ko highlight karna hai use dabaye rakhein (long-press) — <b style="color:var(--gold);">jab mode ⭐ Double Mohar par ho</b> to gold border, aur <b style="color:#ff6fb0;">jab mode 🐣 Baby Winner par ho</b> to gold ki jagah pink border milega (upar wale mode buttons se switch karein). Har bird ka apna alag checkpoint (ya ek se zyada) highlight kiya ja sakta hai, aur ek checkpoint dono ke liye bhi highlight ho sakta hai. Dobara dabaye rakhein taake highlight hat jaye.</label>
+      <div class="row-fields-cp">
+        ${tour.columns.map((c,i)=>{
+          const day = b.times[i] ? parseCp(b.times[i]).day : getColumnDay(tour, i);
+          const timeVal = b.times[i] ? parseCp(b.times[i]).time : '';
+          const isDm = (b.dm_cols || []).includes(i);
+          const isBaby = (b.baby_cols || []).includes(i);
+          let style = '';
+          if(isDm && isBaby) style = 'style="border:2px solid var(--gold); box-shadow:0 0 6px rgba(230,180,60,0.6), inset 0 0 0 3px #ff6fb0;"';
+          else if(isDm) style = 'style="border:2px solid var(--gold); box-shadow:0 0 6px rgba(230,180,60,0.6);"';
+          else if(isBaby) style = 'style="border:2px solid #ff6fb0; box-shadow:0 0 6px rgba(255,111,176,0.6);"';
+          return `<input class="f-cp" data-day="${day}" placeholder="${c}" value="${timeVal}" ${style}>`;
+        }).join('')}
+      </div>
+    `;
+    wrap.appendChild(div);
+  });
+  document.querySelectorAll('.row-card.bird').forEach(card => recalcCardTotal(card));
+  attachAutoSave();
+  initCpLongPress();
+  const searchBox = document.getElementById('birdSearchBox');
+  if(searchBox){ searchBox.value = ''; }
+  filterBirdRows('');
+}
+
+// Naam se parinda talaash karte hain — matching bird ka pura card (record,
+// checkpoints, sab kuch) upar dikha dete hain, baqi hide kar dete hain,
+// taake lambi list mein scroll karke dhoondhna na pade.
+//
+// Har letter par turant list filter karne se page ki height baar baar
+// achanak badalti hai (mobile keyboard khule hone par ye "screen shake"
+// jaisa mehsoos hota hai aur search box scroll ho kar gayab ho jata hai).
+// Is liye asal filtering ko debounce karte hain — typing rukne ke thori
+// dair baad hi list update hoti hai.
+let birdSearchDebounceTimer = null;
+function onBirdSearchInput(value){
+  if(birdSearchDebounceTimer) clearTimeout(birdSearchDebounceTimer);
+  birdSearchDebounceTimer = setTimeout(() => filterBirdRows(value), 300);
+}
+
+let birdSearchScrollTimer = null;
+function filterBirdRows(term){
+  const q = (term || '').trim();
+  const cards = Array.from(document.querySelectorAll('#rows .row-card.bird'));
+  const statusEl = document.getElementById('birdSearchStatus');
+  if(birdSearchScrollTimer){ clearTimeout(birdSearchScrollTimer); birdSearchScrollTimer = null; }
+  if(!q){
+    cards.forEach(c => { c.style.display = ''; });
+    if(statusEl) statusEl.style.display = 'none';
+    return;
+  }
+  let matchCount = 0;
+  let firstMatch = null;
+  cards.forEach(c => {
+    const name = c.dataset.name || '';
+    const isMatch = name.includes(q);
+    c.style.display = isMatch ? '' : 'none';
+    if(isMatch){
+      matchCount++;
+      if(!firstMatch) firstMatch = c;
+    }
+  });
+  if(statusEl){
+    statusEl.style.display = 'block';
+    statusEl.style.color = matchCount ? 'var(--up)' : 'var(--danger)';
+    statusEl.textContent = matchCount ? `✅ ${matchCount} parinda mila` : '❌ Koi parinda nahi mila';
+  }
+  // Yahan bhi scroll turant nahi karte — sirf agar match pehle se screen par
+  // nazar nahi aa raha, aur woh bhi thori dair (typing pura rukne) ke baad.
+  if(firstMatch){
+    birdSearchScrollTimer = setTimeout(() => {
+      const r = firstMatch.getBoundingClientRect();
+      const alreadyVisible = r.top >= 0 && r.bottom <= window.innerHeight;
+      if(!alreadyVisible){
+        firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 400);
+  }
+}
+
+// Checkpoint field par long-press (ya mouse ko dabaye rakhna) karne se woh
+// checkpoint "Double Mohar" ke liye highlight ho jati hai (poori column, sab
+// birds mein) — dobara long-press karne se un-highlight ho jati hai. Header
+// wale ⭐ button se bhi yehi ho sakta hai; ye dono ek hi function use karte hain.
+function initCpLongPress(){
+  const wrap = document.getElementById('rows');
+  if(!wrap || wrap.dataset.lpAttached) return;
+  wrap.dataset.lpAttached = 'true';
+  let timer = null;
+  let triggered = false;
+  let activeEl = null;
+  const HOLD_MS = 550;
+
+  const clearTimer = () => { if(timer){ clearTimeout(timer); timer = null; } };
+
+  const onStart = (e) => {
+    const el = e.target && e.target.closest ? e.target.closest('.f-cp') : null;
+    if(!el) return;
+    activeEl = el;
+    triggered = false;
+    timer = setTimeout(() => {
+      triggered = true;
+      const card = el.closest('.row-card.bird');
+      const cpIdx = card ? Array.from(card.querySelectorAll('.f-cp')).indexOf(el) : -1;
+      const birdIdx = card ? Array.from(wrap.querySelectorAll('.row-card.bird')).indexOf(card) : -1;
+      if(cpIdx !== -1 && birdIdx !== -1){
+        if(navigator.vibrate) navigator.vibrate(30);
+        el.blur();
+        if(getHighlightMode() === 'baby') toggleBirdBabyWinnerCol(birdIdx, cpIdx);
+        else toggleBirdDoubleMoharCol(birdIdx, cpIdx);
+      }
+    }, HOLD_MS);
+  };
+
+  const onEnd = (e) => {
+    clearTimer();
+    if(triggered && activeEl){
+      e.preventDefault();
+      activeEl.blur();
+    }
+    triggered = false;
+    activeEl = null;
+  };
+
+  const onMove = () => { clearTimer(); };
+
+  // Agar user checkpoint field mein type karna shuru kar de (input event),
+  // to iska matlab wo waqt likh raha hai — long-press (highlight toggle) ka
+  // irada nahi. Pending timer turant cancel karte hain, warna beech mein
+  // 550ms guzarne par row re-render ho kar abhi type kiya hua waqt zaya ho
+  // jata (jo checkpoint ghayab hone ka asal bug tha).
+  const onInput = (e) => {
+    const el = e.target && e.target.closest ? e.target.closest('.f-cp') : null;
+    if(!el) return;
+    clearTimer();
+    triggered = false;
+  };
+
+  wrap.addEventListener('touchstart', onStart, { passive: true });
+  wrap.addEventListener('touchend', onEnd);
+  wrap.addEventListener('touchmove', onMove, { passive: true });
+  wrap.addEventListener('touchcancel', onMove);
+  wrap.addEventListener('mousedown', onStart);
+  wrap.addEventListener('mouseup', onEnd);
+  wrap.addEventListener('mouseleave', onMove);
+  wrap.addEventListener('input', onInput);
+}
+
+// Club Logo — result download (PNG/PDF) par halka transparent watermark ki
+// tarah lagta hai. Club-level cheez hai (tournament-specific nahi), isliye
+// currentClub().logo mein save hota hai.
+function processClubLogo(inputEl){
+  const file = (inputEl.files || [])[0];
+  if(!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxDim = 400;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if(w > h && w > maxDim){ h = Math.round(h * maxDim / w); w = maxDim; }
+      else if(h >= w && h > maxDim){ w = Math.round(w * maxDim / h); h = maxDim; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      // Sirf tab PNG use karein jab logo mein waqai transparency ho (varna PNG
+      // bohot bara data bana deta hai). Transparency check ke liye pixel data
+      // ka alpha channel dekhte hain — agar sab opaque hain to JPEG use karein.
+      let hasTransparency = false;
+      try{
+        const px = ctx.getImageData(0, 0, w, h).data;
+        for(let i = 3; i < px.length; i += 4){
+          if(px[i] < 250){ hasTransparency = true; break; }
+        }
+      }catch(e){ hasTransparency = true; } // safe fallback
+      const dataUrl = hasTransparency
+        ? canvas.toDataURL('image/png')
+        : canvas.toDataURL('image/jpeg', 0.85);
+      currentClub().logo = dataUrl;
+      renderClubLogoPreview();
+      save();
+      showToast('✅ Logo save ho gaya');
+      inputEl.value = '';
+    };
+    img.onerror = () => showToast('Logo load nahi ho saka', true);
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function removeClubLogo(){
+  const club = currentClub();
+  if(!club.logo) return;
+  club.logo = '';
+  renderClubLogoPreview();
+  save();
+  showToast('Logo hata diya gaya');
+}
+function renderClubLogoPreview(){
+  const wrap = document.getElementById('clubLogoPreview');
+  if(!wrap) return;
+  const club = currentClub();
+  wrap.innerHTML = club.logo
+    ? `<img src="${club.logo}" style="width:100%; height:100%; object-fit:contain;">`
+    : `<span style="font-size:10px; color:var(--text-faint);">No logo</span>`;
+}
+
+function processImageFile(inputEl){
+  const file = inputEl.files && inputEl.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){
+    showToast('Sirf image files allowed hain', true);
+    inputEl.value = '';
+    return;
+  }
+  const field = inputEl.closest('.img-field');
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const maxDim = 420;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if(w > h && w > maxDim){ h = Math.round(h * maxDim / w); w = maxDim; }
+      else if(h >= w && h > maxDim){ w = Math.round(w * maxDim / h); h = maxDim; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+      field.querySelector('.f-image').value = dataUrl;
+      field.querySelector('.img-preview').innerHTML = `<img src="${dataUrl}" alt="">`;
+      const removeBtn = field.querySelector('.img-field-btns button:last-child');
+      if(removeBtn) removeBtn.style.display = '';
+      inputEl.value = '';
+      save();
+    };
+    img.onerror = ()=>{ showToast('Photo load nahi ho saki', true); };
+    img.src = e.target.result;
+  };
+  reader.onerror = ()=>{ showToast('Photo read nahi ho saki', true); };
+  reader.readAsDataURL(file);
+}
+
+function clearImage(btn){
+  const field = btn.closest('.img-field');
+  field.querySelector('.f-image').value = '';
+  field.querySelector('.img-preview').innerHTML = 'No photo';
+  field.querySelector('.f-image-file').value = '';
+  btn.style.display = 'none';
+  save();
+}
+
+// Sunrise/Sunset: club ki city (lat/lon, jo "City" field se lookup hoti hai)
+// aur is tournament ke Date field ke hisaab se khud fetch ho jate hain — koi
+// manual entry nahi. City set na ho, ya date samajh na aaye, to khali reh
+// jate hain (status message mein wajah dikh jati hai).
+async function autoFetchSunriseSunset(){
+  const statusEl = document.getElementById('sunStatus');
+  const club = data.clubs[currentClubIdx];
+  const sunEl = document.getElementById('m_sunrise');
+  const setEl = document.getElementById('m_sunset');
+  if(!sunEl || !setEl) return;
+
+  if(club.lat == null || club.lon == null){
+    if(statusEl){ statusEl.textContent = '⚠️ Pehle upar "Club" section mein City set karein (Sunrise/Sunset ke liye zaroori hai)'; statusEl.style.color = 'var(--danger)'; }
+    return;
+  }
+  const dateStr = (document.getElementById('m_date').value || '').trim();
+  if(!dateStr){
+    if(statusEl){ statusEl.textContent = ''; }
+    return;
+  }
+  const d = new Date(dateStr);
+  if(isNaN(d.getTime())){
+    if(statusEl){ statusEl.textContent = '⚠️ Date samajh nahi aayi — format try karein: 14 August 2026'; statusEl.style.color = 'var(--danger)'; }
+    return;
+  }
+  const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+  if(statusEl){ statusEl.textContent = '⏳ Sunrise/Sunset nikal rahe hain...'; statusEl.style.color = 'var(--text-faint)'; }
+  try{
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${club.lat}&longitude=${club.lon}&daily=sunrise,sunset&timezone=auto&start_date=${iso}&end_date=${iso}`;
+    const res = await fetch(url);
+    const j = await res.json();
+    const sunriseIso = j.daily && j.daily.sunrise && j.daily.sunrise[0];
+    const sunsetIso = j.daily && j.daily.sunset && j.daily.sunset[0];
+    if(!sunriseIso || !sunsetIso){
+      if(statusEl){ statusEl.textContent = '❌ Is date ke liye data nahi mila'; statusEl.style.color = 'var(--danger)'; }
+      return;
+    }
+    sunEl.value = sunriseIso.slice(11, 16);
+    setEl.value = sunsetIso.slice(11, 16);
+    if(statusEl){ statusEl.textContent = `✅ Auto set ho gaya (${club.city || 'club ki city'} ke hisaab se)`; statusEl.style.color = 'var(--up)'; }
+    save();
+  }catch(e){
+    if(statusEl){ statusEl.textContent = '❌ Internet check karein, dobara koshish karein'; statusEl.style.color = 'var(--danger)'; }
+  }
+}
+
+let sunFetchTimer = null;
+function debouncedFetchSunriseSunset(){
+  clearTimeout(sunFetchTimer);
+  sunFetchTimer = setTimeout(autoFetchSunriseSunset, 700);
+}
+
+async function lookupCityCoords(){
+  const cityInput = document.getElementById('club_city_field');
+  const city = cityInput.value.trim();
+  const statusEl = document.getElementById('cityStatus');
+  if(!city){
+    statusEl.textContent = 'Pehle city ka naam likhein';
+    statusEl.style.color = 'var(--danger)';
+    return;
+  }
+  statusEl.textContent = 'Dhoond rahe hain...';
+  statusEl.style.color = 'var(--text-faint)';
+  try{
+    const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
+    const j = await res.json();
+    if(!j.results || !j.results.length){
+      statusEl.textContent = '❌ City nahi mili — naam check karein (English mein try karein)';
+      statusEl.style.color = 'var(--danger)';
+      return;
+    }
+    const r = j.results[0];
+    const club = data.clubs[currentClubIdx];
+    club.city = city;
+    club.lat = r.latitude;
+    club.lon = r.longitude;
+    const place = [r.name, r.admin1, r.country].filter(Boolean).join(', ');
+    statusEl.textContent = `✅ Mil gaya: ${place}`;
+    statusEl.style.color = 'var(--up)';
+    save();
+    showToast('✅ City confirm ho gayi — homepage par weather dikhega');
+    autoFetchSunriseSunset();
+  }catch(e){
+    statusEl.textContent = '❌ Internet check karein, dobara koshish karein';
+    statusEl.style.color = 'var(--danger)';
+  }
+}
+
+function attachAutoSave(){
+  // clubSelect, tourSelect aur birdSearchBox ko yahan se bahar rakhte hain —
+  // in teenon ka apna khud ka alag oninput/onchange hai (club/tournament
+  // switch karna, ya search filter karna). Agar wo bhi is generic autosave
+  // se overwrite ho jayein to unka asal kaam (switch/search) rukk jata hai.
+  document.querySelectorAll('input:not(.f-image-file):not(.f-image):not(#birdSearchBox), textarea, select:not(#clubSelect):not(#tourSelect)').forEach(el=>{
+    el.oninput = () => {
+      const card = el.closest('.row-card.bird');
+      // Agar checkpoint field ko khaali kar diya jaye, to uska din turant column ke
+      // fixed din se reset ho jaye (reload ka intezar na karna pade) — lekin jab tak
+      // field mein koi value maujood hai, uska din selector se overwrite nahi karte.
+      if(el.classList.contains('f-cp') && !el.value.trim()){
+        const idx = Array.from(card ? card.querySelectorAll('.f-cp') : []).indexOf(el);
+        if(idx !== -1) el.dataset.day = getColumnDay(currentTournament(), idx);
+      }
+      if(card && (el.classList.contains('f-cp') || el.classList.contains('f-deduction'))){
+        recalcCardTotal(card);
+      }
+      if(el.classList.contains('f-cp')){
+        recalcMetaCounts();
+      }
+      if(el.id === 'm_uraan'){
+        document.querySelectorAll('.row-card.bird').forEach(c => recalcCardTotal(c));
+        recalcFirstWinner();
+        recalcWinnerPigeon();
+        recalcDoubleMohar();
+        recalcDailyWinners();
+      }
+      if(el.classList.contains('f-name')){
+        if(card) card.dataset.name = el.value;
+        recalcFirstWinner();
+        recalcWinnerPigeon();
+        recalcDoubleMohar();
+        recalcDailyWinners();
+      }
+      if(el.id === 'm_date' || el.id === 'm_aakhri' || el.id === 'm_duration_days'){
+        if(el.id === 'm_duration_days'){
+          renderEntryDaySelector();
+          renderCols();
+          loadEntryDayDate();
+          refreshDayDateStatus();
+          renderDayAmounts();
+          renderPositionAmounts();
+        }
+        if(el.id === 'm_date') debouncedFetchSunriseSunset();
+        recalcFirstWinner();
+        recalcWinnerPigeon();
+        recalcDoubleMohar();
+        recalcDailyWinners();
+      }
+      if(el.classList.contains('f-total-amt-mirror')){
+        const target = document.getElementById(el.dataset.target);
+        if(target) target.value = el.value;
+      }
+      if(['m_fw_amount','m_wp_amount','m_dm_amount','m_bw_amount'].includes(el.id)){
+        const mirror = document.querySelector(`.f-total-amt-mirror[data-target="${el.id}"]`);
+        if(mirror) mirror.value = el.value;
+      }
+      save();
+    };
+    el.onchange = el.oninput;
+  });
+}
+
+function addRow(){
+  save();
+  const tour = currentTournament();
+  tour.birds.push({ name:"نیا کبوتر", image:"", total:"00:00", deduction:"", note:"", times: tour.columns.map(()=>""), dm_cols: [], baby_cols: [] });
+  renderRows(); recalcMetaCounts(); save();
+}
+function removeRow(idx){ save(); currentTournament().birds.splice(idx,1); renderRows(); recalcMetaCounts(); save(); }
+
+// Bird ko "❌ nahi ud raha" mark karne se wo Flying/Landed/Pigeons count,
+// First Winner, Winner Pigeon, Double Mohar, Baby Winner (Total aur din-wise
+// dono) aur public leaderboard ranking — sab se bahar ho jata hai. Bird ka
+// data delete nahi hota, sirf calculations mein shamil nahi hota, aur result
+// page par cross ke sath dikhta hai.
+function toggleBirdExcluded(idx){
+  save();
+  const bird = currentTournament().birds[idx];
+  if(!bird) return;
+  bird.excluded = !bird.excluded;
+  renderRows();
+  recalcMetaCounts();
+  save();
+}
+
+function resetAll(){
+  if(!confirm('Reset all fields to the original sample data?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  data = JSON.parse(JSON.stringify(SAMPLE));
+  currentClubIdx = 0;
+  currentTourIdx = 0;
+  load();
+  showToast('Reset to sample data');
+}
+
+function showToast(msg, bad){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (bad ? ' bad' : '');
+  setTimeout(()=>{ t.className = 'toast'; }, 3200);
+}
+
+function b64EncodeUnicode(str){ return btoa(unescape(encodeURIComponent(str))); }
+function b64DecodeUnicode(str){ return decodeURIComponent(escape(atob((str||'').replace(/\n/g,'')))); }
+
+function downloadJson(){
+  save();
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'data.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Downloaded data.json');
+}
+
+async function publish(){
+  save();
+  if(!conn.owner || !conn.repo || !conn.token){
+    showToast('Pehle GitHub se connect karein (upar wala form bharein)', true);
+    return;
+  }
+
+  // GitHub ka Contents API tarah ek hi file ~1MB tak allow karta hai — is se
+  // pehle hi clear warning de dete hain (cryptic GitHub error ke bajaye).
+  const approxBytes = new Blob([JSON.stringify(data)]).size;
+  if(approxBytes > 950000){
+    showToast(`❌ Data bohot bara ho gaya hai (~${Math.round(approxBytes/1024)} KB). Kuch bari images (jaise club logo) kam karein, phir publish karein.`, true);
+    return;
+  }
+
+  const btn = document.getElementById('publishBtn');
+  btn.disabled = true;
+  btn.textContent = 'Publishing…';
+
+  const apiUrl = `https://api.github.com/repos/${conn.owner}/${conn.repo}/contents/data.json`;
+  const headers = { 'Authorization': `Bearer ${conn.token}`, 'Accept': 'application/vnd.github+json' };
+
+  try{
+    let sha = undefined;
+    let existingContent = null;
+    const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(conn.branch)}`, { headers });
+    if(getRes.status === 200){
+      const getJson = await getRes.json();
+      sha = getJson.sha;
+      existingContent = getJson.content;
+    } else if(getRes.status !== 404){
+      const errBody = await getRes.json().catch(()=>({}));
+      throw new Error(errBody.message || `GET failed (${getRes.status})`);
+    }
+
+    // Purani data.json ka backup (backups/ folder mein) — upar wale GET se
+    // mila hua content hi reuse karte hain (dobara file fetch nahi karte, is
+    // se ek poora network round-trip bach jata hai). Backup ko await nahi
+    // karte (background mein chalta hai) taake slow internet par asal
+    // publish iske liye na ruke — backup fail ho jaye to bhi asal publish
+    // par asar nahi parta.
+    if(sha && existingContent){
+      const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const backupPath = `backups/data-${stamp}.json`;
+      const backupApiUrl = `https://api.github.com/repos/${conn.owner}/${conn.repo}/contents/${backupPath}`;
+      fetch(backupApiUrl, {
+        method: 'PUT',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Backup before publish — ${stamp}`,
+          content: existingContent,
+          branch: conn.branch
+        })
+      }).catch(()=>{});
+    }
+
+    const content = b64EncodeUnicode(JSON.stringify(data, null, 2));
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: 'Update tournament results via admin panel',
+        content: content,
+        branch: conn.branch,
+        ...(sha ? { sha } : {})
+      })
+    });
+    if(!putRes.ok){
+      const errBody = await putRes.json().catch(()=>({}));
+      throw new Error(errBody.message || `Publish failed (${putRes.status})`);
+    }
+    showToast('✅ Published! Live on the homepage in about a minute.');
+  } catch(err){
+    showToast('❌ ' + err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 Publish — go live now';
+  }
+}
+
+async function loadBackupsList(){
+  loadConn();
+  if(!conn.owner || !conn.repo){
+    showToast('Pehle GitHub se connect karein (upar wala form bharein)', true);
+    return;
+  }
+  const wrap = document.getElementById('backupsList');
+  wrap.innerHTML = '<p class="sub">Loading…</p>';
+  const headers = conn.token
+    ? { 'Authorization': `Bearer ${conn.token}`, 'Accept': 'application/vnd.github+json' }
+    : { 'Accept': 'application/vnd.github+json' };
+  try{
+    const apiUrl = `https://api.github.com/repos/${conn.owner}/${conn.repo}/contents/backups?ref=${encodeURIComponent(conn.branch || 'main')}`;
+    const res = await fetch(apiUrl, { headers });
+    if(res.status === 404){
+      wrap.innerHTML = '<p class="sub">Abhi tak koi backup nahi bani — pehla Publish karne ke baad yahan dikhengi.</p>';
+      return;
+    }
+    if(!res.ok){
+      const errBody = await res.json().catch(()=>({}));
+      throw new Error(errBody.message || `Backups list fetch failed (${res.status})`);
+    }
+    const files = await res.json();
+    const sorted = (Array.isArray(files) ? files : [])
+      .filter(f => f.name.endsWith('.json'))
+      .sort((a,b) => b.name.localeCompare(a.name)); // naya sab se upar
+    if(sorted.length === 0){
+      wrap.innerHTML = '<p class="sub">Abhi tak koi backup nahi bani.</p>';
+      return;
+    }
+    wrap.innerHTML = sorted.map(f => `
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-top:1px solid var(--line);">
+        <span style="font-size:13px; word-break:break-all;">${escapeHtmlAdmin(f.name)}</span>
+        <button type="button" class="btn btn-ghost btn-sm" style="flex-shrink:0;" onclick="restoreBackup('${f.path}', this)">Restore</button>
+      </div>
+    `).join('');
+  }catch(err){
+    wrap.innerHTML = `<p class="sub" style="color:var(--danger);">❌ ${escapeHtmlAdmin(err.message)}</p>`;
+  }
+}
+
+async function restoreBackup(path, btn){
+  if(btn && btn.dataset.confirming !== 'true'){
+    btn.dataset.confirming = 'true';
+    const original = btn.textContent;
+    btn.textContent = '⚠️ Pakka? Dobara tap karein';
+    btn.style.background = 'rgba(217,124,124,0.15)';
+    setTimeout(() => {
+      if(btn.dataset.confirming === 'true'){
+        btn.dataset.confirming = 'false';
+        btn.textContent = original;
+        btn.style.background = '';
+      }
+    }, 4000);
+    return;
+  }
+  if(btn){ btn.dataset.confirming = 'false'; btn.style.background = ''; btn.textContent = 'Restoring…'; btn.disabled = true; }
+
+  loadConn();
+  const headers = conn.token
+    ? { 'Authorization': `Bearer ${conn.token}`, 'Accept': 'application/vnd.github+json' }
+    : { 'Accept': 'application/vnd.github+json' };
+  try{
+    const apiUrl = `https://api.github.com/repos/${conn.owner}/${conn.repo}/contents/${path}?ref=${encodeURIComponent(conn.branch || 'main')}`;
+    const res = await fetch(apiUrl, { headers });
+    if(!res.ok) throw new Error(`Backup fetch failed (${res.status})`);
+    const json = await res.json();
+    const parsed = JSON.parse(b64DecodeUnicode(json.content || ''));
+    data = migrateData(parsed);
+    currentClubIdx = 0;
+    currentTourIdx = 0;
+    populateClubSelect();
+    populateTourSelect();
+    loadCurrentIntoForm();
+    save();
+    showToast('✅ Backup load ho gayi hai — dekh lein, phir "🚀 Publish" dabayein taake ye live ho jaye.');
+  }catch(err){
+    showToast('❌ ' + err.message, true);
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = 'Restore'; }
+  }
+}
+
+function goToLiveSite(){
+  loadConn();
+  if(conn.owner && conn.repo){
+    // If repo is a user/org pages repo (username.github.io), site is at the root
+    const isUserPagesRepo = conn.repo.toLowerCase() === `${conn.owner.toLowerCase()}.github.io`;
+    const url = isUserPagesRepo
+      ? `https://${conn.owner}.github.io/`
+      : `https://${conn.owner}.github.io/${conn.repo}/`;
+    window.open(url, '_blank');
+  } else {
+    // Not connected yet — fall back to opening the homepage in this folder
+    window.open('index.html', '_blank');
+  }
+}
+
+load();
+setInterval(() => {
+  if(typeof recalcFirstWinner === 'function') recalcFirstWinner();
+  if(typeof recalcWinnerPigeon === 'function') recalcWinnerPigeon();
+  if(typeof recalcDoubleMohar === 'function') recalcDoubleMohar();
+  if(typeof recalcDailyWinners === 'function') recalcDailyWinners();
+}, 30000);
+</script>
+</body>
+</html>
