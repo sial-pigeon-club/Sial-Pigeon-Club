@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Sial Pigeon Club KSK – Pigeon Flying Club</title>
+<meta name="description" content="Sial Pigeon Club KSK – Pigeon flying club, flying competitions, results, pigeon profiles and club information.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap');
+
+  :root{
+    --navy: #0c1b3a;
+    --navy-2: #142c58;
+    --navy-3: #0a1730;
+    --blue: #2f6fbf;
+    --blue-dark: #1c4a8a;
+    --gold: #F0A93A;
+    --red: #E23B3B;
+    --text-dim: #9fb0d0;
+    --line: rgba(255,255,255,0.12);
+    --radius: 16px;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin: 0;
+    background: #0a1226;
+    color: #fff;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  .urdu{ font-family: 'Noto Nastaliq Urdu', serif; direction: rtl; unicode-bidi: embed; }
+  a{ color: inherit; }
+
+  .wrap{ max-width: 480px; margin: 0 auto; padding-bottom: 40px; }
+
+  /* Header */
+  header{
+    position: sticky; top: 0; z-index: 20;
+    background: linear-gradient(135deg, var(--navy-3), var(--navy));
+    display:flex; align-items:center; gap: 12px;
+    padding: 16px 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+  }
+  header .back{
+    width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.08);
+    display:flex; align-items:center; justify-content:center; text-decoration:none; color:#fff;
+    font-size: 18px; flex-shrink:0;
+  }
+  header h1{
+    margin:0; font-size: 19px; font-weight: 800; letter-spacing: 0.5px; flex: 1;
+    text-transform: uppercase;
+  }
+  .menu-btn{
+    width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.08);
+    display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; flex-shrink:0;
+    position: relative;
+  }
+  .menu-btn span, .menu-btn::before, .menu-btn::after{
+    content:''; position:absolute; width: 18px; height: 2px; background: #fff; border-radius: 2px;
+  }
+  .menu-btn::before{ transform: translateY(-6px); }
+  .menu-btn span{ display:block; }
+  .menu-btn::after{ transform: translateY(6px); }
+
+  .menu-dropdown{
+    position: absolute; top: 62px; right: 14px; background: var(--navy-2);
+    border: 1px solid var(--line); border-radius: 12px; overflow:hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4); display:none; min-width: 190px; z-index: 30;
+  }
+  .menu-dropdown.open{ display:block; }
+  .menu-dropdown a{
+    display:flex; align-items:center; gap: 10px; padding: 12px 16px; font-size: 14px; font-weight:600;
+    text-decoration:none; color:#fff; border-bottom: 1px solid var(--line);
+  }
+  .menu-dropdown a:last-child{ border-bottom:none; }
+  .menu-dropdown a:active{ background: rgba(255,255,255,0.06); }
+
+  /* Hero */
+  .hero{
+    background: radial-gradient(120% 140% at 15% 0%, #1c3f7a 0%, var(--navy) 55%, var(--navy-3) 100%);
+    padding: 22px 20px 26px; position: relative; overflow:hidden;
+    display:flex; align-items:center; gap: 16px;
+  }
+  .hero-photo{
+    width: 108px; height: 108px; border-radius: 18px; object-fit: cover; flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.15); box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  }
+  .hero-text{ flex: 1; min-width: 0; }
+  .hero-eyebrow{ font-size: 12px; font-weight:700; letter-spacing: 1.5px; color: var(--text-dim); }
+  .hero-title{ font-size: 24px; font-weight: 800; line-height: 1.15; margin: 3px 0 10px; }
+  .hero-tags{ font-size: 12px; font-weight:600; color: #cfe0ff; line-height: 1.8; }
+  .hero-tags b{ color: var(--gold); font-weight: 700; }
+  .hero-pigeon{ position:absolute; opacity: 0.12; font-size: 110px; right: -20px; bottom: -30px; transform: rotate(-8deg); z-index: 0; }
+
+  /* Weather card */
+  .section{ padding: 16px 14px 0; }
+  .weather-card{
+    background: linear-gradient(160deg, var(--blue), var(--blue-dark));
+    border-radius: var(--radius); overflow:hidden; box-shadow: 0 10px 24px rgba(20,60,130,0.35);
+  }
+  .weather-head{
+    padding: 14px 18px; font-size: 16px; font-weight:700; border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+  .weather-main{ display:flex; align-items:center; padding: 16px 18px; gap: 14px; }
+  .weather-icon{ font-size: 44px; line-height:1; }
+  .weather-temp{ font-size: 34px; font-weight: 800; }
+  .weather-desc{ font-size: 13.5px; opacity: 0.9; margin-top: 2px; }
+  .weather-extra{
+    margin-inline-start: auto; text-align: end; font-size: 12.5px; line-height: 1.9; opacity: 0.95;
+  }
+  .weather-hourly{
+    display:flex; padding: 8px 10px 16px; gap: 4px;
+  }
+  .whour{
+    flex:1; text-align:center; padding: 8px 2px; border-radius: 10px;
+  }
+  .whour .wh-lbl{ font-size: 11px; opacity: 0.8; margin-bottom: 4px; }
+  .whour .wh-icon{ font-size: 18px; margin-bottom: 4px; }
+  .whour .wh-temp{ font-size: 13px; font-weight: 700; }
+  .weather-loading{ padding: 20px 18px 24px; font-size: 13px; color: #dce8ff; }
+  .weather-refresh{ text-align:center; font-size: 11px; opacity: 0.75; padding: 0 18px 14px; }
+
+  /* Live tournament card */
+  .tourn-card{
+    background: var(--navy-2); border: 1px solid var(--line); border-radius: var(--radius);
+    overflow:hidden; margin-top: 16px;
+  }
+  .tourn-head{
+    display:flex; align-items:center; padding: 14px 16px; border-bottom: 1px solid var(--line);
+  }
+  .tourn-head .t-title{ font-size: 16px; font-weight: 800; letter-spacing: 0.3px; }
+  .live-pill{
+    margin-inline-start: auto; background: var(--red); color:#fff; font-size: 12px; font-weight:700;
+    padding: 5px 12px; border-radius: 20px; display:flex; align-items:center; gap: 6px;
+  }
+  .live-pill .dot{ width: 7px; height: 7px; border-radius: 50%; background:#fff; animation: pulse 1.4s infinite; }
+  @keyframes pulse{
+    0%{ box-shadow: 0 0 0 0 rgba(255,255,255,0.6); }
+    70%{ box-shadow: 0 0 0 7px rgba(255,255,255,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+  }
+  .live-pill.off{ background: rgba(255,255,255,0.1); }
+  .live-pill.off .dot{ background: var(--text-dim); animation:none; }
+
+  .tourn-row{
+    display:flex; align-items:center; justify-content: space-between; padding: 12px 16px;
+    border-bottom: 1px solid var(--line); font-size: 15px; font-weight: 700;
+  }
+  .tourn-row .status{ color: var(--gold); font-size: 13px; font-weight: 700; }
+
+  .tourn-stats{ display:grid; grid-template-columns: 1fr 1fr 1fr; padding: 16px 8px; }
+  .tstat{ text-align:center; padding: 0 6px; }
+  .tstat + .tstat{ border-inline-start: 1px solid var(--line); }
+  .tstat .tlbl{ font-size: 12px; color: var(--text-dim); font-weight:600; line-height: 1.4; }
+  .tstat .tnum{ font-size: 26px; font-weight: 800; margin-top: 4px; }
+
+  .view-btn{
+    display:flex; align-items:center; justify-content:center; gap: 8px;
+    margin: 4px 14px 16px; padding: 13px; background: var(--blue);
+    border-radius: 12px; font-size: 14px; font-weight: 700; text-decoration:none; color:#fff;
+  }
+  .view-btn:active{ background: var(--blue-dark); }
+
+  /* Quick links */
+  .quick-links{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .qlink{
+    background: var(--navy-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px; text-decoration:none; color:#fff; display:flex; flex-direction:column; gap: 6px;
+  }
+  .qlink .qicon{ font-size: 20px; }
+  .qlink .qtitle{ font-size: 13.5px; font-weight: 700; }
+
+  footer{ text-align:center; padding: 26px 0 0; }
+  footer a{
+    color: var(--text-dim); text-decoration:none; border: 1px solid var(--line);
+    padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="clubs.html">‹</a>
+    <h1>Sial Pigeon Club</h1>
+    <button class="menu-btn" onclick="document.getElementById('menuDrop').classList.toggle('open')"><span></span></button>
+    <div class="menu-dropdown" id="menuDrop">
+      <a href="index.html">🏠 Home</a>
+      <a href="clubs.html">🕊️ All Clubs</a>
+      <a href="home.html">🔴 Live Tournament</a>
+      <a href="weather.html">☁️ Weather</a>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="hero-pigeon">🕊️</div>
+    <img class="hero-photo" src="founder.jpg" alt="Sial Pigeon Club">
+    <div class="hero-text">
+      <div class="hero-eyebrow">WELCOME TO</div>
+      <div class="hero-title">SIAL PIGEON CLUB</div>
+      <div class="hero-tags">
+        <b>LIVE RECORD</b> | <b>LIVE WEATHER</b><br>
+        <b>LIVE TOURNAMENT</b> | <b>FOREVER SAVE</b>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="weather-card" id="weatherCard">
+      <div class="weather-loading">Weather load ho raha hai…</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="tourn-card" id="tournCard">
+      <div class="tourn-head">
+        <div class="t-title">LIVE TOURNAMENT</div>
+        <div class="live-pill off"><div class="dot"></div>Loading</div>
+      </div>
+      <div style="padding:16px; font-size:13px; color: var(--text-dim);">Data load ho rahi hai…</div>
+    </div>
+
+    <div class="quick-links">
+      <a class="qlink" href="clubs.html"><div class="qicon">🕊️</div><div class="qtitle">All Clubs</div></a>
+      <a class="qlink" href="weather.html"><div class="qicon">☁️</div><div class="qtitle">Full Weather Forecast</div></a>
+    </div>
+  </div>
+
+  <footer><a href="clubs.html">Sab Clubs dekhein →</a></footer>
+</div>
+
+<script>
+document.addEventListener('click', (e) => {
+  const drop = document.getElementById('menuDrop');
+  if(!e.target.closest('.menu-btn') && !e.target.closest('.menu-dropdown')) drop.classList.remove('open');
+});
+
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- Weather (Lahore, via Open-Meteo) ---------- */
+const HOME_CITY = { name: 'Lahore, Pakistan', lat: 31.5497, lon: 74.3436 };
+
+function weatherEmoji(code){
+  if(code === 0) return '☀️';
+  if(code === 1) return '🌤️';
+  if(code === 2) return '⛅';
+  if(code === 3) return '☁️';
+  if(code === 45 || code === 48) return '🌫️';
+  if([51,53,55,56,57].includes(code)) return '🌦️';
+  if([61,63,65,66,67].includes(code)) return '🌧️';
+  if([71,73,75,77].includes(code)) return '❄️';
+  if([80,81,82].includes(code)) return '🌦️';
+  if([85,86].includes(code)) return '🌨️';
+  if([95,96,99].includes(code)) return '⛈️';
+  return '🌡️';
+}
+function weatherDesc(code){
+  if(code === 0) return 'Saaf aasman';
+  if(code === 1 || code === 2) return 'Partly Cloudy';
+  if(code === 3) return 'Ghera hua';
+  if(code === 45 || code === 48) return 'Dhund';
+  if([51,53,55,56,57].includes(code)) return 'Halki phuhaar';
+  if([61,63,65,66,67].includes(code)) return 'Baarish';
+  if([71,73,75,77].includes(code)) return 'Barf';
+  if([80,81,82].includes(code)) return 'Baarish ke shower';
+  if([85,86].includes(code)) return 'Barf ke shower';
+  if([95,96,99].includes(code)) return 'Tez aandhi/toofan';
+  return '';
+}
+function hourLabel(d){
+  let h = d.getHours();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if(h === 0) h = 12;
+  return h + ' ' + ampm;
+}
+
+async function loadWeather(){
+  const card = document.getElementById('weatherCard');
+  try{
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${HOME_CITY.lat}&longitude=${HOME_CITY.lon}&current_weather=true&hourly=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m,surface_pressure&timezone=auto`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('fetch failed');
+    const j = await res.json();
+    const cw = j.current_weather;
+    const h = j.hourly;
+
+    const nowIdx = h.time.findIndex(t => t === cw.time) >= 0
+      ? h.time.findIndex(t => t === cw.time)
+      : h.time.findIndex(t => new Date(t) >= new Date(cw.time));
+    const baseIdx = nowIdx >= 0 ? nowIdx : 0;
+    const humidity = h.relative_humidity_2m[baseIdx];
+    const pressure = Math.round(h.surface_pressure[baseIdx]);
+
+    const slots = [0, 3, 6, 9, 12].map(off => baseIdx + off).filter(i => i < h.time.length);
+    const hourlyHtml = slots.map((i, idx) => {
+      const label = idx === 0 ? 'Now' : hourLabel(new Date(h.time[i]));
+      return `<div class="whour">
+        <div class="wh-lbl">${label}</div>
+        <div class="wh-icon">${weatherEmoji(h.weather_code[i])}</div>
+        <div class="wh-temp">${Math.round(h.temperature_2m[i])}°C</div>
+      </div>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="weather-head">${escapeHtml(HOME_CITY.name)}</div>
+      <div class="weather-main">
+        <div class="weather-icon">${weatherEmoji(cw.weathercode)}</div>
+        <div>
+          <div class="weather-temp">${Math.round(cw.temperature)}°C</div>
+          <div class="weather-desc">${weatherDesc(cw.weathercode)}</div>
+        </div>
+        <div class="weather-extra">
+          Humidity: ${humidity}%<br>
+          Wind: ${Math.round(cw.windspeed)} km/h<br>
+          Pressure: ${pressure} hPa
+        </div>
+      </div>
+      <div class="weather-hourly">${hourlyHtml}</div>
+      <div class="weather-refresh">Live weather · Open-Meteo</div>
+    `;
+  }catch(e){
+    card.innerHTML = '<div class="weather-loading">Weather load nahi ho saka — internet check karein.</div>';
+  }
+}
+
+/* ---------- Live tournament summary (from data.json) ---------- */
+function migrateData(raw){
+  if(raw && Array.isArray(raw.clubs)) return raw;
+  const meta = (raw && raw.meta) ? raw.meta : {};
+  return {
+    clubs: [
+      { id: 'club-1', name: meta.club_name || 'Club',
+        tournaments: [ { id: 't-1', meta: meta, columns: (raw && raw.columns) || [], birds: (raw && raw.birds) || [] } ] }
+    ]
+  };
+}
+function isLive(tour){
+  const m = tour && tour.meta;
+  if(!m) return false;
+  if(m.is_live === true) return true;
+  return Number(m.flying) > 0;
+}
+
+function loadTournament(){
+  fetch('./data.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => { if(!r.ok) throw new Error('data.json not found'); return r.json(); })
+    .then(raw => {
+      const data = migrateData(raw);
+      const clubs = data.clubs || [];
+      const live = [];
+      clubs.forEach(club => {
+        const tournaments = club.tournaments || [];
+        const latest = tournaments[tournaments.length - 1];
+        if(latest && isLive(latest)) live.push({ club, tour: latest });
+      });
+
+      const card = document.getElementById('tournCard');
+      if(live.length === 0){
+        card.innerHTML = `
+          <div class="tourn-head">
+            <div class="t-title">LIVE TOURNAMENT</div>
+            <div class="live-pill off"><div class="dot"></div>OFFLINE</div>
+          </div>
+          <div style="padding:20px 16px; font-size:13.5px; color: var(--text-dim); text-align:center;">Abhi koi tournament live nahi hai</div>
+        `;
+        return;
+      }
+
+      const pigeons = live.reduce((s,x) => s + (Number(x.tour.meta.pigeons) || 0), 0);
+      const landed = live.reduce((s,x) => s + (Number(x.tour.meta.landed) || 0), 0);
+      const tournName = live.length === 1
+        ? (live[0].tour.name || live[0].club.name)
+        : `${live.length} Clubs Live`;
+
+      card.innerHTML = `
+        <div class="tourn-head">
+          <div class="t-title">LIVE TOURNAMENT</div>
+          <div class="live-pill"><div class="dot"></div>LIVE</div>
+        </div>
+        <div class="tourn-row">
+          <span class="urdu" style="font-weight:700;">${escapeHtml(tournName)}</span>
+          <span class="status">Live Now</span>
+        </div>
+        <div class="tourn-stats">
+          <div class="tstat"><div class="tlbl">Participating<br>Clubs</div><div class="tnum">${live.length}</div></div>
+          <div class="tstat"><div class="tlbl">Pigeons<br>Participating</div><div class="tnum">${pigeons}</div></div>
+          <div class="tstat"><div class="tlbl">Pigeons<br>Arrived</div><div class="tnum">${landed}</div></div>
+        </div>
+        <a class="view-btn" href="home.html">📡 View Live Results</a>
+      `;
+    })
+    .catch(() => {
+      const card = document.getElementById('tournCard');
+      card.innerHTML = `
+        <div class="tourn-head">
+          <div class="t-title">LIVE TOURNAMENT</div>
+          <div class="live-pill off"><div class="dot"></div>OFFLINE</div>
+        </div>
+        <div style="padding:20px 16px; font-size:13.5px; color: var(--text-dim); text-align:center;">data.json nahi mili</div>
+      `;
+    });
+}
+
+loadWeather();
+loadTournament();
+setInterval(loadTournament, 30000);
+</script>
+</body>
+</html>
