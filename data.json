@@ -69,7 +69,8 @@
             "baby_winner_name": "",
             "baby_winner_amount": "",
             "is_upcoming": false,
-            "entry_fee": "5000"
+            "entry_fee": "5000",
+            "tour_note": ""
           },
           "columns": [
             "#1",
@@ -362,7 +363,7 @@
           ],
           "birds": [
             {
-              "name": "استاد ملک مانی چھت استاد انعام",
+              "name": "استاد ملک مانی چھت استاد انعام شیخ",
               "image": "",
               "total": "0:00",
               "deduction": "",
