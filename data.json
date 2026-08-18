@@ -297,10 +297,10 @@
             "duration_days": 1,
             "sunrise": "",
             "sunset": "",
-            "flying": 42,
+            "flying": 56,
             "landed": 0,
-            "pigeons": 42,
-            "lofts": 6,
+            "pigeons": 56,
+            "lofts": 8,
             "is_live": false,
             "is_upcoming": true,
             "first_winner_time": "",
@@ -459,6 +459,44 @@
             },
             {
               "name": "استاد جہانگیر چھت تسلیم شاہد",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد سجاول گجر چھت بلال اعوان",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد عامر کھرل چھت ملک چاند",
               "image": "",
               "total": "0:00",
               "deduction": "",
