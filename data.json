@@ -1023,6 +1023,290 @@
             "6": 1,
             "7": 3
           }
+        },
+        {
+          "id": "mt8slz2sbcu8f",
+          "name": "چھت جگا سیال کی اسوج ب2026 بازیوں کی تفصیل ",
+          "meta": {
+            "date": "",
+            "uraan_time": "05:00",
+            "aakhri_time": "20:30",
+            "duration_days": 5,
+            "sunrise": "",
+            "sunset": "",
+            "flying": 28,
+            "landed": 0,
+            "pigeons": 28,
+            "lofts": 4,
+            "is_live": false,
+            "is_upcoming": true,
+            "first_winner_time": "",
+            "first_winner_name": "",
+            "winner_pigeon_time": "",
+            "winner_pigeon_name": "",
+            "double_mohar_col": null,
+            "double_mohar_time": "",
+            "double_mohar_name": "",
+            "winner_pigeon_total_ready": false,
+            "daily_winners": [
+              {
+                "day": 1,
+                "first_winner_name": "",
+                "first_winner_time": "",
+                "winner_pigeon_name": "",
+                "winner_pigeon_time": "",
+                "ready": false
+              },
+              {
+                "day": 2,
+                "first_winner_name": "",
+                "first_winner_time": "",
+                "winner_pigeon_name": "",
+                "winner_pigeon_time": "",
+                "ready": true
+              },
+              {
+                "day": 3,
+                "first_winner_name": "",
+                "first_winner_time": "",
+                "winner_pigeon_name": "",
+                "winner_pigeon_time": "",
+                "ready": true
+              },
+              {
+                "day": 4,
+                "first_winner_name": "",
+                "first_winner_time": "",
+                "winner_pigeon_name": "",
+                "winner_pigeon_time": "",
+                "ready": true
+              },
+              {
+                "day": 5,
+                "first_winner_name": "",
+                "first_winner_time": "",
+                "winner_pigeon_name": "",
+                "winner_pigeon_time": "",
+                "ready": true
+              }
+            ],
+            "daily_double_mohar": [
+              {
+                "day": 1,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              },
+              {
+                "day": 2,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              },
+              {
+                "day": 3,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              },
+              {
+                "day": 4,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              },
+              {
+                "day": 5,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              }
+            ],
+            "daily_baby_winner": [
+              {
+                "day": 1,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              },
+              {
+                "day": 2,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              },
+              {
+                "day": 3,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              },
+              {
+                "day": 4,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              },
+              {
+                "day": 5,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              }
+            ],
+            "first_winner_amount_show": true,
+            "winner_pigeon_amount_show": true,
+            "double_mohar_amount_show": true,
+            "baby_winner_amount_show": true,
+            "entry_fee": "",
+            "tour_note": "",
+            "first_winner_amount": "",
+            "winner_pigeon_amount": "",
+            "double_mohar_amount": "",
+            "baby_winner_time": "",
+            "baby_winner_name": "",
+            "baby_winner_amount": "",
+            "day_amounts": {
+              "1": {
+                "fw": "",
+                "wp": "",
+                "dm": "",
+                "bw": ""
+              },
+              "2": {
+                "fw": "",
+                "wp": "",
+                "dm": "",
+                "bw": ""
+              },
+              "3": {
+                "fw": "",
+                "wp": "",
+                "dm": "",
+                "bw": ""
+              },
+              "4": {
+                "fw": "",
+                "wp": "",
+                "dm": "",
+                "bw": ""
+              },
+              "5": {
+                "fw": "",
+                "wp": "",
+                "dm": "",
+                "bw": ""
+              }
+            },
+            "day_dates": {
+              "1": "13 September 2026",
+              "2": "20 September 2026",
+              "3": "04 October 2026",
+              "4": "04 October 2026",
+              "5": "11 October 2026"
+            }
+          },
+          "columns": [
+            "#1",
+            "#2",
+            "#3",
+            "#4",
+            "#5",
+            "#6",
+            "#7"
+          ],
+          "birds": [
+            {
+              "name": "استاد ندیم ملاں چھت جگا سیال",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد عامر کھرل چھت ملک چاند",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد حیدر جوئیہ چھت جگا سیال",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد افضال چھت حیدری مریدکے",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            }
+          ],
+          "gallery": [],
+          "position_amounts_by_tab": {
+            "total": []
+          }
         }
       ]
     }
