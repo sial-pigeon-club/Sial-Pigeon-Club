@@ -176,9 +176,9 @@
   .flex-table-watermark{
     position:absolute; top:0; right:0; bottom:0; width: 32%;
     display:flex; align-items:center; justify-content:center;
-    pointer-events:none; z-index: 0;
+    pointer-events:none; z-index: 0; padding: 4px;
   }
-  .flex-table-watermark img{ width: 80%; height:auto; opacity: 0.22; }
+  .flex-table-watermark img{ width: 100%; height:100%; object-fit: contain; opacity: 0.26; }
   .flex-table-cell{ z-index: 1; }
   .flex-total-row{
     position:relative; display:flex; align-items:center; justify-content:space-between;
@@ -2394,7 +2394,7 @@ function renderFlexCard(bird, club, tour, idx){
         <span class="flex-total-val">${bird.excluded ? '—' : escapeHtmlAdmin(bird.total || '')}</span>
       </div>
     </div>
-    <div class="flex-card-watermark flex-urdu">${escapeHtmlAdmin(m.date || '')}${club.name ? ' · ' + escapeHtmlAdmin(club.name) : ''}</div>
+    <div class="flex-card-watermark"><span dir="ltr" style="direction:ltr;unicode-bidi:isolate;">${escapeHtmlAdmin(m.date || '')}</span>${club.name ? `<span class="flex-urdu"> · ${escapeHtmlAdmin(club.name)}</span>` : ''}</div>
   `;
 }
 
