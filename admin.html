@@ -173,12 +173,16 @@
   .flex-cday{ font-size: 8px; color: #8a6a1f; font-weight: 700; margin-top:1px; direction: rtl; }
   /* Waqt aamad (time) column ke peeche watermark — jahan pigeon ka time
      likha ja raha hai, wahi par halka club logo watermark dikhega. */
+  /* Waqt aamad (time) column ke peeche watermark — jahan pigeon ka time
+     likha ja raha hai, wahi par (aur uske aas paas) bara, saaf watermark
+     dikhega — table ki lambai se independent, hamesha bara/prominent. */
   .flex-table-watermark{
-    position:absolute; top:0; right:0; bottom:0; width: 32%;
+    position:absolute; top:50%; right:6%; transform:translateY(-50%);
+    width: 58%; aspect-ratio: 1 / 1;
     display:flex; align-items:center; justify-content:center;
-    pointer-events:none; z-index: 0; padding: 4px;
+    pointer-events:none; z-index: 0;
   }
-  .flex-table-watermark img{ width: 100%; height:100%; object-fit: contain; opacity: 0.26; }
+  .flex-table-watermark img{ width: 100%; height:100%; object-fit: contain; opacity: 0.3; }
   .flex-table-cell{ z-index: 1; }
   .flex-total-row{
     position:relative; display:flex; align-items:center; justify-content:space-between;
