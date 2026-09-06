@@ -132,16 +132,16 @@
   }
   .flex-header-logo img{ width:100%; height:100%; object-fit:cover; }
   .flex-header-text{ position:relative; flex:1; text-align:right; }
-  .flex-club-name{ color:#F2D98A; font-weight:700; font-size: 16px; line-height:1.5; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
-  .flex-season-year{ color:#fff; font-weight:700; font-size: 13px; margin-top: 2px; opacity:0.92; }
+  .flex-club-name{ color:#F2D98A; font-weight:800; font-size: 18px; line-height:1.5; text-shadow: 0 1px 0 #000, 0 2px 6px rgba(0,0,0,0.55); }
+  .flex-season-year{ color:#fff; font-weight:800; font-size: 15px; margin-top: 2px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
 
   .flex-info-row{ display:flex; gap: 6px; padding: 10px; background:#f3efe6; }
   .flex-info-box{ flex:1; border-radius: 8px; padding: 6px 4px; text-align:center; color:#fff; }
   .flex-info-box .flex-info-lbl{ font-size: 9.5px; opacity:0.9; }
   .flex-info-box .flex-info-val{ font-size: 13.5px; font-weight:700; margin-top:1px; direction: ltr; }
   .flex-info-date{ background: linear-gradient(135deg, #e8592e, #c23b1f); }
-  .flex-info-uraan{ background: linear-gradient(135deg, #6b3fa0, #b98a2e); }
-  .flex-info-aakhri{ background: linear-gradient(135deg, #6b3fa0, #b98a2e); }
+  .flex-info-uraan{ background: linear-gradient(135deg, #c9c9c9, #8a8a8a); color:#1a1a1a; }
+  .flex-info-aakhri{ background: linear-gradient(135deg, #6b3fa0, #c9a227); }
 
   .flex-result-section{ position:relative; overflow:hidden; padding: 12px 12px 4px; }
   .flex-watermark-bg{
@@ -149,7 +149,6 @@
     background-repeat: no-repeat; background-position: center; background-size: contain;
     opacity: 0.13; pointer-events: none;
   }
-  .flex-result-header{ position:relative; display:flex; justify-content:space-between; font-size: 11px; color:#8a6a1f; font-weight:700; border-bottom: 2px solid #e8dcb8; padding-bottom: 6px; margin-bottom: 8px; }
   .flex-result-row{ position:relative; display:flex; align-items:center; gap: 10px; margin-bottom: 10px; }
   .flex-avatar{
     width: 42px; height: 42px; border-radius: 50%; background: #6b1f26;
@@ -162,14 +161,21 @@
   .flex-entry-deduction{ font-size: 10.5px; color: #D64545; font-weight: 600; }
   .flex-excluded-lbl{ color: #D64545; font-weight: 700; font-size: 11px; margin-top: 2px; }
   .flex-entry-note{ font-size: 11px; color: #D64545; margin-top: 2px; }
-  .flex-checkpoints{ position:relative; display:flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-  .flex-chip{ background:#faf6ea; border:1px solid #e8dcb8; border-radius:8px; padding:5px 7px; text-align:center; min-width:48px; }
-  .flex-chip.flex-chip-mohar{ background: linear-gradient(135deg, #fff6da, #ffe6b0); box-shadow: 0 0 0 2px #D7AE55; }
-  .flex-chip.flex-chip-baby{ background: linear-gradient(135deg, #ffe4f0, #ffc2df); box-shadow: 0 0 0 2px #ff6fb0; }
-  .flex-clabel{ font-size: 9px; color: #8a6a1f; }
-  .flex-cname{ font-size: 10px; font-weight:600; color:#3a1418; margin: 1px 0; }
-  .flex-ctime{ font-size: 12px; font-weight: 700; direction: ltr; }
-  .flex-cday{ font-size: 8px; color: #D7AE55; font-weight: 700; margin-top:1px; }
+
+  /* Result table — reference-image ke poster jaisa: Sr# | Pigeon naam | Waqt aamad */
+  .flex-result-table{ position:relative; border:1.5px solid #2c0f14; border-radius:6px; overflow:hidden; margin-bottom: 10px; }
+  .flex-table-row{ display:flex; }
+  .flex-table-row + .flex-table-row{ border-top: 1px solid #d8cba0; }
+  .flex-table-head{ background: linear-gradient(135deg, #6b1f26, #2c0f14); }
+  .flex-table-head .flex-table-cell{ color:#F2D98A; font-weight:700; font-size: 10.5px; }
+  .flex-table-row:not(.flex-table-head){ background:#fff; }
+  .flex-table-row.flex-row-mohar{ background: linear-gradient(135deg, #fff6da, #ffe6b0); }
+  .flex-table-row.flex-row-baby{ background: linear-gradient(135deg, #ffe4f0, #ffc2df); }
+  .flex-table-cell{ padding: 7px 4px; text-align:center; font-size: 12.5px; color:#3a1418; }
+  .flex-col-num{ width: 15%; flex-shrink:0; font-weight:800; border-left: 1px solid rgba(0,0,0,0.1); }
+  .flex-col-name{ flex:1; border-left: 1px solid rgba(0,0,0,0.1); font-weight:600; }
+  .flex-col-time{ width: 32%; flex-shrink:0; direction: ltr; font-weight:700; }
+  .flex-cday{ font-size: 8px; color: #8a6a1f; font-weight: 700; margin-top:1px; direction: rtl; }
   .flex-total-row{
     position:relative; display:flex; align-items:center; justify-content:space-between;
     background: linear-gradient(135deg, #6b1f26, #2c0f14); color:#F2D98A;
@@ -2328,14 +2334,20 @@ function renderFlexCard(bird, club, tour, idx){
   const avatarInner = bird.image ? `<img src="${bird.image}" alt="">` : escapeHtmlAdmin(initialsAdmin(bird.name));
   const dmCols = bird.dm_cols || [];
   const babyCols = bird.baby_cols || [];
-  const chips = (tour.columns || []).map((c,i)=>{
+  const rows = (tour.columns || []).map((c,i)=>{
     const parsed = parseCp(bird.times ? bird.times[i] : '');
     const cpName = (bird.cp_names && bird.cp_names[i]) || '';
     const isDm = dmCols.includes(i);
     const isBaby = babyCols.includes(i);
-    const cls = (isDm ? ' flex-chip-mohar' : '') + (isBaby ? ' flex-chip-baby' : '');
+    const rowCls = (isDm ? ' flex-row-mohar' : '') + (isBaby ? ' flex-row-baby' : '');
     const marker = (isDm ? '⭐ ' : '') + (isBaby ? '🐣 ' : '');
-    return `<div class="flex-chip${cls}"><div class="flex-clabel">${marker}${escapeHtmlAdmin(c)}</div>${cpName ? `<div class="flex-cname flex-urdu">${escapeHtmlAdmin(cpName)}</div>` : ''}<div class="flex-ctime">${parsed.time ? escapeHtmlAdmin(parsed.time) : '—'}</div>${(parsed.time && parsed.day > 1) ? `<div class="flex-cday">Din ${parsed.day}</div>` : ''}</div>`;
+    const nameText = cpName ? cpName : c;
+    const dayTag = (parsed.time && parsed.day > 1) ? `<div class="flex-cday">Din ${parsed.day}</div>` : '';
+    return `<div class="flex-table-row${rowCls}">
+      <div class="flex-table-cell flex-col-num">${i+1}</div>
+      <div class="flex-table-cell flex-col-name flex-urdu">${marker}${escapeHtmlAdmin(nameText)}</div>
+      <div class="flex-table-cell flex-col-time">${parsed.time ? escapeHtmlAdmin(parsed.time) : '—'}${dayTag}</div>
+    </div>`;
   }).join('');
   const year = (m.date || '').match(/\d{4}/);
 
@@ -2356,7 +2368,6 @@ function renderFlexCard(bird, club, tour, idx){
 
     <div class="flex-result-section">
       ${club.logo ? `<div class="flex-watermark-bg" style="background-image:url('${club.logo}')"></div>` : ''}
-      <div class="flex-result-header flex-urdu"><span>وقت آمد</span><span>کبوتر کا نام</span></div>
       <div class="flex-result-row">
         <div class="flex-avatar">${avatarInner}</div>
         <div class="flex-entry-name-wrap">
@@ -2366,7 +2377,14 @@ function renderFlexCard(bird, club, tour, idx){
           ${bird.note ? `<div class="flex-entry-note flex-urdu">${escapeHtmlAdmin(bird.note)}</div>` : ''}
         </div>
       </div>
-      <div class="flex-checkpoints">${chips}</div>
+      <div class="flex-result-table">
+        <div class="flex-table-row flex-table-head flex-urdu">
+          <div class="flex-table-cell flex-col-num">#</div>
+          <div class="flex-table-cell flex-col-name">کبوتر کا نام</div>
+          <div class="flex-table-cell flex-col-time">وقت آمد</div>
+        </div>
+        ${rows}
+      </div>
       <div class="flex-total-row flex-urdu">
         <span>ٹوٹل ٹائم</span>
         <span class="flex-total-val">${bird.excluded ? '—' : escapeHtmlAdmin(bird.total || '')}</span>
