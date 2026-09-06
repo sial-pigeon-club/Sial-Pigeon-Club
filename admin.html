@@ -48,8 +48,10 @@
   .row-card-header.is-open .collapse-arrow{ transform: rotate(180deg); }
   .row-fields{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 0 14px; }
   @media (max-width: 640px){ .row-fields{ grid-template-columns: 1fr 1fr; } }
-  .row-fields-cp{ display:grid; grid-template-columns: repeat(6, 1fr); gap: 0 10px; }
+  .row-fields-cp{ display:grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
   @media (max-width: 640px){ .row-fields-cp{ grid-template-columns: repeat(3, 1fr); } }
+  .f-cp-wrap{ display:flex; flex-direction:column; gap:4px; }
+  .f-cp-wrap .f-cp-name{ font-size: 11.5px; padding: 8px 10px; }
 
   .btn{ display:inline-flex; align-items:center; gap: 8px; cursor:pointer; border: none; font-family:'IBM Plex Mono', monospace; font-size: 12.5px; letter-spacing: .5px; padding: 10px 16px; border-radius: 7px; text-transform: uppercase; }
   .btn-gold{ background: var(--gold); color: #1a1408; font-weight: 600; }
@@ -1881,7 +1883,8 @@ function save(){
       excluded: !!(existingBirds[idx] && existingBirds[idx].excluded),
       times: Array.from(card.querySelectorAll('.f-cp')).map(el =>
         makeCp(el.dataset.day, el.value)
-      )
+      ),
+      cp_names: Array.from(card.querySelectorAll('.f-cp-name')).map(el => el.value)
     };
   });
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ data, clubIdx: currentClubIdx, tourIdx: currentTourIdx }));
@@ -2263,18 +2266,22 @@ function renderRows(){
         <div><label>Deduction (optional, e.g. -06:00)</label><input class="f-deduction" value="${b.deduction||''}"></div>
         <div style="grid-column: span 2;"><label>Note (optional, Urdu)</label><input class="f-note" dir="rtl" value="${b.note||''}"></div>
       </div>
-      <label>Checkpoint times (matching labels above) — is bird ke jis checkpoint ko highlight karna hai use dabaye rakhein (long-press) — <b style="color:var(--gold);">jab mode ⭐ Double Mohar par ho</b> to gold border, aur <b style="color:#ff6fb0;">jab mode 🐣 Baby Winner par ho</b> to gold ki jagah pink border milega (upar wale mode buttons se switch karein). Har bird ka apna alag checkpoint (ya ek se zyada) highlight kiya ja sakta hai, aur ek checkpoint dono ke liye bhi highlight ho sakta hai. Dobara dabaye rakhein taake highlight hat jaye.</label>
+      <label>Checkpoint times (matching labels above) — is bird ke jis checkpoint ko highlight karna hai use dabaye rakhein (long-press) — <b style="color:var(--gold);">jab mode ⭐ Double Mohar par ho</b> to gold border, aur <b style="color:#ff6fb0;">jab mode 🐣 Baby Winner par ho</b> to gold ki jagah pink border milega (upar wale mode buttons se switch karein). Har bird ka apna alag checkpoint (ya ek se zyada) highlight kiya ja sakta hai, aur ek checkpoint dono ke liye bhi highlight ho sakta hai. Dobara dabaye rakhein taake highlight hat jaye. Neeche wala chhota box optional hai — agar bhar dein to flex mein us checkpoint ke sath naam bhi dikhega, khaali chhod dein to sirf time dikhega.</label>
       <div class="row-fields-cp">
         ${tour.columns.map((c,i)=>{
           const day = b.times[i] ? parseCp(b.times[i]).day : getColumnDay(tour, i);
           const timeVal = b.times[i] ? parseCp(b.times[i]).time : '';
+          const cpNameVal = (b.cp_names && b.cp_names[i]) || '';
           const isDm = (b.dm_cols || []).includes(i);
           const isBaby = (b.baby_cols || []).includes(i);
           let style = '';
           if(isDm && isBaby) style = 'style="border:2px solid var(--gold); box-shadow:0 0 6px rgba(230,180,60,0.6), inset 0 0 0 3px #ff6fb0;"';
           else if(isDm) style = 'style="border:2px solid var(--gold); box-shadow:0 0 6px rgba(230,180,60,0.6);"';
           else if(isBaby) style = 'style="border:2px solid #ff6fb0; box-shadow:0 0 6px rgba(255,111,176,0.6);"';
-          return `<input class="f-cp" data-day="${day}" placeholder="${c}" value="${timeVal}" ${style}>`;
+          return `<div class="f-cp-wrap">
+            <input class="f-cp" data-day="${day}" placeholder="${c}" value="${timeVal}" ${style}>
+            <input class="f-cp-name" dir="rtl" placeholder="Naam (optional)" value="${escapeHtmlAdmin(cpNameVal)}">
+          </div>`;
         }).join('')}
       </div>
 
@@ -2323,11 +2330,12 @@ function renderFlexCard(bird, club, tour, idx){
   const babyCols = bird.baby_cols || [];
   const chips = (tour.columns || []).map((c,i)=>{
     const parsed = parseCp(bird.times ? bird.times[i] : '');
+    const cpName = (bird.cp_names && bird.cp_names[i]) || '';
     const isDm = dmCols.includes(i);
     const isBaby = babyCols.includes(i);
     const cls = (isDm ? ' flex-chip-mohar' : '') + (isBaby ? ' flex-chip-baby' : '');
     const marker = (isDm ? '⭐ ' : '') + (isBaby ? '🐣 ' : '');
-    return `<div class="flex-chip${cls}"><div class="flex-clabel">${marker}${escapeHtmlAdmin(c)}</div><div class="flex-cname flex-urdu">${escapeHtmlAdmin(bird.name) || '(bila naam)'}</div><div class="flex-ctime">${parsed.time ? escapeHtmlAdmin(parsed.time) : '—'}</div>${(parsed.time && parsed.day > 1) ? `<div class="flex-cday">Din ${parsed.day}</div>` : ''}</div>`;
+    return `<div class="flex-chip${cls}"><div class="flex-clabel">${marker}${escapeHtmlAdmin(c)}</div>${cpName ? `<div class="flex-cname flex-urdu">${escapeHtmlAdmin(cpName)}</div>` : ''}<div class="flex-ctime">${parsed.time ? escapeHtmlAdmin(parsed.time) : '—'}</div>${(parsed.time && parsed.day > 1) ? `<div class="flex-cday">Din ${parsed.day}</div>` : ''}</div>`;
   }).join('');
   const year = (m.date || '').match(/\d{4}/);
 
