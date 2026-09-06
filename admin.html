@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Tournament Results</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap');
 
   :root{
     --bg: #10142A; --bg-panel: #171D3A; --bg-panel-2: #1D2547;
@@ -98,6 +99,52 @@
   .img-preview img{ width:100%; height:100%; object-fit:cover; }
   .img-field-btns{ display:flex; gap: 8px; flex-wrap:wrap; }
   .btn-sm{ padding: 6px 10px; font-size: 11px; }
+
+  /* 🖼️ Result Flex — har bird ke result ka khud-ba-khud (auto) preview card,
+     public club.html wale result-card jaisa design (naam, tasveer, total time,
+     checkpoints, watermark) — bird edit karte hi live update hota hai. */
+  .flex-section{ margin-top: 16px; }
+  .flex-section > label{ display:block; margin-bottom: 8px; }
+  .flex-card{
+    position: relative; overflow: hidden;
+    background: #F5F7F5; border-radius: 14px; padding: 14px;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif; color: #1E2622;
+  }
+  .flex-urdu{ font-family: 'Noto Nastaliq Urdu', serif; direction: rtl; unicode-bidi: embed; line-height: 1.9; }
+  .flex-watermark-bg{
+    position: absolute; inset: 0; margin: auto; width: 45%; height: 45%;
+    background-repeat: no-repeat; background-position: center; background-size: contain;
+    opacity: 0.14; pointer-events: none;
+  }
+  .flex-entry-top{ position:relative; display:flex; align-items:center; gap: 10px; margin-bottom: 10px; }
+  .flex-entry-total{ font-size: 22px; font-weight: 700; flex-shrink: 0; }
+  .flex-entry-deduction{ font-size: 11px; color: #D64545; font-weight: 600; }
+  .flex-entry-name-wrap{ flex: 1; text-align: right; }
+  .flex-entry-name{ font-size: 17px; font-weight: 600; }
+  .flex-entry-club{ font-size: 11px; color: #5C6B62; margin-top: 2px; }
+  .flex-excluded-lbl{ color: #D64545; font-weight: 700; font-size: 11.5px; margin-top: 2px; }
+  .flex-entry-note{ font-size: 11.5px; color: #D64545; margin-top: 2px; }
+  .flex-avatar{
+    width: 44px; height: 44px; border-radius: 50%; background: #4C7A5E;
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-weight: 700; font-size: 14px; overflow: hidden; flex-shrink:0;
+  }
+  .flex-avatar img{ width:100%; height:100%; object-fit: cover; }
+  .flex-checkpoints{ position:relative; display:flex; gap: 6px; flex-wrap: wrap; }
+  .flex-chip{ background:#fff; border-radius:8px; padding:6px 8px; text-align:center; min-width:50px; }
+  .flex-chip.flex-chip-mohar{ background: linear-gradient(135deg, #fff6da, #ffe6b0); box-shadow: 0 0 0 2px #F0A93A; }
+  .flex-chip.flex-chip-baby{ background: linear-gradient(135deg, #ffe4f0, #ffc2df); box-shadow: 0 0 0 2px #ff6fb0; }
+  .flex-clabel{ font-size: 9.5px; color: #5C6B62; }
+  .flex-ctime{ font-size: 12.5px; font-weight: 600; }
+  .flex-cday{ font-size: 8.5px; color: #F0A93A; font-weight: 700; margin-top:1px; }
+  .flex-card-watermark{ position:relative; text-align:center; font-size: 10px; color: #5C6B62; margin-top: 8px; }
+  .flex-dl-btn{
+    display:flex; align-items:center; justify-content:center; gap: 6px;
+    border: 1px solid #4C7A5E; color: #4C7A5E; background: #fff;
+    border-radius: 8px; padding: 8px; font-weight: 600; font-size: 12px;
+    margin-top: 8px; cursor:pointer; width: 100%;
+  }
+  .flex-dl-btn:disabled{ opacity: 0.6; cursor:not-allowed; }
 </style>
 </head>
 <body>
@@ -1801,6 +1848,7 @@ function save(){
     };
   });
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ data, clubIdx: currentClubIdx, tourIdx: currentTourIdx }));
+  refreshAllFlexCards();
 }
 
 // Har checkpoint COLUMN ka din uske banते waqt hamesha ke liye fix ho jata hai
@@ -2192,6 +2240,12 @@ function renderRows(){
           return `<input class="f-cp" data-day="${day}" placeholder="${c}" value="${timeVal}" ${style}>`;
         }).join('')}
       </div>
+
+      <div class="flex-section">
+        <label>🖼️ Result Flex (khud-ba-khud, live preview — jaise jaise upar edit karein wese hi yeh khud update hota hai)</label>
+        <div class="flex-card" id="flexCard-${idx}"></div>
+        <button type="button" class="flex-dl-btn" onclick="downloadFlex(${idx})">⬇ Flex Download karein (PNG)</button>
+      </div>
       </div>
     `;
     wrap.appendChild(div);
@@ -2209,6 +2263,88 @@ function renderRows(){
   const searchBox = document.getElementById('birdSearchBox');
   if(searchBox){ searchBox.value = ''; }
   filterBirdRows('');
+  refreshAllFlexCards();
+}
+
+// Har bird ka naam ke pehle 2 harf (jab tasveer na lagi ho) — public
+// club.html wale avatar jaisa hi tareeqa, admin ke flex preview ke liye.
+function initialsAdmin(name){
+  const parts = (name||'').trim().split(/\s+/);
+  return parts.slice(0,2).map(p=>p[0]).join('').toUpperCase();
+}
+
+// Ek bird ka "flex" card (naam, tasveer, total time, checkpoints, watermark)
+// current data se bana kar seedha DOM mein daal dete hain — koi button dabane
+// ki zaroorat nahi, upar wale fields edit hote hi (save() ke zariye) yeh khud
+// refresh ho jata hai.
+function renderFlexCard(bird, club, tour, idx){
+  const card = document.getElementById(`flexCard-${idx}`);
+  if(!card || !bird) return;
+  const avatarInner = bird.image ? `<img src="${bird.image}" alt="">` : escapeHtmlAdmin(initialsAdmin(bird.name));
+  const dmCols = bird.dm_cols || [];
+  const babyCols = bird.baby_cols || [];
+  const chips = (tour.columns || []).map((c,i)=>{
+    const parsed = parseCp(bird.times ? bird.times[i] : '');
+    const isDm = dmCols.includes(i);
+    const isBaby = babyCols.includes(i);
+    const cls = (isDm ? ' flex-chip-mohar' : '') + (isBaby ? ' flex-chip-baby' : '');
+    const marker = (isDm ? '⭐ ' : '') + (isBaby ? '🐣 ' : '');
+    return `<div class="flex-chip${cls}"><div class="flex-clabel">${marker}${escapeHtmlAdmin(c)}</div><div class="flex-ctime">${parsed.time ? escapeHtmlAdmin(parsed.time) : '—'}</div>${(parsed.time && parsed.day > 1) ? `<div class="flex-cday">Din ${parsed.day}</div>` : ''}</div>`;
+  }).join('');
+
+  card.innerHTML = `
+    ${club.logo ? `<div class="flex-watermark-bg" style="background-image:url('${club.logo}')"></div>` : ''}
+    <div class="flex-entry-top">
+      <div style="flex-shrink:0;">
+        <div class="flex-entry-total">${bird.excluded ? '—' : escapeHtmlAdmin(bird.total || '')}</div>
+        ${bird.deduction ? `<div class="flex-entry-deduction">${escapeHtmlAdmin(bird.deduction)}</div>` : ''}
+      </div>
+      <div class="flex-entry-name-wrap">
+        <div class="flex-entry-name flex-urdu">${escapeHtmlAdmin(bird.name) || '(bila naam)'}</div>
+        ${club.name ? `<div class="flex-entry-club flex-urdu">${escapeHtmlAdmin(club.name)}</div>` : ''}
+        ${bird.excluded ? `<div class="flex-excluded-lbl">❌ Nahi ud raha</div>` : ''}
+        ${bird.note ? `<div class="flex-entry-note flex-urdu">${escapeHtmlAdmin(bird.note)}</div>` : ''}
+      </div>
+      <div class="flex-avatar">${avatarInner}</div>
+    </div>
+    <div class="flex-checkpoints">${chips}</div>
+    <div class="flex-card-watermark">${escapeHtmlAdmin((tour.meta && tour.meta.date) || '')}${club.name ? ' · ' + escapeHtmlAdmin(club.name) : ''}</div>
+  `;
+}
+
+// Sab birds ke flex cards ek saath refresh — save() ke aakhir mein call hota
+// hai, isliye tour.birds hamesha current DOM state ke mutabiq hote hain.
+function refreshAllFlexCards(){
+  const club = currentClub();
+  const tour = currentTournament();
+  if(!club || !tour) return;
+  (tour.birds || []).forEach((b, idx) => renderFlexCard(b, club, tour, idx));
+}
+
+// Flex card ko seedha PNG image ki tarah download karte hain — watermark
+// (agar club logo lagaya ho) card ke background mein pehle se hi shamil hai.
+function downloadFlex(idx){
+  const card = document.getElementById(`flexCard-${idx}`);
+  if(!card) return;
+  const btn = card.parentElement.querySelector('.flex-dl-btn');
+  const oldLabel = btn ? btn.textContent : '';
+  if(btn){ btn.disabled = true; btn.textContent = 'Generating…'; }
+  html2canvas(card, { backgroundColor: '#F5F7F5', scale: 2 }).then(canvas => {
+    const tour = currentTournament();
+    const bird = tour.birds[idx];
+    const link = document.createElement('a');
+    link.download = `${safeFileNameAdmin(bird ? bird.name : 'result')}-flex.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    if(btn){ btn.disabled = false; btn.textContent = oldLabel; }
+  }).catch(()=>{
+    if(btn){ btn.disabled = false; btn.textContent = oldLabel; }
+    showToast('Flex download mein masla hua, dobara koshish karein.', true);
+  });
+}
+
+function safeFileNameAdmin(name){
+  return (name||'result').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0,50) || 'result';
 }
 
 // Naam se parinda talaash karte hain — matching bird ka pura card (record,
