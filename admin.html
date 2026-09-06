@@ -144,11 +144,6 @@
   .flex-info-aakhri{ background: linear-gradient(135deg, #6b3fa0, #c9a227); }
 
   .flex-result-section{ position:relative; overflow:hidden; padding: 12px 12px 4px; }
-  .flex-watermark-bg{
-    position: absolute; inset: 0; margin: auto; width: 60%; height: 60%;
-    background-repeat: no-repeat; background-position: center; background-size: contain;
-    opacity: 0.13; pointer-events: none;
-  }
   .flex-result-row{ position:relative; display:flex; align-items:center; gap: 10px; margin-bottom: 10px; }
   .flex-avatar{
     width: 42px; height: 42px; border-radius: 50%; background: #6b1f26;
@@ -171,11 +166,20 @@
   .flex-table-row:not(.flex-table-head){ background:#fff; }
   .flex-table-row.flex-row-mohar{ background: linear-gradient(135deg, #fff6da, #ffe6b0); }
   .flex-table-row.flex-row-baby{ background: linear-gradient(135deg, #ffe4f0, #ffc2df); }
-  .flex-table-cell{ padding: 7px 4px; text-align:center; font-size: 12.5px; color:#3a1418; }
+  .flex-table-cell{ padding: 7px 4px; text-align:center; font-size: 12.5px; color:#3a1418; position:relative; }
   .flex-col-num{ width: 15%; flex-shrink:0; font-weight:800; border-left: 1px solid rgba(0,0,0,0.1); }
   .flex-col-name{ flex:1; border-left: 1px solid rgba(0,0,0,0.1); font-weight:600; }
   .flex-col-time{ width: 32%; flex-shrink:0; direction: ltr; font-weight:700; }
   .flex-cday{ font-size: 8px; color: #8a6a1f; font-weight: 700; margin-top:1px; direction: rtl; }
+  /* Waqt aamad (time) column ke peeche watermark — jahan pigeon ka time
+     likha ja raha hai, wahi par halka club logo watermark dikhega. */
+  .flex-table-watermark{
+    position:absolute; top:0; right:0; bottom:0; width: 32%;
+    display:flex; align-items:center; justify-content:center;
+    pointer-events:none; z-index: 0;
+  }
+  .flex-table-watermark img{ width: 80%; height:auto; opacity: 0.22; }
+  .flex-table-cell{ z-index: 1; }
   .flex-total-row{
     position:relative; display:flex; align-items:center; justify-content:space-between;
     background: linear-gradient(135deg, #6b1f26, #2c0f14); color:#F2D98A;
@@ -2367,7 +2371,6 @@ function renderFlexCard(bird, club, tour, idx){
     </div>
 
     <div class="flex-result-section">
-      ${club.logo ? `<div class="flex-watermark-bg" style="background-image:url('${club.logo}')"></div>` : ''}
       <div class="flex-result-row">
         <div class="flex-avatar">${avatarInner}</div>
         <div class="flex-entry-name-wrap">
@@ -2378,6 +2381,7 @@ function renderFlexCard(bird, club, tour, idx){
         </div>
       </div>
       <div class="flex-result-table">
+        ${club.logo ? `<div class="flex-table-watermark"><img src="${club.logo}" alt=""></div>` : ''}
         <div class="flex-table-row flex-table-head flex-urdu">
           <div class="flex-table-cell flex-col-num">#</div>
           <div class="flex-table-cell flex-col-name">کبوتر کا نام</div>
