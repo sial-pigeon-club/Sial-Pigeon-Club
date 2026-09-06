@@ -165,6 +165,7 @@
   .flex-chip.flex-chip-mohar{ background: linear-gradient(135deg, #fff6da, #ffe6b0); box-shadow: 0 0 0 2px #D7AE55; }
   .flex-chip.flex-chip-baby{ background: linear-gradient(135deg, #ffe4f0, #ffc2df); box-shadow: 0 0 0 2px #ff6fb0; }
   .flex-clabel{ font-size: 9px; color: #8a6a1f; }
+  .flex-cname{ font-size: 10px; font-weight:600; color:#3a1418; margin: 1px 0; }
   .flex-ctime{ font-size: 12px; font-weight: 700; direction: ltr; }
   .flex-cday{ font-size: 8px; color: #D7AE55; font-weight: 700; margin-top:1px; }
   .flex-total-row{
@@ -2326,7 +2327,7 @@ function renderFlexCard(bird, club, tour, idx){
     const isBaby = babyCols.includes(i);
     const cls = (isDm ? ' flex-chip-mohar' : '') + (isBaby ? ' flex-chip-baby' : '');
     const marker = (isDm ? '⭐ ' : '') + (isBaby ? '🐣 ' : '');
-    return `<div class="flex-chip${cls}"><div class="flex-clabel">${marker}${escapeHtmlAdmin(c)}</div><div class="flex-ctime">${parsed.time ? escapeHtmlAdmin(parsed.time) : '—'}</div>${(parsed.time && parsed.day > 1) ? `<div class="flex-cday">Din ${parsed.day}</div>` : ''}</div>`;
+    return `<div class="flex-chip${cls}"><div class="flex-clabel">${marker}${escapeHtmlAdmin(c)}</div><div class="flex-cname flex-urdu">${escapeHtmlAdmin(bird.name) || '(bila naam)'}</div><div class="flex-ctime">${parsed.time ? escapeHtmlAdmin(parsed.time) : '—'}</div>${(parsed.time && parsed.day > 1) ? `<div class="flex-cday">Din ${parsed.day}</div>` : ''}</div>`;
   }).join('');
   const year = (m.date || '').match(/\d{4}/);
 
