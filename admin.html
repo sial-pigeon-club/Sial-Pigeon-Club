@@ -24,6 +24,33 @@
   .panel{ background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
   .panel h2{ font-family:'Fraunces', serif; font-size: 17px; margin: 0 0 16px; font-weight:600; color: var(--gold); display:flex; align-items:center; gap:8px; }
 
+  /* 🔎 Global Search — poore admin panel mein kuch bhi (bird, entry fee,
+     note, club naam, tournament, checkpoint labels, GitHub settings...)
+     ek hi search box se dhoondne ke liye. */
+  .gs-wrap{ position: sticky; top: 10px; z-index: 60; margin-bottom: 20px; }
+  .gs-box{ position:relative; }
+  .gs-input{
+    width:100%; box-sizing:border-box; padding: 13px 16px; font-size: 14px;
+    border: 1.5px solid var(--gold-soft); border-radius: var(--radius);
+    background: var(--bg-panel-2); color: var(--text); box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+  }
+  .gs-results{
+    display:none; position:absolute; top: calc(100% + 6px); left:0; right:0;
+    background: var(--bg-panel-2); border: 1px solid var(--line); border-radius: var(--radius);
+    max-height: 360px; overflow-y:auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 61;
+  }
+  .gs-item{ display:flex; align-items:center; justify-content:space-between; gap: 10px; padding: 10px 14px; cursor:pointer; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .gs-item:last-child{ border-bottom:none; }
+  .gs-item:hover{ background: var(--bg-panel); }
+  .gs-item-label{ color: var(--text); }
+  .gs-item-sub{ color: var(--text-faint); font-size: 10.5px; font-family:'IBM Plex Mono', monospace; text-transform:uppercase; letter-spacing:.4px; flex-shrink:0; }
+  .gs-empty{ padding: 14px; color: var(--text-faint); font-size: 13px; text-align:center; }
+  .gs-highlight{ animation: gsPulse 1.6s ease; }
+  @keyframes gsPulse{
+    0%{ box-shadow: 0 0 0 0 rgba(215,174,85,0.7); }
+    100%{ box-shadow: 0 0 0 14px rgba(215,174,85,0); }
+  }
+
   label{ display:block; font-size: 12px; color: var(--text-faint); margin-bottom: 5px; font-family:'IBM Plex Mono', monospace; letter-spacing: .3px; }
   input, textarea, select{
     width: 100%; background: var(--bg-panel-2); border: 1px solid var(--line); color: var(--text);
@@ -245,6 +272,13 @@
   <h1>🕊️ Results Admin Panel</h1>
   <p class="sub">Edit tournament info and bird results — click Publish and it goes live on the homepage.</p>
 
+  <div class="gs-wrap">
+    <div class="gs-box">
+      <input class="gs-input" id="globalSearchBox" type="text" placeholder="🔎 Poore admin panel mein search karein — bird, entry fee, note, club naam, checkpoint, kuch bhi..." oninput="runGlobalSearch(this.value)" onfocus="runGlobalSearch(this.value)">
+      <div class="gs-results" id="globalSearchResults"></div>
+    </div>
+  </div>
+
   <div class="panel">
     <h2>🔗 Connect to GitHub</h2>
     <div class="status-line"><span class="status-dot" id="connDot"></span><span id="connText">Not connected yet — fill in the fields below</span></div>
@@ -451,7 +485,10 @@
       </div>
     </div>
     <div id="rows"></div>
-    <button class="btn btn-ghost" onclick="addRow()">+ Add bird</button>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <button class="btn btn-ghost" onclick="addRow()">+ Add bird</button>
+      <button class="btn btn-ghost" onclick="openQuickAddBirds()">⚡ Quick Add (ek sath kai birds)</button>
+    </div>
   </div>
 
   <div class="actions">
@@ -2759,11 +2796,11 @@ async function lookupCityCoords(){
 }
 
 function attachAutoSave(){
-  // clubSelect, tourSelect aur birdSearchBox ko yahan se bahar rakhte hain —
-  // in teenon ka apna khud ka alag oninput/onchange hai (club/tournament
-  // switch karna, ya search filter karna). Agar wo bhi is generic autosave
-  // se overwrite ho jayein to unka asal kaam (switch/search) rukk jata hai.
-  document.querySelectorAll('input:not(.f-image-file):not(.f-image):not(#birdSearchBox), textarea, select:not(#clubSelect):not(#tourSelect)').forEach(el=>{
+  // clubSelect, tourSelect, birdSearchBox aur globalSearchBox ko yahan se
+  // bahar rakhte hain — in sab ka apna khud ka alag oninput/onchange hai
+  // (club/tournament switch karna, ya search filter karna). Agar wo bhi is
+  // generic autosave se overwrite ho jayein to unka asal kaam rukk jata hai.
+  document.querySelectorAll('input:not(.f-image-file):not(.f-image):not(#birdSearchBox):not(#globalSearchBox), textarea, select:not(#clubSelect):not(#tourSelect)').forEach(el=>{
     el.oninput = () => {
       const card = el.closest('.row-card.bird');
       // Agar checkpoint field ko khaali kar diya jaye, to uska din turant column ke
@@ -2836,7 +2873,7 @@ function setAllCardsCollapsed(collapsed){
 function addRow(){
   save();
   const tour = currentTournament();
-  tour.birds.push({ name:"نیا کبوتر", image:"", total:"00:00", deduction:"", note:"", times: tour.columns.map(()=>""), dm_cols: [], baby_cols: [] });
+  tour.birds.push({ name:"نیا کبوتر", image:"", total:"00:00", deduction:"", note:"", times: tour.columns.map(()=>""), cp_names: tour.columns.map(()=>""), dm_cols: [], baby_cols: [] });
   renderRows(); recalcMetaCounts(); save();
   // Naya bird turant edit karna aasan ho, is liye usko khula rakhte hain aur
   // uske paas scroll kar dete hain (baaki sab collapsed hi rehte hain).
@@ -2850,6 +2887,62 @@ function addRow(){
   }
 }
 function removeRow(idx){ save(); currentTournament().birds.splice(idx,1); renderRows(); recalcMetaCounts(); save(); }
+
+// ⚡ Quick Add — ek sath kai birds add karne ke liye. Har line mein ek naam
+// likhein, sab birds ek dam se ban jate hain aur khule (expanded) reh jate
+// hain taake checkpoint times bhi turant, ek hi scroll mein bhare ja sakein.
+function openQuickAddBirds(){
+  if(document.getElementById('quickAddOverlay')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'quickAddOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;display:flex;align-items:center;justify-content:center;padding:16px;';
+  overlay.innerHTML = `
+    <div style="background:var(--bg-panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px; max-width:420px; width:100%;">
+      <h3 style="margin:0 0 8px; font-family:'Fraunces',serif; color:var(--gold);">⚡ Quick Add Birds</h3>
+      <label style="margin-bottom:8px;">Har line mein ek bird ka naam likhein (paste bhi kar sakte hain) — jitni lines utne birds ek sath ban jayenge. Naam baad mein bhi edit ho sakta hai.</label>
+      <textarea id="quickAddNames" rows="8" dir="rtl" placeholder="کالی زہریلی&#10;ٹیڈی نر&#10;ٹیڈی مادی" style="width:100%;"></textarea>
+      <div style="display:flex; gap:8px; margin-top:14px; justify-content:flex-end;">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeQuickAddBirds()">Cancel</button>
+        <button type="button" class="btn btn-gold btn-sm" onclick="submitQuickAddBirds()">Add Birds</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  document.getElementById('quickAddNames').focus();
+}
+
+function closeQuickAddBirds(){
+  const overlay = document.getElementById('quickAddOverlay');
+  if(overlay) overlay.remove();
+}
+
+function submitQuickAddBirds(){
+  const textarea = document.getElementById('quickAddNames');
+  const names = (textarea ? textarea.value : '').split('\n').map(s => s.trim()).filter(Boolean);
+  closeQuickAddBirds();
+  if(names.length === 0) return;
+  save();
+  const tour = currentTournament();
+  const startIdx = tour.birds.length;
+  names.forEach(name => {
+    tour.birds.push({
+      name, image:"", total:"00:00", deduction:"", note:"",
+      times: tour.columns.map(()=>""),
+      cp_names: tour.columns.map(()=>""),
+      dm_cols: [], baby_cols: []
+    });
+  });
+  renderRows(); recalcMetaCounts(); save();
+  const cards = document.querySelectorAll('#rows .row-card.bird');
+  for(let i = startIdx; i < cards.length; i++){
+    const card = cards[i];
+    const header = card.querySelector('.row-card-header');
+    const body = card.querySelector('.row-card-body');
+    if(header && body){ body.classList.remove('collapsed'); header.classList.add('is-open'); }
+  }
+  if(cards[startIdx]){ cards[startIdx].scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  showToast(`✅ ${names.length} birds add ho gaye`);
+}
 
 // Bird ko "❌ nahi ud raha" mark karne se wo Flying/Landed/Pigeons count,
 // First Winner, Winner Pigeon, Double Mohar, Baby Winner (Total aur din-wise
@@ -2875,6 +2968,126 @@ function resetAll(){
   load();
   showToast('Reset to sample data');
 }
+
+// 🔎 Global Search — poore admin panel (bird, entry fee, note, club naam,
+// tournament, checkpoint labels, GitHub settings, publish/backup buttons...)
+// mein se kuch bhi dhoondne ke liye. Static fields ek dafa index ho jate hain
+// (labels + unke pass wale input/select/textarea), club/tournament/bird
+// naam har baar taaza (live) nikale jate hain taake current data reflect ho.
+let staticSearchIndex = null;
+
+function buildStaticSearchIndex(){
+  const items = [];
+  const seen = new Set();
+  document.querySelectorAll('.panel > h2').forEach(h2 => {
+    const label = h2.textContent.trim();
+    if(!label) return;
+    items.push({ type:'section', label, fullText: label, sub:'Section', el: h2 });
+  });
+  document.querySelectorAll('label').forEach(lbl => {
+    if(lbl.closest('#rows') || lbl.closest('#quickAddOverlay')) return;
+    const raw = lbl.textContent.trim();
+    if(!raw) return;
+    const shortLabel = raw.length > 70 ? raw.slice(0, 67) + '…' : raw;
+    let target = lbl.nextElementSibling;
+    if(!target || !['INPUT','SELECT','TEXTAREA'].includes(target.tagName)){
+      const parent = lbl.parentElement;
+      target = parent ? parent.querySelector('input, select, textarea') : null;
+    }
+    const key = raw + '|' + (target ? target.id : '');
+    if(seen.has(key)) return;
+    seen.add(key);
+    items.push({ type:'field', label: shortLabel, fullText: raw, sub:'Field', el: target || lbl });
+  });
+  staticSearchIndex = items;
+}
+
+function buildDynamicSearchIndex(){
+  const items = [];
+  (data.clubs || []).forEach((c, ci) => {
+    const cname = c.name || `Club #${ci+1}`;
+    items.push({ type:'club', label: cname, fullText: cname, sub:'Club', clubIdx: ci });
+    (c.tournaments || []).forEach((t, ti) => {
+      const tname = t.name || `Tournament #${ti+1}`;
+      items.push({ type:'tournament', label: tname, fullText: tname, sub: cname, clubIdx: ci, tourIdx: ti });
+    });
+  });
+  const tour = currentTournament();
+  (tour && tour.birds || []).forEach((b, bi) => {
+    const bname = b.name || '(bila naam)';
+    items.push({ type:'bird', label: bname, fullText: bname, sub:'Bird (is tournament mein)', birdIdx: bi });
+  });
+  return items;
+}
+
+function runGlobalSearch(query){
+  const resultsBox = document.getElementById('globalSearchResults');
+  const q = (query || '').trim().toLowerCase();
+  if(!q){ resultsBox.style.display = 'none'; resultsBox.innerHTML = ''; return; }
+  if(!staticSearchIndex) buildStaticSearchIndex();
+  const all = staticSearchIndex.concat(buildDynamicSearchIndex());
+  const matches = all.filter(item => (item.fullText || item.label || '').toLowerCase().includes(q)).slice(0, 25);
+  if(matches.length === 0){
+    resultsBox.innerHTML = `<div class="gs-empty">Kuch nahi mila "${escapeHtmlAdmin(query)}" ke liye</div>`;
+    resultsBox.style.display = 'block';
+    return;
+  }
+  window.__gsMatches = matches;
+  resultsBox.innerHTML = matches.map((m,i) => `
+    <div class="gs-item" onclick="goToSearchResult(${i})">
+      <span class="gs-item-label">${escapeHtmlAdmin(m.label)}</span>
+      <span class="gs-item-sub">${escapeHtmlAdmin(m.sub)}</span>
+    </div>
+  `).join('');
+  resultsBox.style.display = 'block';
+}
+
+function goToSearchResult(i){
+  const m = window.__gsMatches && window.__gsMatches[i];
+  const resultsBox = document.getElementById('globalSearchResults');
+  const box = document.getElementById('globalSearchBox');
+  if(resultsBox) resultsBox.style.display = 'none';
+  if(box) box.value = '';
+  if(!m) return;
+
+  if(m.type === 'section' || m.type === 'field'){
+    const el = m.el;
+    if(!el) return;
+    el.scrollIntoView({ behavior:'smooth', block:'center' });
+    const flashEl = (el.tagName === 'H2') ? el.closest('.panel') : (el.closest('.img-field, .grid2 > div') || el);
+    if(flashEl){
+      flashEl.classList.add('gs-highlight');
+      setTimeout(()=> flashEl.classList.remove('gs-highlight'), 1600);
+    }
+    if(['INPUT','SELECT','TEXTAREA'].includes(el.tagName)) el.focus();
+  } else if(m.type === 'club'){
+    const sel = document.getElementById('clubSelect');
+    sel.value = m.clubIdx;
+    onClubChange();
+    sel.closest('.panel').scrollIntoView({ behavior:'smooth', block:'center' });
+  } else if(m.type === 'tournament'){
+    const clubSel = document.getElementById('clubSelect');
+    clubSel.value = m.clubIdx;
+    onClubChange();
+    const tourSel = document.getElementById('tourSelect');
+    tourSel.value = m.tourIdx;
+    onTourChange();
+    tourSel.closest('.panel').scrollIntoView({ behavior:'smooth', block:'center' });
+  } else if(m.type === 'bird'){
+    const searchBox = document.getElementById('birdSearchBox');
+    if(searchBox) searchBox.value = m.label;
+    filterBirdRows(m.label);
+  }
+}
+
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('globalSearchBox');
+  const resultsBox = document.getElementById('globalSearchResults');
+  if(!wrap || !resultsBox) return;
+  if(!wrap.contains(e.target) && !resultsBox.contains(e.target)){
+    resultsBox.style.display = 'none';
+  }
+});
 
 function showToast(msg, bad){
   const t = document.getElementById('toast');
