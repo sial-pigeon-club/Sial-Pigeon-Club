@@ -1034,10 +1034,10 @@
             "duration_days": 5,
             "sunrise": "05:45",
             "sunset": "18:11",
-            "flying": 35,
+            "flying": 42,
             "landed": 0,
-            "pigeons": 35,
-            "lofts": 5,
+            "pigeons": 42,
+            "lofts": 6,
             "is_live": false,
             "is_upcoming": true,
             "first_winner_time": "",
@@ -1234,8 +1234,18 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
+              "sync_targets": {},
               "excluded": false,
               "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
                 "",
                 "",
                 "",
@@ -1253,8 +1263,18 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
+              "sync_targets": {},
               "excluded": false,
               "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
                 "",
                 "",
                 "",
@@ -1272,8 +1292,18 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
+              "sync_targets": {},
               "excluded": false,
               "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
                 "",
                 "",
                 "",
@@ -1291,8 +1321,18 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
+              "sync_targets": {},
               "excluded": false,
               "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
                 "",
                 "",
                 "",
@@ -1310,8 +1350,47 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
+              "sync_targets": {},
               "excluded": false,
               "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد رانا حسن چھت گھر والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
                 "",
                 "",
                 "",
