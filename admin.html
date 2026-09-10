@@ -79,15 +79,12 @@
   @media (max-width: 640px){ .row-fields-cp{ grid-template-columns: repeat(3, 1fr); } }
   .f-cp-wrap{ display:flex; flex-direction:column; gap:4px; }
   .f-cp-wrap .f-cp-name{ font-size: 11.5px; padding: 8px 10px; }
+  .f-cp-sync-btn{
+    font-size: 10px; padding: 5px 6px; border-radius: 6px; cursor:pointer;
+    border: 1px solid var(--line); background: var(--bg); color: var(--text-faint);
+  }
+  .f-cp-sync-btn.active{ border-color: #4C9BD6; background: rgba(76,155,214,0.15); color: #4C9BD6; font-weight:600; }
 
-  /* 🔍 Do Tournaments Compare Karein — sirf raw checkpoint/total times
-     side-by-side dikhane ke liye, koi winner/score calculate nahi hota. */
-  .cmp-table{ width:100%; border-collapse:collapse; font-size: 13px; }
-  .cmp-table th, .cmp-table td{ border: 1px solid var(--line); padding: 8px 10px; text-align: center; vertical-align: top; }
-  .cmp-table th{ background: var(--bg); color: var(--gold); font-weight:600; font-size:12.5px; }
-  .cmp-label{ font-weight:600; color: var(--text-dim); white-space:nowrap; }
-  .cmp-side{ text-align:right; direction: rtl; }
-  .cmp-total-row td{ background: var(--bg); font-weight:700; }
 
   .btn{ display:inline-flex; align-items:center; gap: 8px; cursor:pointer; border: none; font-family:'IBM Plex Mono', monospace; font-size: 12.5px; letter-spacing: .5px; padding: 10px 16px; border-radius: 7px; text-transform: uppercase; }
   .btn-gold{ background: var(--gold); color: #1a1408; font-weight: 600; }
@@ -498,22 +495,6 @@
       <button class="btn btn-ghost" onclick="addRow()">+ Add bird</button>
       <button class="btn btn-ghost" onclick="openQuickAddBirds()">⚡ Quick Add (ek sath kai birds)</button>
     </div>
-  </div>
-
-  <div class="panel">
-    <h2>🔍 Do Tournaments Compare Karein (sirf raw times, koi winner nahi)</h2>
-    <label>Kisi bhi 2 tournaments (chahe alag club ki hon) ki checkpoint times aur total time side-by-side dekhne ke liye neeche dono select karein. Yeh sirf data dikhata hai — koi winner/points/hisaab nahi banata, sirf aap khud dekh sakte hain.</label>
-    <div class="row-fields" style="grid-template-columns: 1fr 1fr;">
-      <div>
-        <label>Pehli tournament</label>
-        <select id="cmpTourA" onchange="renderComparison()"></select>
-      </div>
-      <div>
-        <label>Doosri tournament</label>
-        <select id="cmpTourB" onchange="renderComparison()"></select>
-      </div>
-    </div>
-    <div id="cmpResults" style="margin-top:14px;"></div>
   </div>
 
   <div class="actions">
@@ -1742,7 +1723,6 @@ function loadCurrentIntoForm(){
   refreshDayDateStatus();
   renderCols();
   renderRows();
-  populateCompareSelectors();
   renderPositionAmounts();
   renderDayAmounts();
   recalcMetaCounts();
@@ -1955,6 +1935,9 @@ function save(){
       // jate the.
       dm_cols: (existingBirds[idx] && existingBirds[idx].dm_cols) ? existingBirds[idx].dm_cols.slice() : [],
       baby_cols: (existingBirds[idx] && existingBirds[idx].baby_cols) ? existingBirds[idx].baby_cols.slice() : [],
+      // sync_targets bhi isi tarah picker/modal se set hota hai, DOM se nahi
+      // padha ja sakta, isliye carry-forward.
+      sync_targets: (existingBirds[idx] && existingBirds[idx].sync_targets) ? JSON.parse(JSON.stringify(existingBirds[idx].sync_targets)) : {},
       // excluded bhi DOM mein nahi hota (button click se hi set hota hai),
       // isliye wahi carry-forward tareeqa.
       excluded: !!(existingBirds[idx] && existingBirds[idx].excluded),
@@ -1975,23 +1958,39 @@ function save(){
 // number (#1, #2...) par bhi khud-ba-khud copy ho jata hai — flex aur
 // checkpoint field dono jagah. Khaali cheezein overwrite nahi hoti (taake
 // ghalti se doosri tournament ka data delete na ho).
+// Agar ek hi bird (naam se match) ANY club ki ANY tournament mein (SAME date
+// par) shamil hai, aur us checkpoint par admin ne 🔗 Sync ON kiya hai, to
+// wahi time/naam un doosri tournaments mein us bird ke usi checkpoint number
+// (#1, #2...) par bhi khud-ba-khud copy ho jata hai — flex aur checkpoint
+// field dono jagah. Yeh POORI TARAH OPT-IN hai: jab tak us specific
+// checkpoint par 🔗 ON na ho, kuch bhi sync nahi hota. Khaali cheezein
+// overwrite nahi hoti (taake ghalti se doosri tournament ka data delete na
+// ho).
+// Agar bird ke kisi checkpoint par admin ne 🔗 se specific tournaments
+// CHOOSE ki hain, to sirf UNHI chuni hui tournaments mein — koi aur nahi,
+// chahe wahan isi naam ka bird ho bhi — us checkpoint ka time+naam
+// khud-ba-khud copy ho jata hai. Poori tarah OPT-IN aur SPECIFIC hai: jab
+// tak kisi tournament ko checklist se select na karein, wahan kuch sync
+// nahi hota. Khaali cheezein overwrite nahi hoti.
 function syncBirdTimesAcrossTournaments(){
-  const club = currentClub();
-  if(!club || !Array.isArray(club.tournaments)) return;
-  const curTour = club.tournaments[currentTourIdx];
-  if(!curTour || !curTour.meta || !curTour.meta.date) return;
-  const curDate = curTour.meta.date;
+  const curTour = currentTournament();
+  if(!curTour) return;
   (curTour.birds || []).forEach(srcBird => {
     const name = (srcBird.name || '').trim();
     if(!name) return;
-    club.tournaments.forEach((tgtTour, ti) => {
-      if(ti === currentTourIdx) return;
-      if(!tgtTour.meta || tgtTour.meta.date !== curDate) return;
-      (tgtTour.birds || []).forEach(tgtBird => {
-        if((tgtBird.name || '').trim() !== name) return;
-        const maxLen = Math.min((srcBird.times || []).length, (tgtTour.columns || []).length);
-        for(let i = 0; i < maxLen; i++){
-          const srcTime = srcBird.times[i];
+    const targets = srcBird.sync_targets || {};
+    Object.keys(targets).forEach(cpIdxStr => {
+      const i = Number(cpIdxStr);
+      const keys = targets[cpIdxStr] || [];
+      keys.forEach(key => {
+        const [ci, ti] = key.split(':').map(Number);
+        const tgtClub = data.clubs[ci];
+        const tgtTour = tgtClub && tgtClub.tournaments && tgtClub.tournaments[ti];
+        if(!tgtTour || tgtTour === curTour) return;
+        if(i >= (tgtTour.columns || []).length) return;
+        (tgtTour.birds || []).forEach(tgtBird => {
+          if((tgtBird.name || '').trim() !== name) return;
+          const srcTime = srcBird.times && srcBird.times[i];
           const srcCpName = (srcBird.cp_names || [])[i];
           if(srcTime){
             const parsed = parseCp(srcTime);
@@ -2004,7 +2003,7 @@ function syncBirdTimesAcrossTournaments(){
             tgtBird.cp_names = tgtBird.cp_names || [];
             tgtBird.cp_names[i] = srcCpName;
           }
-        }
+        });
       });
     });
   });
@@ -2244,6 +2243,107 @@ function toggleBirdBabyWinnerCol(birdIdx, cpIdx){
   save();
 }
 
+// 🔗 Sync toggle: is bird ke is checkpoint ko ON karne par, isi naam ke bird
+// (koi bhi club, koi bhi tournament, bas date same honi chahiye) ka wahi
+// checkpoint time+naam khud-ba-khud copy ho jayega — jab tak ON na karein,
+// kuch bhi sync nahi hota (opt-in, per-checkpoint).
+// 🔗 Sync picker: club select karo, phir us club ki tournaments ki checklist
+// aati hai — jo jo tournament check karein, sirf UNHI mein (agar wahan isi
+// naam ka bird ho) is checkpoint ka time+naam sync hoga. Kai clubs se
+// tournaments ek sath choose ki ja sakti hain (chips list mein sab dikhti
+// hain, club dropdown badalne se pehli selections zaya nahi hoti).
+function openSyncPicker(birdIdx, cpIdx){
+  if(document.getElementById('syncPickerOverlay')) return;
+  const tour = currentTournament();
+  const bird = tour.birds[birdIdx];
+  if(!bird) return;
+  const existing = (bird.sync_targets && bird.sync_targets[cpIdx]) ? bird.sync_targets[cpIdx].slice() : [];
+
+  window.__syncPicker = { birdIdx, cpIdx, selected: existing };
+
+  const overlay = document.createElement('div');
+  overlay.id = 'syncPickerOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;display:flex;align-items:center;justify-content:center;padding:16px;';
+  overlay.innerHTML = `
+    <div style="background:var(--bg-panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px; max-width:440px; width:100%; max-height:85vh; overflow-y:auto;">
+      <h3 style="margin:0 0 8px; font-family:'Fraunces',serif; color:var(--gold);">🔗 Sync — kin tournaments mein?</h3>
+      <label style="margin-bottom:8px;">Pehle club select karein, phir us club ki tournaments mein se jo jo chahiye tick karein. Sirf yehi selected tournaments (agar wahan isi naam ka bird ho) is checkpoint se sync hongi.</label>
+      <select id="syncPickerClub" onchange="renderSyncPickerTournaments()" style="margin-bottom:10px;"></select>
+      <div id="syncPickerTourList" style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px;"></div>
+      <label style="margin-bottom:6px;">Ab tak select ki hui:</label>
+      <div id="syncPickerChips" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;"></div>
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeSyncPicker()">Cancel</button>
+        <button type="button" class="btn btn-gold btn-sm" onclick="submitSyncPicker()">Save</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const clubSel = document.getElementById('syncPickerClub');
+  clubSel.innerHTML = (data.clubs || []).map((c, ci) => `<option value="${ci}">${escapeHtmlAdmin(c.name || 'Club')}</option>`).join('');
+  clubSel.value = currentClubIdx;
+  renderSyncPickerTournaments();
+}
+
+function renderSyncPickerTournaments(){
+  const state = window.__syncPicker;
+  if(!state) return;
+  const ci = Number(document.getElementById('syncPickerClub').value);
+  const club = data.clubs[ci];
+  const listEl = document.getElementById('syncPickerTourList');
+  listEl.innerHTML = (club.tournaments || []).map((t, ti) => {
+    const key = `${ci}:${ti}`;
+    const checked = state.selected.includes(key);
+    return `<label style="display:flex; align-items:center; gap:8px; font-size:13px;"><input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleSyncPickerTournament('${key}')"> ${escapeHtmlAdmin(t.name || 'Tournament')}</label>`;
+  }).join('') || `<p style="color:var(--text-faint); font-size:12.5px;">Is club mein koi tournament nahi.</p>`;
+  renderSyncPickerChips();
+}
+
+function toggleSyncPickerTournament(key){
+  const state = window.__syncPicker;
+  if(!state) return;
+  const pos = state.selected.indexOf(key);
+  if(pos === -1) state.selected.push(key);
+  else state.selected.splice(pos, 1);
+  renderSyncPickerChips();
+}
+
+function renderSyncPickerChips(){
+  const state = window.__syncPicker;
+  const chipsEl = document.getElementById('syncPickerChips');
+  if(!state || !chipsEl) return;
+  chipsEl.innerHTML = state.selected.map(key => {
+    const [ci, ti] = key.split(':').map(Number);
+    const club = data.clubs[ci];
+    const t = club && club.tournaments && club.tournaments[ti];
+    const label = `${club ? (club.name || 'Club') : '?'} — ${t ? (t.name || 'Tournament') : '?'}`;
+    return `<span style="background:rgba(76,155,214,0.15); color:#4C9BD6; border:1px solid #4C9BD6; border-radius:6px; padding:4px 8px; font-size:11.5px; display:inline-flex; align-items:center; gap:6px;">${escapeHtmlAdmin(label)} <span style="cursor:pointer;" onclick="toggleSyncPickerTournament('${key}'); renderSyncPickerTournaments();">✕</span></span>`;
+  }).join('') || `<span style="color:var(--text-faint); font-size:12px;">Koi select nahi</span>`;
+}
+
+function closeSyncPicker(){
+  const overlay = document.getElementById('syncPickerOverlay');
+  if(overlay) overlay.remove();
+  window.__syncPicker = null;
+}
+
+function submitSyncPicker(){
+  const state = window.__syncPicker;
+  if(!state) return;
+  save();
+  const tour = currentTournament();
+  const bird = tour.birds[state.birdIdx];
+  if(bird){
+    if(!bird.sync_targets) bird.sync_targets = {};
+    if(state.selected.length) bird.sync_targets[state.cpIdx] = state.selected.slice();
+    else delete bird.sync_targets[state.cpIdx];
+  }
+  closeSyncPicker();
+  renderRows();
+  save();
+}
+
 // Purani tournaments jinme ek hi global checkpoint (tour.meta.double_mohar_col)
 // "Double Mohar" ke liye select hui thi, unhein naye per-bird tareeqe mein
 // migrate karte hain (ek hi baar) taake purana highlight data zaya na ho.
@@ -2385,7 +2485,7 @@ function renderRows(){
         <div><label>Deduction (optional, e.g. -06:00)</label><input class="f-deduction" value="${b.deduction||''}"></div>
         <div style="grid-column: span 2;"><label>Note (optional, Urdu)</label><input class="f-note" dir="rtl" value="${b.note||''}"></div>
       </div>
-      <label>Checkpoint times (matching labels above) — is bird ke jis checkpoint ko highlight karna hai use dabaye rakhein (long-press) — <b style="color:var(--gold);">jab mode ⭐ Double Mohar par ho</b> to gold border, aur <b style="color:#ff6fb0;">jab mode 🐣 Baby Winner par ho</b> to gold ki jagah pink border milega (upar wale mode buttons se switch karein). Har bird ka apna alag checkpoint (ya ek se zyada) highlight kiya ja sakta hai, aur ek checkpoint dono ke liye bhi highlight ho sakta hai. Dobara dabaye rakhein taake highlight hat jaye. Neeche wala chhota box optional hai — agar bhar dein to flex mein us checkpoint ke sath naam bhi dikhega, khaali chhod dein to sirf time dikhega.</label>
+      <label>Checkpoint times (matching labels above) — is bird ke jis checkpoint ko highlight karna hai use dabaye rakhein (long-press) — <b style="color:var(--gold);">jab mode ⭐ Double Mohar par ho</b> to gold border, aur <b style="color:#ff6fb0;">jab mode 🐣 Baby Winner par ho</b> to gold ki jagah pink border milega (upar wale mode buttons se switch karein). Har bird ka apna alag checkpoint (ya ek se zyada) highlight kiya ja sakta hai, aur ek checkpoint dono ke liye bhi highlight ho sakta hai. Dobara dabaye rakhein taake highlight hat jaye. Neeche wala chhota box optional hai — agar bhar dein to flex mein us checkpoint ke sath naam bhi dikhega, khaali chhod dein to sirf time dikhega. <b style="color:#4C9BD6;">🔗 button</b> dabane se ek chhota box khulega jahan aap club aur phir usi club ki specific tournament(s) choose kar sakte hain — sirf UNHI chuni hui tournaments mein (agar wahan isi naam ka bird ho) is checkpoint ka time+naam sync hoga, baaki kahin nahi, chahe wahan bhi same naam ka bird ho.</label>
       <div class="row-fields-cp">
         ${tour.columns.map((c,i)=>{
           const day = b.times[i] ? parseCp(b.times[i]).day : getColumnDay(tour, i);
@@ -2393,6 +2493,7 @@ function renderRows(){
           const cpNameVal = (b.cp_names && b.cp_names[i]) || '';
           const isDm = (b.dm_cols || []).includes(i);
           const isBaby = (b.baby_cols || []).includes(i);
+          const syncCount = ((b.sync_targets || {})[i] || []).length;
           let style = '';
           if(isDm && isBaby) style = 'style="border:2px solid var(--gold); box-shadow:0 0 6px rgba(230,180,60,0.6), inset 0 0 0 3px #ff6fb0;"';
           else if(isDm) style = 'style="border:2px solid var(--gold); box-shadow:0 0 6px rgba(230,180,60,0.6);"';
@@ -2400,6 +2501,7 @@ function renderRows(){
           return `<div class="f-cp-wrap">
             <input class="f-cp" data-day="${day}" placeholder="${c}" value="${timeVal}" ${style}>
             <input class="f-cp-name" dir="rtl" placeholder="Naam (optional)" value="${escapeHtmlAdmin(cpNameVal)}">
+            <button type="button" class="f-cp-sync-btn${syncCount ? ' active' : ''}" onclick="openSyncPicker(${idx}, ${i})" title="Kin specific tournaments mein sync karna hai, choose karein">🔗 ${syncCount ? syncCount + ' tournament' + (syncCount > 1 ? 's' : '') : 'Sync off'}</button>
           </div>`;
         }).join('')}
       </div>
@@ -3156,81 +3258,6 @@ document.addEventListener('click', (e) => {
     resultsBox.style.display = 'none';
   }
 });
-
-// 🔍 Do Tournaments Compare Karein — kisi bhi do tournaments (chahe alag club
-// ki hon) ki checkpoint times aur total time side-by-side dikhane ke liye.
-// Yeh sirf RAW DATA dikhata hai — koi winner, score, points, ya hisaab-kitab
-// nahi banata. Har checkpoint par dono tournaments ke sab birds ke naam +
-// time list ho jate hain, taake khud dekh kar samajh sakein.
-function populateCompareSelectors(){
-  const selA = document.getElementById('cmpTourA');
-  const selB = document.getElementById('cmpTourB');
-  if(!selA || !selB) return;
-  const prevA = selA.value, prevB = selB.value;
-  const opts = [`<option value="">— Select —</option>`];
-  (data.clubs || []).forEach((c, ci) => {
-    (c.tournaments || []).forEach((t, ti) => {
-      opts.push(`<option value="${ci}:${ti}">${escapeHtmlAdmin(c.name || 'Club')} — ${escapeHtmlAdmin(t.name || 'Tournament')}</option>`);
-    });
-  });
-  selA.innerHTML = opts.join('');
-  selB.innerHTML = opts.join('');
-  if(prevA) selA.value = prevA;
-  if(prevB) selB.value = prevB;
-}
-
-function renderComparison(){
-  const resultsEl = document.getElementById('cmpResults');
-  const selA = document.getElementById('cmpTourA');
-  const selB = document.getElementById('cmpTourB');
-  if(!resultsEl) return;
-  if(!selA.value || !selB.value){ resultsEl.innerHTML = ''; return; }
-  const [ciA, tiA] = selA.value.split(':').map(Number);
-  const [ciB, tiB] = selB.value.split(':').map(Number);
-  const clubA = data.clubs[ciA]; const tourA = clubA && clubA.tournaments[tiA];
-  const clubB = data.clubs[ciB]; const tourB = clubB && clubB.tournaments[tiB];
-  if(!tourA || !tourB){ resultsEl.innerHTML = ''; return; }
-
-  const birdTimeAt = (bird, i) => {
-    const parsed = parseCp(bird.times && bird.times[i]);
-    return parsed.time || '';
-  };
-  const sideList = (tour, i) => {
-    const lines = (tour.birds || [])
-      .map(b => { const t = birdTimeAt(b, i); return t ? `${escapeHtmlAdmin(b.name || '(bila naam)')}: ${escapeHtmlAdmin(t)}` : ''; })
-      .filter(Boolean);
-    return lines.length ? lines.join('<br>') : '—';
-  };
-  const totalList = (tour) => {
-    const lines = (tour.birds || [])
-      .map(b => b.total ? `${escapeHtmlAdmin(b.name || '(bila naam)')}: ${escapeHtmlAdmin(b.total)}` : '')
-      .filter(Boolean);
-    return lines.length ? lines.join('<br>') : '—';
-  };
-
-  const maxCols = Math.max((tourA.columns || []).length, (tourB.columns || []).length);
-  let rowsHtml = '';
-  for(let i = 0; i < maxCols; i++){
-    const labelA = (tourA.columns || [])[i] || '';
-    const labelB = (tourB.columns || [])[i] || '';
-    const label = (labelA && labelB && labelA !== labelB)
-      ? `${escapeHtmlAdmin(labelA)} / ${escapeHtmlAdmin(labelB)}`
-      : escapeHtmlAdmin(labelA || labelB || `#${i+1}`);
-    rowsHtml += `<tr><td class="cmp-label">${label}</td><td class="cmp-side">${sideList(tourA, i)}</td><td class="cmp-side">${sideList(tourB, i)}</td></tr>`;
-  }
-
-  resultsEl.innerHTML = `
-    <table class="cmp-table">
-      <thead>
-        <tr><th></th><th>${escapeHtmlAdmin(clubA.name || '')} — ${escapeHtmlAdmin(tourA.name || '')}</th><th>${escapeHtmlAdmin(clubB.name || '')} — ${escapeHtmlAdmin(tourB.name || '')}</th></tr>
-      </thead>
-      <tbody>
-        ${rowsHtml}
-        <tr class="cmp-total-row"><td class="cmp-label">Total Time</td><td class="cmp-side">${totalList(tourA)}</td><td class="cmp-side">${totalList(tourB)}</td></tr>
-      </tbody>
-    </table>
-  `;
-}
 
 function showToast(msg, bad){
   const t = document.getElementById('toast');
