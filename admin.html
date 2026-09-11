@@ -402,13 +402,14 @@
       </label>
     </div>
     <div class="note" style="background: rgba(76,155,214,0.08); border-color:#4C9BD6; margin-bottom:18px;">
-      <label style="display:block; margin:0 0 8px;">
-        <span style="color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:14px; text-transform:none; letter-spacing:0;"><b style="color:#4C9BD6;">⚙️ Mode</b> — sirf isi tournament ke liye. "Tournament Mode" hamesha ki tarah normal rehta hai. "Competition Mode" mein har bird row par 🆚 Compare button aata hai (baaqi sab tournaments par is se koi farq nahi padta).</span>
+      <label style="display:flex; align-items:center; gap:10px; cursor:pointer; margin:0 0 10px;">
+        <input type="checkbox" id="m_mode" style="width:auto; margin:0;" onchange="onModeChange()">
+        <span style="color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:14px; text-transform:none; letter-spacing:0;"><b style="color:#4C9BD6;">🆚 Competition bhi ON karein</b> — sirf isi tournament ke liye. Yeh tournament ki normal features (First Winner, Winner Pigeon, Double Mohar, results waghera) bilkul waise hi chalte rehte hain — tick karne se sirf har bird row par 🆚 Compare button ADD ho jata hai, kuch hatta nahi. Untick = sirf normal Tournament Mode.</span>
       </label>
-      <select id="m_mode" onchange="onModeChange()" style="margin-bottom:0;">
-        <option value="tournament">🏆 Tournament Mode (normal)</option>
-        <option value="competition">🆚 Competition Mode (bird-vs-bird Compare)</option>
-      </select>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <button type="button" class="btn btn-gold btn-sm" onclick="saveModeNow()">💾 Save karein (turant GitHub par publish)</button>
+        <span id="modeSaveStatus" class="sub" style="margin:0;"></span>
+      </div>
     </div>
     <div><label>💵 Entry Fee (optional — public page par tournament info ke sath dikhega)</label><input id="m_entry_fee" placeholder="e.g. Rs 500 per bird"></div>
     <div><label>📝 Tournament Note (optional, Urdu) — public page par sab ko dikhega</label><input id="m_tour_note" dir="rtl" placeholder="e.g. Ye tournament date change ho sakti hai"></div>
@@ -1736,7 +1737,7 @@ function loadCurrentIntoForm(){
   document.getElementById('m_tour_name').value = tour.name || '';
   document.getElementById('m_is_live').checked = !!tour.meta.is_live;
   document.getElementById('m_is_upcoming').checked = !!tour.meta.is_upcoming;
-  document.getElementById('m_mode').value = tour.meta.mode || 'tournament';
+  document.getElementById('m_mode').checked = (tour.meta.mode === 'competition');
   document.getElementById('m_fw_amount_show').checked = tour.meta.first_winner_amount_show !== false;
   document.getElementById('m_wp_amount_show').checked = tour.meta.winner_pigeon_amount_show !== false;
   document.getElementById('m_dm_amount_show').checked = tour.meta.double_mohar_amount_show !== false;
@@ -1770,12 +1771,30 @@ function onTourChange(){
   save();
 }
 
-// Sirf isi tournament ke liye Tournament Mode (normal) aur Competition Mode
-// (bird-vs-bird 🆚 Compare button) ke darmiyan switch karta hai — baaqi
-// tournaments par is se koi farq nahi padta.
+// Sirf isi tournament ke liye Competition ON/OFF karta hai — normal
+// Tournament features hamesha chalte rehte hain, ye sirf 🆚 Compare button
+// ki visibility control karta hai.
 function onModeChange(){
   save();
   renderRows();
+}
+
+// Mode badalne ke baad sirf browser mein save hona kaafi nahi — jab tak
+// "🚀 Publish" na ho, GitHub par purana data hi raha aata hai, isliye kisi
+// aur device/browser mein khulte hi mode wapas purana dikhta hai. Ye button
+// save() ke sath sath seedha publish() bhi chala deta hai taake mode turant
+// GitHub par (aur sab jagah) update ho jaye.
+async function saveModeNow(){
+  save();
+  const statusEl = document.getElementById('modeSaveStatus');
+  if(!conn.owner || !conn.repo || !conn.token){
+    if(statusEl){ statusEl.textContent = '⚠️ Save ho gaya (is browser mein) — lekin GitHub connect nahi hai, isliye doosre device/app mein abhi purana hi dikhega. Neeche GitHub connection bhar kar "Publish" karein.'; statusEl.style.color = 'var(--danger)'; }
+    showToast('Save ho gaya, lekin GitHub connected nahi — is se doosre device par nazar nahi aayega', true);
+    return;
+  }
+  if(statusEl){ statusEl.textContent = '⏳ Publish ho raha hai…'; statusEl.style.color = 'var(--text-dim)'; }
+  await publish();
+  if(statusEl){ statusEl.textContent = '✅ Save ho gaya aur GitHub par publish bhi ho gaya — ab har jagah yehi dikhega.'; statusEl.style.color = 'var(--up)'; }
 }
 
 // Tournament ka naam field mein type karte hi turant dropdown ke option
@@ -1925,7 +1944,7 @@ function save(){
   tour.name = document.getElementById('m_tour_name').value;
   tour.meta.is_live = document.getElementById('m_is_live').checked;
   tour.meta.is_upcoming = document.getElementById('m_is_upcoming').checked;
-  tour.meta.mode = document.getElementById('m_mode').value || 'tournament';
+  tour.meta.mode = document.getElementById('m_mode').checked ? 'competition' : 'tournament';
   tour.meta.first_winner_amount_show = document.getElementById('m_fw_amount_show').checked;
   tour.meta.winner_pigeon_amount_show = document.getElementById('m_wp_amount_show').checked;
   tour.meta.double_mohar_amount_show = document.getElementById('m_dm_amount_show').checked;
