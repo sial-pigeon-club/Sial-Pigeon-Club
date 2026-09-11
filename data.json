@@ -1214,7 +1214,8 @@
               "3": "27 September 2026",
               "4": "04 October 2026",
               "5": "11 October 2026"
-            }
+            },
+            "mode": "competition"
           },
           "columns": [
             "#1",
