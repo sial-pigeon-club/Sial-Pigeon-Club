@@ -381,7 +381,8 @@
       </div>
     </div>
     <div class="actions">
-      <button class="btn btn-ghost" onclick="addTournament()">+ Naya tournament (nayi date)</button>
+      <button class="btn btn-ghost" onclick="addTournament('tournament')">+ Naya Tournament (nayi date)</button>
+      <button class="btn btn-ghost" style="border-color:#4C9BD6; color:#4C9BD6;" onclick="addTournament('competition')">+ Nayi Competition (bird-vs-bird)</button>
       <button class="btn btn-ghost" onclick="deleteTournament(this)" style="border-color:var(--danger); color:var(--danger);">🗑 Yeh tournament delete karein</button>
     </div>
   </div>
@@ -1712,7 +1713,8 @@ function populateTourSelect(){
   const sel = document.getElementById('tourSelect');
   sel.innerHTML = club.tournaments.map((t,i)=>{
     const label = t.name ? t.name : (t.meta.date ? t.meta.date : `Tournament ${i+1}`);
-    return `<option value="${i}">${escapeHtmlAdmin(label)}</option>`;
+    const prefix = (t.meta && t.meta.mode === 'competition') ? '🆚 ' : '🏆 ';
+    return `<option value="${i}">${prefix}${escapeHtmlAdmin(label)}</option>`;
   }).join('');
   sel.value = currentTourIdx;
 }
@@ -1835,16 +1837,17 @@ function deleteClub(btn){
   showToast(`"${deletedName}" delete ho gaya`);
 }
 
-function addTournament(){
+function addTournament(mode){
   save();
   const club = data.clubs[currentClubIdx];
   const t = blankTournament(currentTournament().columns);
+  t.meta.mode = (mode === 'competition') ? 'competition' : 'tournament';
   club.tournaments.push(t);
   currentTourIdx = club.tournaments.length - 1;
   populateTourSelect();
   loadCurrentIntoForm();
   save();
-  showToast('✅ Naya tournament add ho gaya — is club ki history mein shamil ho gaya');
+  showToast(t.meta.mode === 'competition' ? '✅ Nayi Competition add ho gayi — is club ki history mein shamil ho gayi' : '✅ Naya tournament add ho gaya — is club ki history mein shamil ho gaya');
 }
 
 function deleteTournament(btn){
