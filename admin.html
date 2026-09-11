@@ -85,6 +85,18 @@
   }
   .f-cp-sync-btn.active{ border-color: #4C9BD6; background: rgba(76,155,214,0.15); color: #4C9BD6; font-weight:600; }
 
+  /* 🆚 Bird Compare modal */
+  .cmp-tab-btn{ background: transparent; border: 1px solid var(--line); color: var(--text-dim); }
+  .cmp-tab-btn.active{ border-color: var(--gold); background: rgba(215,174,85,0.15); color: var(--gold); font-weight:700; }
+  .cmp-table{ width:100%; border-collapse: collapse; font-size: 13px; }
+  .cmp-table th{ text-align:left; color: var(--text-faint); font-family:'IBM Plex Mono', monospace; font-size: 10.5px; text-transform:uppercase; letter-spacing:.4px; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  .cmp-table td{ padding: 7px 8px; border-bottom: 1px solid var(--line); }
+  .cmp-table tr.cmp-self td{ background: rgba(215,174,85,0.14); font-weight:700; color: var(--gold); }
+  .cmp-table .cmp-rank{ font-family:'IBM Plex Mono', monospace; color: var(--text-faint); width: 34px; }
+  .cmp-cp-block{ margin-bottom: 18px; }
+  .cmp-cp-block h4{ font-family:'IBM Plex Mono', monospace; font-size: 12px; color: var(--teal); margin: 0 0 6px; text-transform:uppercase; letter-spacing:.4px; }
+  .cmp-empty{ color: var(--text-faint); font-size: 12.5px; padding: 10px 0; }
+
 
   .btn{ display:inline-flex; align-items:center; gap: 8px; cursor:pointer; border: none; font-family:'IBM Plex Mono', monospace; font-size: 12.5px; letter-spacing: .5px; padding: 10px 16px; border-radius: 7px; text-transform: uppercase; }
   .btn-gold{ background: var(--gold); color: #1a1408; font-weight: 600; }
@@ -387,6 +399,15 @@
         <input type="checkbox" id="m_is_upcoming" style="width:auto; margin:0;" onchange="save()">
         <span style="color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:14px; text-transform:none; letter-spacing:0;"><b style="color:var(--gold);">🔜 Yeh tournament UPCOMING hai</b> — tick karein to homepage aur is tournament ke result page par "UPCOMING" wala blinking badge dikhega. Untick karein to kahin nahi dikhega — ye poori tarah manual control hai, Date field se koi automatic farq nahi padta.</span>
       </label>
+    </div>
+    <div class="note" style="background: rgba(76,155,214,0.08); border-color:#4C9BD6; margin-bottom:18px;">
+      <label style="display:block; margin:0 0 8px;">
+        <span style="color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:14px; text-transform:none; letter-spacing:0;"><b style="color:#4C9BD6;">⚙️ Mode</b> — sirf isi tournament ke liye. "Tournament Mode" hamesha ki tarah normal rehta hai. "Competition Mode" mein har bird row par 🆚 Compare button aata hai (baaqi sab tournaments par is se koi farq nahi padta).</span>
+      </label>
+      <select id="m_mode" onchange="onModeChange()" style="margin-bottom:0;">
+        <option value="tournament">🏆 Tournament Mode (normal)</option>
+        <option value="competition">🆚 Competition Mode (bird-vs-bird Compare)</option>
+      </select>
     </div>
     <div><label>💵 Entry Fee (optional — public page par tournament info ke sath dikhega)</label><input id="m_entry_fee" placeholder="e.g. Rs 500 per bird"></div>
     <div><label>📝 Tournament Note (optional, Urdu) — public page par sab ko dikhega</label><input id="m_tour_note" dir="rtl" placeholder="e.g. Ye tournament date change ho sakti hai"></div>
@@ -772,7 +793,7 @@ function blankTournament(cols){
     name: "",
     meta: {
       date:"", uraan_time:"05:00", aakhri_time:"20:30", duration_days:1, sunrise:"", sunset:"",
-      flying:0, landed:0, pigeons:0, lofts:0, is_live:false, is_upcoming:false,
+      flying:0, landed:0, pigeons:0, lofts:0, is_live:false, is_upcoming:false, mode: "tournament",
       first_winner_time:"", first_winner_name:"", winner_pigeon_time:"", winner_pigeon_name:"",
       double_mohar_col:null, double_mohar_time:"", double_mohar_name:""
     },
@@ -808,6 +829,7 @@ function migrateData(raw){
               date: meta.date||"", uraan_time: meta.uraan_time||"05:00", aakhri_time: meta.aakhri_time||"20:30",
               duration_days: meta.duration_days||1, sunrise: meta.sunrise||"", sunset: meta.sunset||"",
               flying: meta.flying||0, landed: meta.landed||0, pigeons: meta.pigeons||0, lofts: meta.lofts||0,
+              mode: meta.mode || "tournament",
               first_winner_time: meta.first_winner_time||"", first_winner_name: meta.first_winner_name||"",
               winner_pigeon_time: meta.winner_pigeon_time||"", winner_pigeon_name: meta.winner_pigeon_name||""
             },
@@ -1712,6 +1734,7 @@ function loadCurrentIntoForm(){
   document.getElementById('m_tour_name').value = tour.name || '';
   document.getElementById('m_is_live').checked = !!tour.meta.is_live;
   document.getElementById('m_is_upcoming').checked = !!tour.meta.is_upcoming;
+  document.getElementById('m_mode').value = tour.meta.mode || 'tournament';
   document.getElementById('m_fw_amount_show').checked = tour.meta.first_winner_amount_show !== false;
   document.getElementById('m_wp_amount_show').checked = tour.meta.winner_pigeon_amount_show !== false;
   document.getElementById('m_dm_amount_show').checked = tour.meta.double_mohar_amount_show !== false;
@@ -1743,6 +1766,14 @@ function onTourChange(){
   currentTourIdx = Number(document.getElementById('tourSelect').value);
   loadCurrentIntoForm();
   save();
+}
+
+// Sirf isi tournament ke liye Tournament Mode (normal) aur Competition Mode
+// (bird-vs-bird 🆚 Compare button) ke darmiyan switch karta hai — baaqi
+// tournaments par is se koi farq nahi padta.
+function onModeChange(){
+  save();
+  renderRows();
 }
 
 // Tournament ka naam field mein type karte hi turant dropdown ke option
@@ -1891,6 +1922,7 @@ function save(){
   tour.name = document.getElementById('m_tour_name').value;
   tour.meta.is_live = document.getElementById('m_is_live').checked;
   tour.meta.is_upcoming = document.getElementById('m_is_upcoming').checked;
+  tour.meta.mode = document.getElementById('m_mode').value || 'tournament';
   tour.meta.first_winner_amount_show = document.getElementById('m_fw_amount_show').checked;
   tour.meta.winner_pigeon_amount_show = document.getElementById('m_wp_amount_show').checked;
   tour.meta.double_mohar_amount_show = document.getElementById('m_dm_amount_show').checked;
@@ -2405,6 +2437,246 @@ function formatMinutes(total){
   return `${sign}${h}:${mm}`;
 }
 
+// 🆚 Bird Compare — ek bird select karke tournament ke baaqi (excluded ke
+// ilawa) sab birds se uska comparison 3 formats mein dikhata hai: Winner
+// Pigeon (aakhri bhare hue checkpoint ka Uraan se waqfa), Checkpoint-wise
+// (har checkpoint par sab birds ka alag-alag comparison), aur Total Time
+// (grand total). Sirf dekhne ke liye hai — data mein kuch save nahi hota,
+// tour.birds (already-saved data) se hi hisaab lagta hai isliye khulne se
+// pehle save() zaroor call hota hai taake abhi-abhi type ki hui values bhi
+// shamil ho jayein.
+
+function cmpBirdGrandTotal(bird, start){
+  const times = bird.times || [];
+  const ded = parseHM(bird.deduction || '');
+  const byDay = {};
+  let any = false;
+  times.forEach(raw => {
+    if(!raw) return;
+    const { day, time } = parseCp(raw);
+    if(!time) return;
+    any = true;
+    let diff = parseHM(time) - start;
+    if(diff < 0) diff += 1440;
+    byDay[day] = (byDay[day] || 0) + diff;
+  });
+  if(!any) return null;
+  let total = 0;
+  Object.keys(byDay).forEach(d => { total += byDay[d] + ded; });
+  return total;
+}
+
+// Bird ka sab se aakhri bhara hua checkpoint (sab se badhe din mein), Uraan
+// se uska waqfa — Winner Pigeon comparison ke liye.
+function cmpBirdLastCpDiff(bird, start){
+  const times = bird.times || [];
+  let bestDay = -1, bestIdx = -1;
+  times.forEach((raw, i) => {
+    if(!raw) return;
+    const { day, time } = parseCp(raw);
+    if(!time) return;
+    if(day > bestDay || (day === bestDay && i > bestIdx)){ bestDay = day; bestIdx = i; }
+  });
+  if(bestIdx === -1) return null;
+  const { time } = parseCp(times[bestIdx]);
+  let diff = parseHM(time) - start;
+  if(diff < 0) diff += 1440;
+  return diff;
+}
+
+function cmpEligibleBirds(){
+  const tour = currentTournament();
+  return (tour.birds || []).map((b, i) => ({ bird: b, idx: i })).filter(x => !x.bird.excluded);
+}
+
+function openBirdCompare(idx){
+  if(document.getElementById('cmpOverlay')) return;
+  save();
+  const tour = currentTournament();
+  const bird = tour.birds[idx];
+  if(!bird) return;
+  window.__cmpState = { idx };
+
+  const overlay = document.createElement('div');
+  overlay.id = 'cmpOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;display:flex;align-items:center;justify-content:center;padding:16px;';
+  overlay.innerHTML = `
+    <div style="background:var(--bg-panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px; max-width:640px; width:100%; max-height:85vh; overflow-y:auto;">
+      <h3 style="margin:0 0 4px; font-family:'Fraunces',serif; color:var(--gold);">🆚 Compare — ${escapeHtmlAdmin(bird.name || '(bila naam)')}</h3>
+      <p class="sub" style="margin:0 0 14px;">Isi tournament ke baaqi sab birds (jo "❌ not-flying" mark nahi) ke sath comparison.</p>
+      <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+        <button type="button" class="btn btn-sm cmp-tab-btn" data-tab="wp" onclick="switchCmpTab('wp')">🏆 Winner Pigeon</button>
+        <button type="button" class="btn btn-sm cmp-tab-btn" data-tab="cp" onclick="switchCmpTab('cp')">📍 Checkpoint-wise</button>
+        <button type="button" class="btn btn-sm cmp-tab-btn" data-tab="sc" onclick="switchCmpTab('sc')">📊 Total Score</button>
+        <button type="button" class="btn btn-sm cmp-tab-btn" data-tab="tt" onclick="switchCmpTab('tt')">⏱ Total Time</button>
+      </div>
+      <div id="cmpBody"></div>
+      <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeBirdCompare()">Band karein</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  switchCmpTab('wp');
+}
+
+function closeBirdCompare(){
+  const overlay = document.getElementById('cmpOverlay');
+  if(overlay) overlay.remove();
+  window.__cmpState = null;
+}
+
+function switchCmpTab(tab){
+  const state = window.__cmpState;
+  if(!state) return;
+  state.tab = tab;
+  document.querySelectorAll('.cmp-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+  const body = document.getElementById('cmpBody');
+  if(!body) return;
+  if(tab === 'wp') body.innerHTML = renderCmpWinnerPigeon(state.idx);
+  else if(tab === 'cp') body.innerHTML = renderCmpCheckpoints(state.idx);
+  else if(tab === 'sc') body.innerHTML = renderCmpScore(state.idx);
+  else body.innerHTML = renderCmpTotalTime(state.idx);
+}
+
+function renderCmpWinnerPigeon(selfIdx){
+  const tour = currentTournament();
+  const start = parseHM(tour.meta.uraan_time);
+  const rows = cmpEligibleBirds().map(x => ({
+    idx: x.idx, name: x.bird.name || '(bila naam)', diff: cmpBirdLastCpDiff(x.bird, start)
+  })).filter(r => r.diff !== null);
+  if(!rows.length) return `<p class="cmp-empty">Abhi kisi bird ka koi checkpoint bhara nahi — comparison ke liye kam se kam ek checkpoint chahiye.</p>`;
+  rows.sort((a,b) => b.diff - a.diff);
+  const trs = rows.map((r, i) => `
+    <tr class="${r.idx === selfIdx ? 'cmp-self' : ''}">
+      <td class="cmp-rank">#${i+1}</td>
+      <td dir="rtl" style="text-align:right;">${escapeHtmlAdmin(r.name)}</td>
+      <td>${formatMinutes(r.diff)}</td>
+    </tr>`).join('');
+  const selfRank = rows.findIndex(r => r.idx === selfIdx) + 1;
+  const note = selfRank
+    ? `<p class="sub" style="margin:0 0 10px;">Is bird ki position: <b style="color:var(--gold);">#${selfRank}</b> / ${rows.length}</p>`
+    : `<p class="cmp-empty">Is bird ka abhi koi checkpoint bhara nahi — neeche baaqi birds ka comparison hai.</p>`;
+  return `${note}
+    <table class="cmp-table"><thead><tr><th>#</th><th>Bird</th><th>Uraan se waqfa</th></tr></thead><tbody>${trs}</tbody></table>`;
+}
+
+function renderCmpCheckpoints(selfIdx){
+  const tour = currentTournament();
+  const start = parseHM(tour.meta.uraan_time);
+  const eligible = cmpEligibleBirds();
+  const blocks = tour.columns.map((colLabel, ci) => {
+    const rows = eligible.map(x => {
+      const raw = x.bird.times[ci];
+      if(!raw) return null;
+      const { time } = parseCp(raw);
+      if(!time) return null;
+      let diff = parseHM(time) - start;
+      if(diff < 0) diff += 1440;
+      return { idx: x.idx, name: x.bird.name || '(bila naam)', time, diff };
+    }).filter(Boolean);
+    if(!rows.length) return `<div class="cmp-cp-block"><h4>${escapeHtmlAdmin(colLabel)}</h4><p class="cmp-empty">Koi bird ka time abhi bhara nahi.</p></div>`;
+    rows.sort((a,b) => b.diff - a.diff);
+    const selfRow = rows.find(r => r.idx === selfIdx);
+    const others = rows.filter(r => r.idx !== selfIdx);
+    const beatNote = selfRow
+      ? `<p class="sub" style="margin:2px 0 8px;">Is checkpoint par is bird ne <b style="color:var(--gold);">${others.filter(r => r.diff < selfRow.diff).length}/${others.length}</b> birds ko beat kiya (jin ka is checkpoint par time bhara hai unme se)</p>`
+      : '';
+    const trs = rows.map((r,i) => `
+      <tr class="${r.idx === selfIdx ? 'cmp-self' : ''}">
+        <td class="cmp-rank">#${i+1}</td>
+        <td dir="rtl" style="text-align:right;">${escapeHtmlAdmin(r.name)}</td>
+        <td>${r.time}</td>
+        <td>${formatMinutes(r.diff)}</td>
+      </tr>`).join('');
+    return `<div class="cmp-cp-block">
+      <h4>${escapeHtmlAdmin(colLabel)}${selfRow ? '' : ' — is bird ka is checkpoint par time nahi'}</h4>
+      ${beatNote}
+      <table class="cmp-table"><thead><tr><th>#</th><th>Bird</th><th>Waqt</th><th>Waqfa</th></tr></thead><tbody>${trs}</tbody></table>
+    </div>`;
+  }).join('');
+  return blocks || `<p class="cmp-empty">Is tournament mein koi checkpoint nahi.</p>`;
+}
+
+// Ek bird ka ek khaas checkpoint (index ke hisaab se) par Uraan se waqfa —
+// Total Score tab ke liye, checkpoint-number ke hisaab se match karne ke
+// liye (#1 sirf #1 se, #2 sirf #2 se... jaisa competition ke rules hain).
+function cmpBirdCpDiffAt(bird, ci, start){
+  const raw = (bird.times || [])[ci];
+  if(!raw) return null;
+  const { time } = parseCp(raw);
+  if(!time) return null;
+  let diff = parseHM(time) - start;
+  if(diff < 0) diff += 1440;
+  return diff;
+}
+
+// 📊 Total Score: selected bird ka baaqi HAR bird ke khilaf checkpoint-wise
+// muqabla — jis checkpoint number par dono ka time bhara ho aur is bird ka
+// waqfa zyada ho, wahan +1 point milta hai. Agar kisi checkpoint par sirf
+// is bird ka time bhara ho (doosre bird ka us number par abhi tak nahi) to
+// is bird ko us checkpoint ka +1 bonus point milta hai (aage nikalne ka) —
+// jaise agar is bird ke 7 checkpoints bhare hon aur doosre ke sirf 6, to
+// pehle 6 par muqabla hota hai aur 7wan checkpoint bonus ban jata hai.
+function renderCmpScore(selfIdx){
+  const tour = currentTournament();
+  const start = parseHM(tour.meta.uraan_time);
+  const selfBird = tour.birds[selfIdx];
+  const competitors = cmpEligibleBirds().filter(x => x.idx !== selfIdx);
+  if(!competitors.length) return `<p class="cmp-empty">Is tournament mein koi aur bird nahi jis se compare kiya ja sake.</p>`;
+  const numCols = tour.columns.length;
+  let grandTotal = 0;
+  const rows = competitors.map(x => {
+    let wins = 0, bonus = 0;
+    for(let ci = 0; ci < numCols; ci++){
+      const sVal = cmpBirdCpDiffAt(selfBird, ci, start);
+      const cVal = cmpBirdCpDiffAt(x.bird, ci, start);
+      if(sVal === null) continue;
+      if(cVal === null){ bonus++; }
+      else if(sVal > cVal){ wins++; }
+    }
+    const pts = wins + bonus;
+    grandTotal += pts;
+    return { name: x.bird.name || '(bila naam)', wins, bonus, pts };
+  });
+  const trs = rows.map(r => `
+    <tr>
+      <td dir="rtl" style="text-align:right;">${escapeHtmlAdmin(r.name)}</td>
+      <td>${r.wins}</td>
+      <td>${r.bonus}</td>
+      <td style="font-weight:700; color:var(--gold);">${r.pts}</td>
+    </tr>`).join('');
+  return `
+    <p class="sub" style="margin:0 0 10px;">Har checkpoint number par jis bird ka Uraan se waqfa zyada ho wo us checkpoint jeetta hai (+1 point). Agar us checkpoint par sirf is bird ka hi time bhara ho (doosre bird ne abhi tak wahan tak nahi pohncha), to is bird ko +1 bonus point milta hai.</p>
+    <p style="margin:0 0 12px; font-size:15px;">Total Score (sab baaqi birds ke khilaf jama): <b style="color:var(--gold); font-size:19px;">${grandTotal}</b></p>
+    <table class="cmp-table"><thead><tr><th>Bird</th><th>Checkpoints jeete</th><th>Bonus</th><th>Total</th></tr></thead><tbody>${trs}</tbody></table>
+  `;
+}
+
+function renderCmpTotalTime(selfIdx){
+  const tour = currentTournament();
+  const start = parseHM(tour.meta.uraan_time);
+  const rows = cmpEligibleBirds().map(x => ({
+    idx: x.idx, name: x.bird.name || '(bila naam)', total: cmpBirdGrandTotal(x.bird, start)
+  })).filter(r => r.total !== null);
+  if(!rows.length) return `<p class="cmp-empty">Abhi kisi bird ka koi checkpoint bhara nahi — comparison ke liye kam se kam ek checkpoint chahiye.</p>`;
+  rows.sort((a,b) => b.total - a.total);
+  const trs = rows.map((r,i) => `
+    <tr class="${r.idx === selfIdx ? 'cmp-self' : ''}">
+      <td class="cmp-rank">#${i+1}</td>
+      <td dir="rtl" style="text-align:right;">${escapeHtmlAdmin(r.name)}</td>
+      <td>${formatMinutes(r.total)}</td>
+    </tr>`).join('');
+  const selfRank = rows.findIndex(r => r.idx === selfIdx) + 1;
+  const note = selfRank
+    ? `<p class="sub" style="margin:0 0 10px;">Is bird ki position: <b style="color:var(--gold);">#${selfRank}</b> / ${rows.length}</p>`
+    : `<p class="cmp-empty">Is bird ka abhi koi checkpoint bhara nahi — neeche baaqi birds ka comparison hai.</p>`;
+  return `${note}
+    <table class="cmp-table"><thead><tr><th>#</th><th>Bird</th><th>Total time</th></tr></thead><tbody>${trs}</tbody></table>`;
+}
+
 function recalcCardTotal(card){
   const cpEls = Array.from(card.querySelectorAll('.f-cp'));
   const times = cpEls.map(i => i.value.trim());
@@ -2455,6 +2727,7 @@ function renderRows(){
     if(b.excluded) div.dataset.excluded = 'true';
     div.innerHTML = `
       <div class="row-card-actions">
+        ${tour.meta.mode === 'competition' ? `<button type="button" class="rm" style="border-color:#4C9BD6; color:#4C9BD6;" onclick="openBirdCompare(${idx})">🆚 Compare</button>` : ''}
         <button type="button" class="rm" style="background: ${b.excluded ? 'var(--danger)' : 'transparent'}; color: ${b.excluded ? '#fff' : 'var(--danger)'};" onclick="toggleBirdExcluded(${idx})">${b.excluded ? '❌ Excluded' : '❌ Mark not-flying'}</button>
         <button class="rm" onclick="removeRow(${idx})">Remove</button>
       </div>
