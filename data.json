@@ -2204,6 +2204,209 @@
           "position_amounts_by_tab": {
             "total": []
           }
+        },
+        {
+          "id": "mtysguvnoaye6",
+          "name": "بھادوں آخری اتوار 11 کبوتروں کی بازی ",
+          "meta": {
+            "date": "13 September 2026",
+            "uraan_time": "06:00",
+            "aakhri_time": "20:00",
+            "duration_days": 1,
+            "sunrise": "05:45",
+            "sunset": "18:11",
+            "flying": 33,
+            "landed": 0,
+            "pigeons": 33,
+            "lofts": 3,
+            "is_live": false,
+            "is_upcoming": true,
+            "mode": "tournament",
+            "first_winner_time": "",
+            "first_winner_name": "",
+            "winner_pigeon_time": "",
+            "winner_pigeon_name": "",
+            "double_mohar_col": null,
+            "double_mohar_time": "",
+            "double_mohar_name": "",
+            "winner_pigeon_total_ready": false,
+            "daily_winners": [
+              {
+                "day": 1,
+                "first_winner_name": "",
+                "first_winner_time": "",
+                "winner_pigeon_name": "",
+                "winner_pigeon_time": "",
+                "ready": false
+              }
+            ],
+            "daily_double_mohar": [
+              {
+                "day": 1,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              }
+            ],
+            "daily_baby_winner": [
+              {
+                "day": 1,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              }
+            ],
+            "first_winner_amount_show": true,
+            "winner_pigeon_amount_show": true,
+            "double_mohar_amount_show": true,
+            "baby_winner_amount_show": true,
+            "entry_fee": "",
+            "tour_note": "",
+            "first_winner_amount": "",
+            "winner_pigeon_amount": "",
+            "double_mohar_amount": "",
+            "baby_winner_time": "",
+            "baby_winner_name": "",
+            "baby_winner_amount": ""
+          },
+          "columns": [
+            "#1",
+            "#2",
+            "#3",
+            "#4",
+            "#5",
+            "#6",
+            "#7",
+            "#8",
+            "#9",
+            "#10",
+            "#11"
+          ],
+          "birds": [
+            {
+              "name": "استاد ندیم ملاں چھت جگا سیال",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد حیدر جوئیہ چھت شفاقت جرمنی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد افضال چھت حیدری مریدکے",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            }
+          ],
+          "gallery": [],
+          "position_amounts_by_tab": {
+            "total": []
+          },
+          "column_days": {
+            "7": 1,
+            "8": 1,
+            "9": 1,
+            "10": 1
+          }
         }
       ]
     },
