@@ -297,10 +297,10 @@
             "duration_days": 1,
             "sunrise": "05:45",
             "sunset": "18:11",
-            "flying": 56,
+            "flying": 224,
             "landed": 0,
-            "pigeons": 56,
-            "lofts": 8,
+            "pigeons": 224,
+            "lofts": 32,
             "is_live": false,
             "is_upcoming": true,
             "first_winner_time": "",
@@ -350,7 +350,8 @@
             "baby_winner_time": "",
             "baby_winner_name": "",
             "baby_winner_amount": "",
-            "tour_note": "اس ٹورنامنٹ کی نقد انٹری ہوگی  اور نقد انعام دیا جائے گا۔"
+            "tour_note": "اس ٹورنامنٹ کی نقد انٹری ہوگی  اور نقد انعام دیا جائے گا۔",
+            "mode": "tournament"
           },
           "columns": [
             "#1",
@@ -370,8 +371,18 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
+              "sync_targets": {},
               "excluded": false,
               "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
                 "",
                 "",
                 "",
@@ -389,8 +400,18 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
+              "sync_targets": {},
               "excluded": false,
               "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
                 "",
                 "",
                 "",
@@ -408,8 +429,18 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
+              "sync_targets": {},
               "excluded": false,
               "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
                 "",
                 "",
                 "",
@@ -427,8 +458,18 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
+              "sync_targets": {},
               "excluded": false,
               "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
                 "",
                 "",
                 "",
@@ -446,8 +487,18 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
+              "sync_targets": {},
               "excluded": false,
               "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
                 "",
                 "",
                 "",
@@ -465,8 +516,18 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
+              "sync_targets": {},
               "excluded": false,
               "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
                 "",
                 "",
                 "",
@@ -484,8 +545,18 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
+              "sync_targets": {},
               "excluded": false,
               "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
                 "",
                 "",
                 "",
@@ -503,8 +574,714 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
+              "sync_targets": {},
               "excluded": false,
               "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد پومی بٹ چھت استاد بلال بٹ",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد عامر کھرل چھت رائے محسن",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد عمران شاہ چھت ملک علی نمبردار",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد ندیم ملاں چھت جگا سیال",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "کامران چھت خلیفہ اسد جٹ",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد کرامت چھت رضوان مہر",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد ملک مانی چھت حافظ سعودیہ والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد صغیر بھٹی چھت تالاب والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد سید محمد اشرف رچنا ٹاؤن",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد ملک عثمان چھت پلازے والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد شبیر چھت رانا حیدر",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد عمر چھینہ چھت S.A گارڈن والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد شیخ اطہر چھت ندیم جٹ شیشے والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد ارشد چھت زید 42 چک",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد آصف جیو چھت حافظ عثمان لال حویلی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد صغیر بھٹی چھت خلیفہ وڈا والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد ملک ایاز چھت علی احمد چیمہ",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد ھوگی چھت اشرف دودھیا",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد رائے امتیاز بشیر ٹاؤن",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد عمر چھت شہزاد والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "اکرم ڈوگر",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد اعجاز چھت لاہور قلندر",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد حاجی نواز چھت زاویار معروف",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد شیخ اطہر چھت میاں برادران",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
                 "",
                 "",
                 "",
@@ -1034,8 +1811,8 @@
             "duration_days": 5,
             "sunrise": "05:45",
             "sunset": "18:11",
-            "flying": 42,
-            "landed": 0,
+            "flying": 31,
+            "landed": 11,
             "pigeons": 42,
             "lofts": 6,
             "is_live": false,
@@ -1230,7 +2007,7 @@
             {
               "name": "استاد ندیم ملاں چھت جگا سیال",
               "image": "",
-              "total": "0:00",
+              "total": "22:57",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -1238,9 +2015,9 @@
               "sync_targets": {},
               "excluded": false,
               "times": [
-                "",
-                "",
-                "",
+                "1/12:22",
+                "1/12:44",
+                "1/12:51",
                 "",
                 "",
                 "",
@@ -1259,7 +2036,7 @@
             {
               "name": "استاد عامر کھرل چھت ملک چاند",
               "image": "",
-              "total": "0:00",
+              "total": "15:40",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -1267,8 +2044,8 @@
               "sync_targets": {},
               "excluded": false,
               "times": [
-                "",
-                "",
+                "1/12:43",
+                "1/12:57",
                 "",
                 "",
                 "",
@@ -1288,7 +2065,7 @@
             {
               "name": "استاد حیدر جوئیہ چھت شفاقت جرمنی",
               "image": "",
-              "total": "0:00",
+              "total": "26:31",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -1296,9 +2073,9 @@
               "sync_targets": {},
               "excluded": false,
               "times": [
-                "",
-                "",
-                "",
+                "1/13:42",
+                "1/13:54",
+                "1/13:55",
                 "",
                 "",
                 "",
@@ -1317,7 +2094,7 @@
             {
               "name": "استاد افضال چھت حیدری مریدکے",
               "image": "",
-              "total": "0:00",
+              "total": "22:25",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -1325,9 +2102,9 @@
               "sync_targets": {},
               "excluded": false,
               "times": [
-                "",
-                "",
-                "",
+                "1/12:20",
+                "1/12:22",
+                "1/12:43",
                 "",
                 "",
                 "",
