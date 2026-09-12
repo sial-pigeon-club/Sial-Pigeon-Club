@@ -2274,11 +2274,11 @@
             "entry_fee": "5000",
             "tour_note": "",
             "first_winner_amount": "",
-            "winner_pigeon_amount": "",
+            "winner_pigeon_amount": "5,000",
             "double_mohar_amount": "",
             "baby_winner_time": "",
             "baby_winner_name": "",
-            "baby_winner_amount": "",
+            "baby_winner_amount": "5000",
             "mode": "tournament"
           },
           "columns": [
@@ -2787,7 +2787,28 @@
           ],
           "gallery": [],
           "position_amounts_by_tab": {
-            "total": []
+            "total": [
+              {
+                "amount": "300000",
+                "show": true
+              },
+              {
+                "amount": "25000",
+                "show": true
+              },
+              {
+                "amount": "20000",
+                "show": true
+              },
+              {
+                "amount": "10000",
+                "show": true
+              },
+              {
+                "amount": "7000",
+                "show": true
+              }
+            ]
           },
           "column_days": {
             "3": 1,
