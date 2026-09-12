@@ -2666,6 +2666,22 @@ function renderCmpCheckpoints(selfIdx){
     if(!pairs.length && !extraA.length && !extraB.length){
       return `<div class="cmp-cp-block"><h4>${escapeHtmlAdmin(compName)}</h4><p class="cmp-empty">Kisi bhi bird ka koi checkpoint abhi bhara nahi.</p></div>`;
     }
+    // Bonus checkpoints (jinka doosri taraf koi muqabla nahi) sab se pehle
+    // dikhte hain — is bird ka bonus ho to ✅, competitor ka bonus ho to
+    // is bird ke liye ❌ (uska is checkpoint par time hi nahi hai).
+    const bonusRows = extraA.map(ci => `
+      <tr class="cmp-self">
+        <td class="cmp-rank">${escapeHtmlAdmin(colLabel(ci))} (bonus)</td>
+        <td>${escapeHtmlAdmin(cmpBirdRawTimeAt(selfBird, ci) || '—')}</td>
+        <td>—</td>
+        <td style="font-size:15px;">✅</td>
+      </tr>`).join('') + extraB.map(ci => `
+      <tr>
+        <td class="cmp-rank">${escapeHtmlAdmin(colLabel(ci))} (bonus)</td>
+        <td>—</td>
+        <td>${escapeHtmlAdmin(cmpBirdRawTimeAt(x.bird, ci) || '—')}</td>
+        <td style="font-size:15px;">❌</td>
+      </tr>`).join('');
     const pairRows = pairs.map((p) => {
       const sVal = cmpBirdCpDiffAt(selfBird, p.aCol, start);
       const cVal = cmpBirdCpDiffAt(x.bird, p.bCol, start);
@@ -2680,16 +2696,13 @@ function renderCmpCheckpoints(selfIdx){
         <td style="font-size:15px;">${win ? '✅' : (lose ? '❌' : (sVal !== null && cVal !== null ? '➖' : ''))}</td>
       </tr>`;
     }).join('');
-    const bonusNotes = [];
-    if(extraA.length) bonusNotes.push(`<p class="sub" style="margin:8px 0 0;">✅ Is bird ke <b style="color:var(--gold);">${extraA.length}</b> checkpoint(s) [${extraA.map(colLabel).map(escapeHtmlAdmin).join(', ')}] ka is competitor ke pass koi muqabla nahi — bonus (+${extraA.length}).</p>`);
-    if(extraB.length) bonusNotes.push(`<p class="sub" style="margin:8px 0 0;">⚠️ ${escapeHtmlAdmin(compName)} ke <b>${extraB.length}</b> checkpoint(s) [${extraB.map(colLabel).map(escapeHtmlAdmin).join(', ')}] ka is bird ke pass koi muqabla nahi — is bird ko is se (-${extraB.length}) hota hai.</p>`);
+    const allRows = bonusRows + pairRows;
     const netScore = cmpCheckpointNetScore(selfBird, x.bird, start);
     const netColor = netScore > 0 ? 'var(--up)' : (netScore < 0 ? 'var(--danger)' : 'var(--text-dim)');
     const netSign = netScore > 0 ? `+${netScore}` : `${netScore}`;
     return `<div class="cmp-cp-block">
       <h4 dir="rtl" style="text-align:right;">${escapeHtmlAdmin(compName)}</h4>
-      ${pairRows ? `<table class="cmp-table"><thead><tr><th>Checkpoint</th><th>Is bird</th><th>Competitor</th><th>Jeeta</th></tr></thead><tbody>${pairRows}</tbody></table>` : ''}
-      ${bonusNotes.join('')}
+      ${allRows ? `<table class="cmp-table"><thead><tr><th>Checkpoint</th><th>Is bird</th><th>Competitor</th><th>Jeeta</th></tr></thead><tbody>${allRows}</tbody></table>` : ''}
       <p style="margin:8px 0 0; font-size:14px;">Is competitor ke khilaf checkpoint score: <b style="color:${netColor};">${netSign}</b></p>
     </div>`;
   }).join('');
