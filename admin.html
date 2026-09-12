@@ -526,13 +526,6 @@
     <button class="btn btn-ghost" onclick="resetAll()">Reset to sample data</button>
   </div>
 
-  <div class="panel">
-    <h2>🗄 Backup &amp; Restore</h2>
-    <p class="sub" style="margin-bottom:10px;">Har baar Publish karne se pehle purana data khud-ba-khud backup ho jata hai. Backup sirf <b>7 din</b> tak rehti hai — agar us dauran restore nahi kiya to khud-ba-khud delete ho jati hai (repo halka rakhne ke liye).</p>
-    <button class="btn btn-ghost" onclick="loadBackupsList()">🔄 Backups dekhein</button>
-    <div id="backupsList" style="margin-top:12px;"></div>
-  </div>
-
   <div class="toast" id="toast"></div>
 </div>
 </div>
@@ -3787,121 +3780,6 @@ async function publish(){
 // backups har publish par bhi call hota hai). Backup filename ka pattern
 // "data-YYYY-MM-DDTHH-MM-SS-mmm-Z.json" hai — hum sirf "YYYY-MM-DD" wala
 // hissa (5th se 15th character) nikal kar date compare karte hain.
-async function cleanupOldBackups(){
-  if(!conn.owner || !conn.repo || !conn.token) return;
-  const headers = { 'Authorization': `Bearer ${conn.token}`, 'Accept': 'application/vnd.github+json' };
-  try{
-    const apiUrl = `https://api.github.com/repos/${conn.owner}/${conn.repo}/contents/backups?ref=${encodeURIComponent(conn.branch || 'main')}`;
-    const res = await fetch(apiUrl, { headers });
-    if(!res.ok) return; // backups folder abhi nahi bani, ya fetch fail — chup chaap skip
-    const files = await res.json();
-    if(!Array.isArray(files)) return;
-    const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
-    files.forEach(f => {
-      if(!f.name.startsWith('data-') || !f.name.endsWith('.json')) return;
-      const dateStr = f.name.slice(5, 15); // "YYYY-MM-DD"
-      const t = new Date(dateStr).getTime();
-      if(isNaN(t) || t >= cutoff) return; // 7 din se nayi hai, chhoro
-      fetch(`https://api.github.com/repos/${conn.owner}/${conn.repo}/contents/${f.path}`, {
-        method: 'DELETE',
-        headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: `Auto-delete backup older than 7 days — ${f.name}`, sha: f.sha, branch: conn.branch })
-      }).catch(()=>{});
-    });
-  }catch(e){ /* best-effort, chup chaap ignore karo */ }
-}
-
-async function loadBackupsList(){
-  loadConn();
-  if(!conn.owner || !conn.repo){
-    showToast('Pehle GitHub se connect karein (upar wala form bharein)', true);
-    return;
-  }
-  const wrap = document.getElementById('backupsList');
-  wrap.innerHTML = '<p class="sub">Loading…</p>';
-  const headers = conn.token
-    ? { 'Authorization': `Bearer ${conn.token}`, 'Accept': 'application/vnd.github+json' }
-    : { 'Accept': 'application/vnd.github+json' };
-  try{
-    const apiUrl = `https://api.github.com/repos/${conn.owner}/${conn.repo}/contents/backups?ref=${encodeURIComponent(conn.branch || 'main')}`;
-    const res = await fetch(apiUrl, { headers });
-    if(res.status === 404){
-      wrap.innerHTML = '<p class="sub">Abhi tak koi backup nahi bani — pehla Publish karne ke baad yahan dikhengi.</p>';
-      return;
-    }
-    if(!res.ok){
-      const errBody = await res.json().catch(()=>({}));
-      throw new Error(errBody.message || `Backups list fetch failed (${res.status})`);
-    }
-    const files = await res.json();
-    const sorted = (Array.isArray(files) ? files : [])
-      .filter(f => f.name.endsWith('.json'))
-      .sort((a,b) => b.name.localeCompare(a.name)); // naya sab se upar
-    if(sorted.length === 0){
-      wrap.innerHTML = '<p class="sub">Abhi tak koi backup nahi bani.</p>';
-      return;
-    }
-    wrap.innerHTML = sorted.map(f => {
-      const dateStr = f.name.slice(5, 15);
-      const ageMs = Date.now() - new Date(dateStr).getTime();
-      const daysLeft = Math.max(0, 7 - Math.floor(ageMs / (24*60*60*1000)));
-      return `
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-top:1px solid var(--line);">
-        <div>
-          <div style="font-size:13px; word-break:break-all;">${escapeHtmlAdmin(f.name)}</div>
-          <div style="font-size:11px; color:var(--text-faint);">${daysLeft > 0 ? `${daysLeft} din mein khud delete hogi` : 'aaj ya kal delete ho sakti hai'}</div>
-        </div>
-        <button type="button" class="btn btn-ghost btn-sm" style="flex-shrink:0;" onclick="restoreBackup('${f.path}', this)">Restore</button>
-      </div>
-    `;
-    }).join('');
-  }catch(err){
-    wrap.innerHTML = `<p class="sub" style="color:var(--danger);">❌ ${escapeHtmlAdmin(err.message)}</p>`;
-  }
-}
-
-async function restoreBackup(path, btn){
-  if(btn && btn.dataset.confirming !== 'true'){
-    btn.dataset.confirming = 'true';
-    const original = btn.textContent;
-    btn.textContent = '⚠️ Pakka? Dobara tap karein';
-    btn.style.background = 'rgba(217,124,124,0.15)';
-    setTimeout(() => {
-      if(btn.dataset.confirming === 'true'){
-        btn.dataset.confirming = 'false';
-        btn.textContent = original;
-        btn.style.background = '';
-      }
-    }, 4000);
-    return;
-  }
-  if(btn){ btn.dataset.confirming = 'false'; btn.style.background = ''; btn.textContent = 'Restoring…'; btn.disabled = true; }
-
-  loadConn();
-  const headers = conn.token
-    ? { 'Authorization': `Bearer ${conn.token}`, 'Accept': 'application/vnd.github+json' }
-    : { 'Accept': 'application/vnd.github+json' };
-  try{
-    const apiUrl = `https://api.github.com/repos/${conn.owner}/${conn.repo}/contents/${path}?ref=${encodeURIComponent(conn.branch || 'main')}`;
-    const res = await fetch(apiUrl, { headers });
-    if(!res.ok) throw new Error(`Backup fetch failed (${res.status})`);
-    const json = await res.json();
-    const parsed = JSON.parse(b64DecodeUnicode(json.content || ''));
-    data = migrateData(parsed);
-    currentClubIdx = 0;
-    currentTourIdx = 0;
-    populateClubSelect();
-    populateTourSelect();
-    loadCurrentIntoForm();
-    save();
-    showToast('✅ Backup load ho gayi hai — dekh lein, phir "🚀 Publish" dabayein taake ye live ho jaye.');
-  }catch(err){
-    showToast('❌ ' + err.message, true);
-  }finally{
-    if(btn){ btn.disabled = false; btn.textContent = 'Restore'; }
-  }
-}
-
 function goToLiveSite(){
   loadConn();
   if(conn.owner && conn.repo){
