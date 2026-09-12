@@ -331,9 +331,21 @@ function migrateData(raw){
     ]
   };
 }
+// Sirf AAJ ki tareekh wale tournaments hi "Live" summary mein ginte hain —
+// agar Date field mein likhi tareekh aaj se mukhtalif ho, to wo tournament
+// (chahe is_live tick ho ya flying > 0 ho) is card mein shamil nahi hota,
+// taake purane/aane wale tournaments ka record yahan jama na ho.
+function isSameAsToday(dateStr){
+  if(!dateStr) return null; // date hi nahi likhi — pata nahi, undecided
+  const d = new Date(dateStr);
+  if(isNaN(d.getTime())) return null; // format samajh nahi aaya — undecided
+  const now = new Date();
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+}
 function isLive(tour){
   const m = tour && tour.meta;
   if(!m) return false;
+  if(isSameAsToday(m.date) === false) return false; // date maujood hai magar aaj ki nahi
   if(m.is_live === true) return true;
   return Number(m.flying) > 0;
 }
