@@ -2622,6 +2622,37 @@ function cmpAlignedPairs(birdA, birdB){
   };
 }
 
+// Ek bird ka ek khaas checkpoint (column index ke hisaab se) ka ASAL
+// (raw) time — jaisa admin ne bhara — display ke liye.
+function cmpBirdRawTimeAt(bird, ci){
+  const raw = (bird.times || [])[ci];
+  if(!raw) return null;
+  const { time } = parseCp(raw);
+  return time || null;
+}
+
+// Do birds ke darmiyan NET checkpoint score — matched pairs mein jeetne
+// par +1, haarne par -1, barabar par 0. Is bird ke apne bonus (unmatched)
+// checkpoints par +1 (har ek), aur competitor ke bonus checkpoints par -1
+// (har ek) — kyun ke un checkpoints par is bird peeche reh gaya. Total
+// number POSITIVE (zyada jeeta), NEGATIVE (zyada haara), ya ZERO (barabar)
+// ho sakta hai.
+function cmpCheckpointNetScore(selfBird, compBird, start){
+  const { pairs, extraA, extraB } = cmpAlignedPairs(selfBird, compBird);
+  let score = 0;
+  pairs.forEach(p => {
+    const sVal = cmpBirdCpDiffAt(selfBird, p.aCol, start);
+    const cVal = cmpBirdCpDiffAt(compBird, p.bCol, start);
+    if(sVal !== null && cVal !== null){
+      if(sVal > cVal) score++;
+      else if(sVal < cVal) score--;
+    }
+  });
+  score += extraA.length;
+  score -= extraB.length;
+  return score;
+}
+
 function renderCmpCheckpoints(selfIdx){
   const tour = currentTournament();
   const start = parseHM(tour.meta.uraan_time);
@@ -2635,31 +2666,40 @@ function renderCmpCheckpoints(selfIdx){
     if(!pairs.length && !extraA.length && !extraB.length){
       return `<div class="cmp-cp-block"><h4>${escapeHtmlAdmin(compName)}</h4><p class="cmp-empty">Kisi bhi bird ka koi checkpoint abhi bhara nahi.</p></div>`;
     }
-    const pairRows = pairs.map((p,i) => {
+    const pairRows = pairs.map((p) => {
       const sVal = cmpBirdCpDiffAt(selfBird, p.aCol, start);
       const cVal = cmpBirdCpDiffAt(x.bird, p.bCol, start);
+      const sRaw = cmpBirdRawTimeAt(selfBird, p.aCol);
+      const cRaw = cmpBirdRawTimeAt(x.bird, p.bCol);
       const win = sVal !== null && cVal !== null && sVal > cVal;
+      const lose = sVal !== null && cVal !== null && sVal < cVal;
       return `<tr class="${win ? 'cmp-self' : ''}">
         <td class="cmp-rank">${escapeHtmlAdmin(colLabel(p.aCol))} ↔ ${escapeHtmlAdmin(colLabel(p.bCol))}</td>
-        <td>${sVal === null ? '—' : formatMinutes(sVal)}</td>
-        <td>${cVal === null ? '—' : formatMinutes(cVal)}</td>
-        <td>${win ? '✅' : ''}</td>
+        <td>${sRaw === null ? '—' : escapeHtmlAdmin(sRaw)}</td>
+        <td>${cRaw === null ? '—' : escapeHtmlAdmin(cRaw)}</td>
+        <td style="font-size:15px;">${win ? '✅' : (lose ? '❌' : (sVal !== null && cVal !== null ? '➖' : ''))}</td>
       </tr>`;
     }).join('');
     const bonusNotes = [];
-    if(extraA.length) bonusNotes.push(`<p class="sub" style="margin:8px 0 0;">✅ Is bird ke <b style="color:var(--gold);">${extraA.length}</b> checkpoint(s) [${extraA.map(colLabel).map(escapeHtmlAdmin).join(', ')}] ka is competitor ke pass koi muqabla nahi — bonus.</p>`);
-    if(extraB.length) bonusNotes.push(`<p class="sub" style="margin:8px 0 0;">⚠️ ${escapeHtmlAdmin(compName)} ke <b>${extraB.length}</b> checkpoint(s) [${extraB.map(colLabel).map(escapeHtmlAdmin).join(', ')}] ka is bird ke pass koi muqabla nahi — inka bonus ${escapeHtmlAdmin(compName)} ko milega.</p>`);
+    if(extraA.length) bonusNotes.push(`<p class="sub" style="margin:8px 0 0;">✅ Is bird ke <b style="color:var(--gold);">${extraA.length}</b> checkpoint(s) [${extraA.map(colLabel).map(escapeHtmlAdmin).join(', ')}] ka is competitor ke pass koi muqabla nahi — bonus (+${extraA.length}).</p>`);
+    if(extraB.length) bonusNotes.push(`<p class="sub" style="margin:8px 0 0;">⚠️ ${escapeHtmlAdmin(compName)} ke <b>${extraB.length}</b> checkpoint(s) [${extraB.map(colLabel).map(escapeHtmlAdmin).join(', ')}] ka is bird ke pass koi muqabla nahi — is bird ko is se (-${extraB.length}) hota hai.</p>`);
+    const netScore = cmpCheckpointNetScore(selfBird, x.bird, start);
+    const netColor = netScore > 0 ? 'var(--up)' : (netScore < 0 ? 'var(--danger)' : 'var(--text-dim)');
+    const netSign = netScore > 0 ? `+${netScore}` : `${netScore}`;
     return `<div class="cmp-cp-block">
       <h4 dir="rtl" style="text-align:right;">${escapeHtmlAdmin(compName)}</h4>
       ${pairRows ? `<table class="cmp-table"><thead><tr><th>Checkpoint</th><th>Is bird</th><th>Competitor</th><th>Jeeta</th></tr></thead><tbody>${pairRows}</tbody></table>` : ''}
       ${bonusNotes.join('')}
+      <p style="margin:8px 0 0; font-size:14px;">Is competitor ke khilaf checkpoint score: <b style="color:${netColor};">${netSign}</b></p>
     </div>`;
   }).join('');
   return blocks;
 }
 
 // Ek bird ka ek khaas checkpoint (column index ke hisaab se) par Uraan se
-// waqfa.
+// waqfa — sirf jeet/haar tay karne ke liye (raw time midnight ke aar-paar
+// galat order de sakta hai, isliye waqfa hi use hota hai comparison ke
+// liye; DISPLAY ke liye cmpBirdRawTimeAt use hota hai).
 function cmpBirdCpDiffAt(bird, ci, start){
   const raw = (bird.times || [])[ci];
   if(!raw) return null;
@@ -2674,55 +2714,30 @@ function cmpBirdCpDiffAt(bird, ci, start){
 // muqabla — (1) Checkpoints jeete: sirf ginti, checkpoints ki tadaad barabar
 // na ho to jis ke ZYADA checkpoints hain uske AAKHRI (last) utne hi
 // checkpoints, dusre ke SAB checkpoints se match hote hain (dekhein
-// cmpAlignedPairs).
+// cmpAlignedPairs). "Checkpoint Score" NET hai — jeetne par +1, haarne par
+// -1, bonus checkpoint par +1, doosre ke bonus checkpoint se -1 — total
+// POSITIVE, NEGATIVE ya ZERO ho sakta hai.
 // (2) Winner Pigeon: is bird ka sab se aakhri bhara hua checkpoint (Uraan se
 // waqfa) us competitor se zyada ho to ✅, warna ❌. (3) Total Time: is bird
 // ka grand total us competitor ke grand total se zyada ho to ✅, warna ❌.
 // KHAAS CASE: agar kisi bird ka EK BHI checkpoint fill nahi, to jis bird se
 // uska muqabla ho raha hai, us bird ke jitne bhi checkpoints fill hon wo sab
-// khud-ba-khud jeet jata hai (Checkpoints jeete = us bird ke filled checkpoints
+// khud-ba-khud jeet jata hai (Checkpoint Score = us bird ke filled checkpoints
 // ki poori ginti), aur Winner Pigeon + Total Time dono bhi us bird ke ✅ ban
 // jate hain. Agar DONO ka ek bhi checkpoint fill nahi, to sab kuch "barabar"
 // (level) ho jata hai — na ✅ na ❌.
-function cmpFilledCount(bird){
-  let c = 0;
-  (bird.times || []).forEach(raw => {
-    if(!raw) return;
-    const { time } = parseCp(raw);
-    if(time) c++;
-  });
-  return c;
-}
-
 function renderCmpScore(selfIdx){
   const tour = currentTournament();
   const start = parseHM(tour.meta.uraan_time);
   const selfBird = tour.birds[selfIdx];
   const competitors = cmpEligibleBirds().filter(x => x.idx !== selfIdx);
   if(!competitors.length) return `<p class="cmp-empty">Is tournament mein koi aur bird nahi jis se compare kiya ja sake.</p>`;
-  const selfCount = cmpFilledCount(selfBird);
   const selfWP = cmpBirdLastCpDiff(selfBird, start);
   const selfTotal = cmpBirdGrandTotal(selfBird, start);
   // v==='level' -> barabar, v===true -> jeeta, v===false -> haara
   const sign = v => v === 'level' ? '➖ Barabar' : (v ? '✅' : '❌');
   const rows = competitors.map(x => {
-    const compCount = cmpFilledCount(x.bird);
-    let wins;
-    if(selfCount === 0 && compCount === 0){
-      wins = 0;
-    } else if(selfCount === 0){
-      wins = 0;
-    } else if(compCount === 0){
-      wins = selfCount; // is bird ke sab checkpoints khud-ba-khud jeet gaye
-    } else {
-      const { pairs } = cmpAlignedPairs(selfBird, x.bird);
-      wins = 0;
-      pairs.forEach(p => {
-        const sVal = cmpBirdCpDiffAt(selfBird, p.aCol, start);
-        const cVal = cmpBirdCpDiffAt(x.bird, p.bCol, start);
-        if(sVal !== null && cVal !== null && sVal > cVal) wins++;
-      });
-    }
+    const score = cmpCheckpointNetScore(selfBird, x.bird, start);
     const compWP = cmpBirdLastCpDiff(x.bird, start);
     let wpWin;
     if(selfWP === null && compWP === null) wpWin = 'level';
@@ -2735,18 +2750,23 @@ function renderCmpScore(selfIdx){
     else if(selfTotal === null) ttWin = false;
     else if(compTotal === null) ttWin = true;
     else ttWin = selfTotal > compTotal;
-    return { name: x.bird.name || '(bila naam)', wins, wpWin, ttWin };
+    return { name: x.bird.name || '(bila naam)', score, wpWin, ttWin };
   });
+  const scoreDisplay = s => {
+    const color = s > 0 ? 'var(--up)' : (s < 0 ? 'var(--danger)' : 'var(--text-dim)');
+    const label = s > 0 ? `+${s}` : `${s}`;
+    return `<b style="color:${color};">${label}</b>`;
+  };
   const trs = rows.map(r => `
     <tr>
       <td dir="rtl" style="text-align:right;">${escapeHtmlAdmin(r.name)}</td>
-      <td>${r.wins}</td>
+      <td>${scoreDisplay(r.score)}</td>
       <td style="font-size:16px;">${sign(r.wpWin)}</td>
       <td style="font-size:16px;">${sign(r.ttWin)}</td>
     </tr>`).join('');
   return `
-    <p class="sub" style="margin:0 0 10px;">Checkpoints ki tadaad barabar ho to seedha #1↔#1, #2↔#2 compare hota hai. Barabar na ho to jis ke zyada checkpoints hain uske AAKHRI (last) utne hi checkpoints, dusre (kam checkpoints wale) ke SAB checkpoints se match hote hain — baaqi shuru wale extra checkpoints uska bonus ban jate hain (yahan bonus alag se nahi dikhaya, sirf "Checkpoints jeete" mein common wale hi ginte hain). "Winner Pigeon" column batata hai ke is bird ka aakhri checkpoint us competitor se aage hai ya nahi (✅/❌). "Total Time" column batata hai ke is bird ka poora total us competitor se zyada hai ya nahi (✅/❌). Agar kisi bird ka ek bhi checkpoint fill nahi, to doosra bird khud-ba-khud jeet jata hai — dono ka na ho to "Barabar".</p>
-    <table class="cmp-table"><thead><tr><th>Bird</th><th>Checkpoints jeete</th><th>Winner Pigeon</th><th>Total Time</th></tr></thead><tbody>${trs}</tbody></table>
+    <p class="sub" style="margin:0 0 10px;">Checkpoints ki tadaad barabar ho to seedha #1↔#1, #2↔#2 compare hota hai. Barabar na ho to jis ke zyada checkpoints hain uske AAKHRI (last) utne hi checkpoints, dusre (kam checkpoints wale) ke SAB checkpoints se match hote hain. "Checkpoint Score" NET hai: jeetne par +1, haarne par -1, apne bonus (unmatched) checkpoint par +1, competitor ke bonus checkpoint se -1 — total positive, negative ya zero ho sakta hai. "Winner Pigeon" column batata hai ke is bird ka aakhri checkpoint us competitor se aage hai ya nahi (✅/❌). "Total Time" column batata hai ke is bird ka poora total us competitor se zyada hai ya nahi (✅/❌). Agar kisi bird ka ek bhi checkpoint fill nahi, to doosra bird khud-ba-khud jeet jata hai — dono ka na ho to "Barabar".</p>
+    <table class="cmp-table"><thead><tr><th>Bird</th><th>Checkpoint Score</th><th>Winner Pigeon</th><th>Total Time</th></tr></thead><tbody>${trs}</tbody></table>
   `;
 }
 
