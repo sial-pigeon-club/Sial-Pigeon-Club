@@ -1733,7 +1733,8 @@
               "3": "27 September 2026",
               "4": "04 October 2026",
               "5": "11 October 2026"
-            }
+            },
+            "mode": "tournament"
           },
           "columns": [
             "#1",
@@ -1753,8 +1754,18 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
+              "sync_targets": {},
               "excluded": false,
               "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
                 "",
                 "",
                 "",
@@ -1772,8 +1783,18 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
+              "sync_targets": {},
               "excluded": false,
               "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
                 "",
                 "",
                 "",
@@ -1811,8 +1832,8 @@
             "duration_days": 5,
             "sunrise": "05:45",
             "sunset": "18:11",
-            "flying": 31,
-            "landed": 11,
+            "flying": 42,
+            "landed": 0,
             "pigeons": 42,
             "lofts": 6,
             "is_live": false,
@@ -2007,7 +2028,7 @@
             {
               "name": "استاد ندیم ملاں چھت جگا سیال",
               "image": "",
-              "total": "22:57",
+              "total": "0:00",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -2015,9 +2036,9 @@
               "sync_targets": {},
               "excluded": false,
               "times": [
-                "1/12:22",
-                "1/12:44",
-                "1/12:51",
+                "",
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -2036,7 +2057,7 @@
             {
               "name": "استاد عامر کھرل چھت ملک چاند",
               "image": "",
-              "total": "15:40",
+              "total": "0:00",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -2044,8 +2065,8 @@
               "sync_targets": {},
               "excluded": false,
               "times": [
-                "1/12:43",
-                "1/12:57",
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -2065,7 +2086,7 @@
             {
               "name": "استاد حیدر جوئیہ چھت شفاقت جرمنی",
               "image": "",
-              "total": "26:31",
+              "total": "0:00",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -2073,9 +2094,9 @@
               "sync_targets": {},
               "excluded": false,
               "times": [
-                "1/13:42",
-                "1/13:54",
-                "1/13:55",
+                "",
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -2094,7 +2115,7 @@
             {
               "name": "استاد افضال چھت حیدری مریدکے",
               "image": "",
-              "total": "22:25",
+              "total": "0:00",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -2102,9 +2123,9 @@
               "sync_targets": {},
               "excluded": false,
               "times": [
-                "1/12:20",
-                "1/12:22",
-                "1/12:43",
+                "",
+                "",
+                "",
                 "",
                 "",
                 "",
