@@ -528,7 +528,7 @@
 
   <div class="panel">
     <h2>🗄 Backup &amp; Restore</h2>
-    <p class="sub" style="margin-bottom:10px;">Har baar Publish karne se pehle purana data khud-ba-khud backup ho jata hai (kabhi khud delete nahi hota, jab tak aap khud GitHub se delete na karein). Yahan se koi bhi purani backup wapas load kar sakte hain.</p>
+    <p class="sub" style="margin-bottom:10px;">Har baar Publish karne se pehle purana data khud-ba-khud backup ho jata hai. Backup sirf <b>7 din</b> tak rehti hai — agar us dauran restore nahi kiya to khud-ba-khud delete ho jati hai (repo halka rakhne ke liye).</p>
     <button class="btn btn-ghost" onclick="loadBackupsList()">🔄 Backups dekhein</button>
     <div id="backupsList" style="margin-top:12px;"></div>
   </div>
@@ -3682,18 +3682,74 @@ function downloadJson(){
   showToast('Downloaded data.json');
 }
 
+// Git Data API se publish — Contents API (jo pehle use ho raha tha) ka
+// PUT sirf ~1MB tak ki file allow karta hai, isliye data barhne par
+// "data bohot bara" wala error aata tha. Git Data API (blob→tree→commit→
+// ref update) 100MB tak ki file bina kisi size-limit warning ke publish
+// kar deta hai — bas thoda zyada API calls lagti hain (isliye thora time
+// lagta hai, lekin fail nahi hota).
+async function publishViaGitDataApi(jsonString, commitMessage){
+  const headers = { 'Authorization': `Bearer ${conn.token}`, 'Accept': 'application/vnd.github+json' };
+  const branch = conn.branch || 'main';
+
+  const refRes = await fetch(`https://api.github.com/repos/${conn.owner}/${conn.repo}/git/ref/heads/${encodeURIComponent(branch)}`, { headers });
+  if(!refRes.ok){
+    const e = await refRes.json().catch(()=>({}));
+    throw new Error(e.message || `Branch ref fetch failed (${refRes.status})`);
+  }
+  const parentCommitSha = (await refRes.json()).object.sha;
+
+  const commitRes = await fetch(`https://api.github.com/repos/${conn.owner}/${conn.repo}/git/commits/${parentCommitSha}`, { headers });
+  if(!commitRes.ok){
+    const e = await commitRes.json().catch(()=>({}));
+    throw new Error(e.message || `Commit fetch failed (${commitRes.status})`);
+  }
+  const baseTreeSha = (await commitRes.json()).tree.sha;
+
+  const blobRes = await fetch(`https://api.github.com/repos/${conn.owner}/${conn.repo}/git/blobs`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content: b64EncodeUnicode(jsonString), encoding: 'base64' })
+  });
+  if(!blobRes.ok){
+    const e = await blobRes.json().catch(()=>({}));
+    throw new Error(e.message || `Blob create failed (${blobRes.status})`);
+  }
+  const blobSha = (await blobRes.json()).sha;
+
+  const treeRes = await fetch(`https://api.github.com/repos/${conn.owner}/${conn.repo}/git/trees`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ base_tree: baseTreeSha, tree: [{ path: 'data.json', mode: '100644', type: 'blob', sha: blobSha }] })
+  });
+  if(!treeRes.ok){
+    const e = await treeRes.json().catch(()=>({}));
+    throw new Error(e.message || `Tree create failed (${treeRes.status})`);
+  }
+  const treeSha = (await treeRes.json()).sha;
+
+  const newCommitRes = await fetch(`https://api.github.com/repos/${conn.owner}/${conn.repo}/git/commits`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: commitMessage, tree: treeSha, parents: [parentCommitSha] })
+  });
+  if(!newCommitRes.ok){
+    const e = await newCommitRes.json().catch(()=>({}));
+    throw new Error(e.message || `Commit create failed (${newCommitRes.status})`);
+  }
+  const newCommitSha = (await newCommitRes.json()).sha;
+
+  const updateRefRes = await fetch(`https://api.github.com/repos/${conn.owner}/${conn.repo}/git/refs/heads/${encodeURIComponent(branch)}`, {
+    method: 'PATCH', headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sha: newCommitSha })
+  });
+  if(!updateRefRes.ok){
+    const e = await updateRefRes.json().catch(()=>({}));
+    throw new Error(e.message || `Ref update failed (${updateRefRes.status})`);
+  }
+}
+
 async function publish(){
   save();
   if(!conn.owner || !conn.repo || !conn.token){
     showToast('Pehle GitHub se connect karein (upar wala form bharein)', true);
-    return;
-  }
-
-  // GitHub ka Contents API tarah ek hi file ~1MB tak allow karta hai — is se
-  // pehle hi clear warning de dete hain (cryptic GitHub error ke bajaye).
-  const approxBytes = new Blob([JSON.stringify(data)]).size;
-  if(approxBytes > 950000){
-    showToast(`❌ Data bohot bara ho gaya hai (~${Math.round(approxBytes/1024)} KB). Kuch bari images (jaise club logo) kam karein, phir publish karein.`, true);
     return;
   }
 
@@ -3705,54 +3761,26 @@ async function publish(){
   const headers = { 'Authorization': `Bearer ${conn.token}`, 'Accept': 'application/vnd.github+json' };
 
   try{
-    let sha = undefined;
-    let existingContent = null;
-    const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(conn.branch)}`, { headers });
-    if(getRes.status === 200){
+    // Purani data.json ka backup (backups/ folder mein) — 7 din tak rehti
+    // hai, phir khud-ba-khud delete ho jati hai (cleanupOldBackups neeche).
+    // Backup ko await nahi karte (background mein chalta hai) taake asal
+    // publish iske liye na ruke.
+    fetch(`${apiUrl}?ref=${encodeURIComponent(conn.branch)}`, { headers }).then(async getRes => {
+      if(getRes.status !== 200) return;
       const getJson = await getRes.json();
-      sha = getJson.sha;
-      existingContent = getJson.content;
-    } else if(getRes.status !== 404){
-      const errBody = await getRes.json().catch(()=>({}));
-      throw new Error(errBody.message || `GET failed (${getRes.status})`);
-    }
-
-    // Purani data.json ka backup (backups/ folder mein) — upar wale GET se
-    // mila hua content hi reuse karte hain (dobara file fetch nahi karte, is
-    // se ek poora network round-trip bach jata hai). Backup ko await nahi
-    // karte (background mein chalta hai) taake slow internet par asal
-    // publish iske liye na ruke — backup fail ho jaye to bhi asal publish
-    // par asar nahi parta.
-    if(sha && existingContent){
       const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const backupPath = `backups/data-${stamp}.json`;
-      const backupApiUrl = `https://api.github.com/repos/${conn.owner}/${conn.repo}/contents/${backupPath}`;
+      const backupApiUrl = `https://api.github.com/repos/${conn.owner}/${conn.repo}/contents/backups/data-${stamp}.json`;
       fetch(backupApiUrl, {
         method: 'PUT',
         headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: `Backup before publish — ${stamp}`,
-          content: existingContent,
-          branch: conn.branch
-        })
+        body: JSON.stringify({ message: `Backup before publish — ${stamp}`, content: getJson.content, branch: conn.branch })
       }).catch(()=>{});
-    }
+    }).catch(()=>{});
+    cleanupOldBackups();
 
-    const content = b64EncodeUnicode(JSON.stringify(data, null, 2));
-    const putRes = await fetch(apiUrl, {
-      method: 'PUT',
-      headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: 'Update tournament results via admin panel',
-        content: content,
-        branch: conn.branch,
-        ...(sha ? { sha } : {})
-      })
-    });
-    if(!putRes.ok){
-      const errBody = await putRes.json().catch(()=>({}));
-      throw new Error(errBody.message || `Publish failed (${putRes.status})`);
-    }
+    // Asal publish — Git Data API ke zariye, taake data.json kitni bhi
+    // bari ho jaye, publish hamesha ho sake (koi size limit nahi).
+    await publishViaGitDataApi(JSON.stringify(data, null, 2), 'Update tournament results via admin panel');
     showToast('✅ Published! Live on the homepage in about a minute.');
   } catch(err){
     showToast('❌ ' + err.message, true);
@@ -3760,6 +3788,34 @@ async function publish(){
     btn.disabled = false;
     btn.textContent = '🚀 Publish — go live now';
   }
+}
+
+// 7 din se purani backups khud-ba-khud delete kar deta hai (best-effort,
+// backups har publish par bhi call hota hai). Backup filename ka pattern
+// "data-YYYY-MM-DDTHH-MM-SS-mmm-Z.json" hai — hum sirf "YYYY-MM-DD" wala
+// hissa (5th se 15th character) nikal kar date compare karte hain.
+async function cleanupOldBackups(){
+  if(!conn.owner || !conn.repo || !conn.token) return;
+  const headers = { 'Authorization': `Bearer ${conn.token}`, 'Accept': 'application/vnd.github+json' };
+  try{
+    const apiUrl = `https://api.github.com/repos/${conn.owner}/${conn.repo}/contents/backups?ref=${encodeURIComponent(conn.branch || 'main')}`;
+    const res = await fetch(apiUrl, { headers });
+    if(!res.ok) return; // backups folder abhi nahi bani, ya fetch fail — chup chaap skip
+    const files = await res.json();
+    if(!Array.isArray(files)) return;
+    const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    files.forEach(f => {
+      if(!f.name.startsWith('data-') || !f.name.endsWith('.json')) return;
+      const dateStr = f.name.slice(5, 15); // "YYYY-MM-DD"
+      const t = new Date(dateStr).getTime();
+      if(isNaN(t) || t >= cutoff) return; // 7 din se nayi hai, chhoro
+      fetch(`https://api.github.com/repos/${conn.owner}/${conn.repo}/contents/${f.path}`, {
+        method: 'DELETE',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: `Auto-delete backup older than 7 days — ${f.name}`, sha: f.sha, branch: conn.branch })
+      }).catch(()=>{});
+    });
+  }catch(e){ /* best-effort, chup chaap ignore karo */ }
 }
 
 async function loadBackupsList(){
@@ -3792,12 +3848,20 @@ async function loadBackupsList(){
       wrap.innerHTML = '<p class="sub">Abhi tak koi backup nahi bani.</p>';
       return;
     }
-    wrap.innerHTML = sorted.map(f => `
+    wrap.innerHTML = sorted.map(f => {
+      const dateStr = f.name.slice(5, 15);
+      const ageMs = Date.now() - new Date(dateStr).getTime();
+      const daysLeft = Math.max(0, 7 - Math.floor(ageMs / (24*60*60*1000)));
+      return `
       <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-top:1px solid var(--line);">
-        <span style="font-size:13px; word-break:break-all;">${escapeHtmlAdmin(f.name)}</span>
+        <div>
+          <div style="font-size:13px; word-break:break-all;">${escapeHtmlAdmin(f.name)}</div>
+          <div style="font-size:11px; color:var(--text-faint);">${daysLeft > 0 ? `${daysLeft} din mein khud delete hogi` : 'aaj ya kal delete ho sakti hai'}</div>
+        </div>
         <button type="button" class="btn btn-ghost btn-sm" style="flex-shrink:0;" onclick="restoreBackup('${f.path}', this)">Restore</button>
       </div>
-    `).join('');
+    `;
+    }).join('');
   }catch(err){
     wrap.innerHTML = `<p class="sub" style="color:var(--danger);">❌ ${escapeHtmlAdmin(err.message)}</p>`;
   }
