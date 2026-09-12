@@ -2950,7 +2950,7 @@ function renderFlexCard(bird, club, tour, idx){
     const isBaby = babyCols.includes(i);
     const rowCls = (isDm ? ' flex-row-mohar' : '') + (isBaby ? ' flex-row-baby' : '');
     const marker = (isDm ? '⭐ ' : '') + (isBaby ? '🐣 ' : '');
-    const nameText = cpName ? cpName : c;
+    const nameText = cpName ? cpName : '—';
     const dayTag = (parsed.time && parsed.day > 1) ? `<div class="flex-cday">Din ${parsed.day}</div>` : '';
     return `<div class="flex-table-row${rowCls}">
       <div class="flex-table-cell flex-col-num">${i+1}</div>
@@ -2987,10 +2987,10 @@ function renderFlexCard(bird, club, tour, idx){
       </div>
       <div class="flex-result-table">
         ${club.logo ? `<div class="flex-table-watermark"><img src="${club.logo}" alt=""></div>` : ''}
-        <div class="flex-table-row flex-table-head flex-urdu">
-          <div class="flex-table-cell flex-col-num">#</div>
-          <div class="flex-table-cell flex-col-name">کبوتر کا نام</div>
-          <div class="flex-table-cell flex-col-time">وقت آمد</div>
+        <div class="flex-table-row flex-table-head">
+          <div class="flex-table-cell flex-col-num flex-urdu">نمبر شمار</div>
+          <div class="flex-table-cell flex-col-name flex-urdu">کبوتر کا نام</div>
+          <div class="flex-table-cell flex-col-time flex-urdu">وقت آمد</div>
         </div>
         ${rows}
       </div>
