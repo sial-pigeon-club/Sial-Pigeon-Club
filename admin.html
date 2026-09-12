@@ -2585,46 +2585,81 @@ function renderCmpWinnerPigeon(selfIdx){
     <table class="cmp-table"><thead><tr><th>#</th><th>Bird</th><th>Uraan se waqfa</th></tr></thead><tbody>${trs}</tbody></table>`;
 }
 
+// Do birds ke darmiyan checkpoints ka SAHI alignment — agar dono ke filled
+// checkpoints ki tadaad barabar na ho, to hum AAKHRI checkpoint se ULTA
+// (reverse) match karte hain: jis ke zyada checkpoints hain uske SAB SE
+// AAKHRI utne hi checkpoints, dusre bird ke SAB checkpoints se match hote
+// hain. Jis ke paas ZYADA checkpoints hain uske SHURU ke (jitne extra hain)
+// checkpoints kisi se match nahi hote — wo iska bonus ban jate hain.
+// Misaal: Bird A ke 3 checkpoints (c1,c2,c3), Bird B ke 2 (b1,b2) — to
+// A ka c2 = B ka b1 match hoga, A ka c3 = B ka b2 match hoga, aur A ka c1
+// bonus ban jayega (kisi se match nahi hota).
+function cmpAlignedPairs(birdA, birdB){
+  const filledOf = (bird) => {
+    const list = [];
+    (bird.times || []).forEach((raw, i) => {
+      if(!raw) return;
+      const { time } = parseCp(raw);
+      if(time) list.push(i);
+    });
+    return list;
+  };
+  const filledA = filledOf(birdA);
+  const filledB = filledOf(birdB);
+  const n = Math.min(filledA.length, filledB.length);
+  const pairs = [];
+  for(let k = 0; k < n; k++){
+    pairs.push({
+      aCol: filledA[filledA.length - n + k],
+      bCol: filledB[filledB.length - n + k]
+    });
+  }
+  return {
+    pairs,
+    extraA: filledA.slice(0, filledA.length - n), // A ke shuru ke extra checkpoints (A ka bonus)
+    extraB: filledB.slice(0, filledB.length - n)  // B ke shuru ke extra checkpoints (B ka bonus)
+  };
+}
+
 function renderCmpCheckpoints(selfIdx){
   const tour = currentTournament();
   const start = parseHM(tour.meta.uraan_time);
-  const eligible = cmpEligibleBirds();
-  const blocks = tour.columns.map((colLabel, ci) => {
-    const rows = eligible.map(x => {
-      const raw = x.bird.times[ci];
-      if(!raw) return null;
-      const { time } = parseCp(raw);
-      if(!time) return null;
-      let diff = parseHM(time) - start;
-      if(diff < 0) diff += 1440;
-      return { idx: x.idx, name: x.bird.name || '(bila naam)', time, diff };
-    }).filter(Boolean);
-    if(!rows.length) return `<div class="cmp-cp-block"><h4>${escapeHtmlAdmin(colLabel)}</h4><p class="cmp-empty">Koi bird ka time abhi bhara nahi.</p></div>`;
-    rows.sort((a,b) => b.diff - a.diff);
-    const selfRow = rows.find(r => r.idx === selfIdx);
-    const others = rows.filter(r => r.idx !== selfIdx);
-    const beatNote = selfRow
-      ? `<p class="sub" style="margin:2px 0 8px;">Is checkpoint par is bird ne <b style="color:var(--gold);">${others.filter(r => r.diff < selfRow.diff).length}/${others.length}</b> birds ko beat kiya (jin ka is checkpoint par time bhara hai unme se)</p>`
-      : '';
-    const trs = rows.map((r,i) => `
-      <tr class="${r.idx === selfIdx ? 'cmp-self' : ''}">
+  const selfBird = tour.birds[selfIdx];
+  const competitors = cmpEligibleBirds().filter(x => x.idx !== selfIdx);
+  if(!competitors.length) return `<p class="cmp-empty">Is tournament mein koi aur bird nahi jis se compare kiya ja sake.</p>`;
+  const colLabel = ci => tour.columns[ci] || ('#' + (ci+1));
+  const blocks = competitors.map(x => {
+    const compName = x.bird.name || '(bila naam)';
+    const { pairs, extraA, extraB } = cmpAlignedPairs(selfBird, x.bird);
+    if(!pairs.length && !extraA.length && !extraB.length){
+      return `<div class="cmp-cp-block"><h4>${escapeHtmlAdmin(compName)}</h4><p class="cmp-empty">Kisi bhi bird ka koi checkpoint abhi bhara nahi.</p></div>`;
+    }
+    const pairRows = pairs.map((p,i) => {
+      const sVal = cmpBirdCpDiffAt(selfBird, p.aCol, start);
+      const cVal = cmpBirdCpDiffAt(x.bird, p.bCol, start);
+      const win = sVal !== null && cVal !== null && sVal > cVal;
+      return `<tr class="${win ? 'cmp-self' : ''}">
         <td class="cmp-rank">#${i+1}</td>
-        <td dir="rtl" style="text-align:right;">${escapeHtmlAdmin(r.name)}</td>
-        <td>${r.time}</td>
-        <td>${formatMinutes(r.diff)}</td>
-      </tr>`).join('');
+        <td>${escapeHtmlAdmin(colLabel(p.aCol))} ↔ ${escapeHtmlAdmin(colLabel(p.bCol))}</td>
+        <td>${sVal === null ? '—' : formatMinutes(sVal)}</td>
+        <td>${cVal === null ? '—' : formatMinutes(cVal)}</td>
+        <td>${win ? '✅' : ''}</td>
+      </tr>`;
+    }).join('');
+    const bonusNotes = [];
+    if(extraA.length) bonusNotes.push(`<p class="sub" style="margin:8px 0 0;">✅ Is bird ke <b style="color:var(--gold);">${extraA.length}</b> checkpoint(s) [${extraA.map(colLabel).map(escapeHtmlAdmin).join(', ')}] ka is competitor ke pass koi muqabla nahi — bonus.</p>`);
+    if(extraB.length) bonusNotes.push(`<p class="sub" style="margin:8px 0 0;">⚠️ ${escapeHtmlAdmin(compName)} ke <b>${extraB.length}</b> checkpoint(s) [${extraB.map(colLabel).map(escapeHtmlAdmin).join(', ')}] ka is bird ke pass koi muqabla nahi — inka bonus ${escapeHtmlAdmin(compName)} ko milega.</p>`);
     return `<div class="cmp-cp-block">
-      <h4>${escapeHtmlAdmin(colLabel)}${selfRow ? '' : ' — is bird ka is checkpoint par time nahi'}</h4>
-      ${beatNote}
-      <table class="cmp-table"><thead><tr><th>#</th><th>Bird</th><th>Waqt</th><th>Waqfa</th></tr></thead><tbody>${trs}</tbody></table>
+      <h4 dir="rtl" style="text-align:right;">${escapeHtmlAdmin(compName)}</h4>
+      ${pairRows ? `<table class="cmp-table"><thead><tr><th>#</th><th>Checkpoint</th><th>Is bird</th><th>Competitor</th><th>Jeeta</th></tr></thead><tbody>${pairRows}</tbody></table>` : ''}
+      ${bonusNotes.join('')}
     </div>`;
   }).join('');
-  return blocks || `<p class="cmp-empty">Is tournament mein koi checkpoint nahi.</p>`;
+  return blocks;
 }
 
-// Ek bird ka ek khaas checkpoint (index ke hisaab se) par Uraan se waqfa —
-// Total Score tab ke liye, checkpoint-number ke hisaab se match karne ke
-// liye (#1 sirf #1 se, #2 sirf #2 se... jaisa competition ke rules hain).
+// Ek bird ka ek khaas checkpoint (column index ke hisaab se) par Uraan se
+// waqfa.
 function cmpBirdCpDiffAt(bird, ci, start){
   const raw = (bird.times || [])[ci];
   if(!raw) return null;
@@ -2636,29 +2671,27 @@ function cmpBirdCpDiffAt(bird, ci, start){
 }
 
 // 📊 Total Score: selected bird ka baaqi HAR bird ke khilaf checkpoint-wise
-// muqabla — jis checkpoint number par dono ka time bhara ho aur is bird ka
-// waqfa zyada ho, wahan +1 point milta hai. Agar kisi checkpoint par sirf
-// is bird ka time bhara ho (doosre bird ka us number par abhi tak nahi) to
-// is bird ko us checkpoint ka +1 bonus point milta hai (aage nikalne ka) —
-// jaise agar is bird ke 7 checkpoints bhare hon aur doosre ke sirf 6, to
-// pehle 6 par muqabla hota hai aur 7wan checkpoint bonus ban jata hai.
+// muqabla — checkpoints ki tadaad barabar na ho to AAKHRI se ulta (reverse)
+// align hoti hain (dekhein cmpAlignedPairs). Aligned pair mein jis ka
+// waqfa zyada ho wahan is bird ko +1 point milta hai. Is bird ke jitne
+// checkpoints is competitor ke muqable mein "extra" (bina match ke) hain,
+// unka +1 bonus point (per checkpoint) milta hai.
 function renderCmpScore(selfIdx){
   const tour = currentTournament();
   const start = parseHM(tour.meta.uraan_time);
   const selfBird = tour.birds[selfIdx];
   const competitors = cmpEligibleBirds().filter(x => x.idx !== selfIdx);
   if(!competitors.length) return `<p class="cmp-empty">Is tournament mein koi aur bird nahi jis se compare kiya ja sake.</p>`;
-  const numCols = tour.columns.length;
   let grandTotal = 0;
   const rows = competitors.map(x => {
-    let wins = 0, bonus = 0;
-    for(let ci = 0; ci < numCols; ci++){
-      const sVal = cmpBirdCpDiffAt(selfBird, ci, start);
-      const cVal = cmpBirdCpDiffAt(x.bird, ci, start);
-      if(sVal === null) continue;
-      if(cVal === null){ bonus++; }
-      else if(sVal > cVal){ wins++; }
-    }
+    const { pairs, extraA } = cmpAlignedPairs(selfBird, x.bird);
+    let wins = 0;
+    pairs.forEach(p => {
+      const sVal = cmpBirdCpDiffAt(selfBird, p.aCol, start);
+      const cVal = cmpBirdCpDiffAt(x.bird, p.bCol, start);
+      if(sVal !== null && cVal !== null && sVal > cVal) wins++;
+    });
+    const bonus = extraA.length;
     const pts = wins + bonus;
     grandTotal += pts;
     return { name: x.bird.name || '(bila naam)', wins, bonus, pts };
@@ -2671,7 +2704,7 @@ function renderCmpScore(selfIdx){
       <td style="font-weight:700; color:var(--gold);">${r.pts}</td>
     </tr>`).join('');
   return `
-    <p class="sub" style="margin:0 0 10px;">Har checkpoint number par jis bird ka Uraan se waqfa zyada ho wo us checkpoint jeetta hai (+1 point). Agar us checkpoint par sirf is bird ka hi time bhara ho (doosre bird ne abhi tak wahan tak nahi pohncha), to is bird ko +1 bonus point milta hai.</p>
+    <p class="sub" style="margin:0 0 10px;">Checkpoints ki tadaad barabar na ho to aakhri checkpoint se ulta match hota hai (misaal: 3 vs 2 checkpoints ho to is bird ka 2nd = competitor ka 1st, is bird ka 3rd = competitor ka 2nd — pehla checkpoint bonus ban jata hai). Jis aligned pair mein waqfa zyada ho wahan +1 point, aur bina-match checkpoints ka +1 bonus point.</p>
     <p style="margin:0 0 12px; font-size:15px;">Total Score (sab baaqi birds ke khilaf jama): <b style="color:var(--gold); font-size:19px;">${grandTotal}</b></p>
     <table class="cmp-table"><thead><tr><th>Bird</th><th>Checkpoints jeete</th><th>Bonus</th><th>Total</th></tr></thead><tbody>${trs}</tbody></table>
   `;
