@@ -2864,8 +2864,8 @@
             "uraan_time": "06:00",
             "aakhri_time": "20:00",
             "duration_days": 1,
-            "sunrise": "",
-            "sunset": "",
+            "sunrise": "05:45",
+            "sunset": "18:11",
             "flying": 121,
             "landed": 0,
             "pigeons": 121,
@@ -3270,7 +3270,7 @@
               ]
             },
             {
-              "name": "استاد شہزاد گل وچ جورا چھت سیلر والی",
+              "name": "استاد شہزاد گل جورا چھت سیلر والی",
               "image": "",
               "total": "0:00",
               "deduction": "",
