@@ -3688,7 +3688,7 @@ function downloadJson(){
 // ref update) 100MB tak ki file bina kisi size-limit warning ke publish
 // kar deta hai — bas thoda zyada API calls lagti hain (isliye thora time
 // lagta hai, lekin fail nahi hota).
-async function publishViaGitDataApi(jsonString, commitMessage){
+async function publishViaGitDataApi(jsonString, commitMessage, isRetry){
   const headers = { 'Authorization': `Bearer ${conn.token}`, 'Accept': 'application/vnd.github+json' };
   const branch = conn.branch || 'main';
 
@@ -3742,7 +3742,16 @@ async function publishViaGitDataApi(jsonString, commitMessage){
   });
   if(!updateRefRes.ok){
     const e = await updateRefRes.json().catch(()=>({}));
-    throw new Error(e.message || `Ref update failed (${updateRefRes.status})`);
+    const msg = e.message || `Ref update failed (${updateRefRes.status})`;
+    // Agar branch hamare ref-fetch aur ref-update ke darmiyan kisi aur
+    // commit (backup, ya kahin aur se publish) ki wajah se aage badh gayi
+    // ho, to GitHub "not a fast forward" deta hai. Aik dafa khud-ba-khud
+    // latest ref par dobara try kar lete hain, taake user ko dobara Publish
+    // dabana na pare.
+    if(!isRetry && /fast.forward/i.test(msg)){
+      return publishViaGitDataApi(jsonString, commitMessage, true);
+    }
+    throw new Error(msg);
   }
 }
 
@@ -3757,29 +3766,13 @@ async function publish(){
   btn.disabled = true;
   btn.textContent = 'Publishing…';
 
-  const apiUrl = `https://api.github.com/repos/${conn.owner}/${conn.repo}/contents/data.json`;
-  const headers = { 'Authorization': `Bearer ${conn.token}`, 'Accept': 'application/vnd.github+json' };
-
   try{
-    // Purani data.json ka backup (backups/ folder mein) — 7 din tak rehti
-    // hai, phir khud-ba-khud delete ho jati hai (cleanupOldBackups neeche).
-    // Backup ko await nahi karte (background mein chalta hai) taake asal
-    // publish iske liye na ruke.
-    fetch(`${apiUrl}?ref=${encodeURIComponent(conn.branch)}`, { headers }).then(async getRes => {
-      if(getRes.status !== 200) return;
-      const getJson = await getRes.json();
-      const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const backupApiUrl = `https://api.github.com/repos/${conn.owner}/${conn.repo}/contents/backups/data-${stamp}.json`;
-      fetch(backupApiUrl, {
-        method: 'PUT',
-        headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: `Backup before publish — ${stamp}`, content: getJson.content, branch: conn.branch })
-      }).catch(()=>{});
-    }).catch(()=>{});
-    cleanupOldBackups();
-
-    // Asal publish — Git Data API ke zariye, taake data.json kitni bhi
-    // bari ho jaye, publish hamesha ho sake (koi size limit nahi).
+    // NOTE: pehle yahan har publish se pehle ek "backup" commit (backups/
+    // folder mein) bhi banta tha. User ke mutabiq isse publish bohot slow
+    // ho gaya tha, aur data.json ka purana data waise bhi GitHub ki commit
+    // history mein maujood rehta hai — is liye alag se backup file banana
+    // hata diya gaya hai. Publish ab seedha, tez, aur sirf ek commit karta
+    // hai.
     await publishViaGitDataApi(JSON.stringify(data, null, 2), 'Update tournament results via admin panel');
     showToast('✅ Published! Live on the homepage in about a minute.');
   } catch(err){
