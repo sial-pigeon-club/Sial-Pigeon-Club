@@ -297,8 +297,8 @@
             "duration_days": 1,
             "sunrise": "05:45",
             "sunset": "18:11",
-            "flying": 257,
-            "landed": 2,
+            "flying": 256,
+            "landed": 3,
             "pigeons": 259,
             "lofts": 37,
             "is_live": false,
@@ -598,7 +598,7 @@
             {
               "name": "استاد پومی بٹ چھت استاد بلال بٹ",
               "image": "",
-              "total": "0:00",
+              "total": "2:57",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -606,7 +606,7 @@
               "sync_targets": {},
               "excluded": false,
               "times": [
-                "",
+                "1/8:57",
                 "",
                 "",
                 "",
