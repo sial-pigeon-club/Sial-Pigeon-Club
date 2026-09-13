@@ -378,8 +378,8 @@
             "duration_days": 1,
             "sunrise": "05:45",
             "sunset": "18:11",
-            "flying": 255,
-            "landed": 4,
+            "flying": 253,
+            "landed": 6,
             "pigeons": 259,
             "lofts": 37,
             "is_live": true,
@@ -592,7 +592,7 @@
             {
               "name": "استاد جہانگیر چھت تسلیم شاہد",
               "image": "",
-              "total": "0:00",
+              "total": "3:14",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -600,7 +600,7 @@
               "sync_targets": {},
               "excluded": false,
               "times": [
-                "",
+                "1/9:14",
                 "",
                 "",
                 "",
@@ -1317,7 +1317,7 @@
             {
               "name": "استاد حاجی نواز چھت زاویار معروف",
               "image": "",
-              "total": "0:17",
+              "total": "4:11",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -1326,7 +1326,7 @@
               "excluded": false,
               "times": [
                 "1/6:17",
-                "",
+                "1/9:54",
                 "",
                 "",
                 "",
