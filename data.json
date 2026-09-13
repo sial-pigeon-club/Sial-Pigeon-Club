@@ -2082,7 +2082,7 @@
               "image": "",
               "total": "17:37",
               "deduction": "",
-              "note": "اس چھت کے ساتھ جگا سیال کی چھت کی بھادوں کے آخری اتوار کی بازی نہیں ہے",
+              "note": "",
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
@@ -2244,8 +2244,8 @@
             "duration_days": 1,
             "sunrise": "05:45",
             "sunset": "18:11",
-            "flying": 41,
-            "landed": 3,
+            "flying": 40,
+            "landed": 4,
             "pigeons": 44,
             "lofts": 4,
             "is_live": true,
@@ -2317,7 +2317,7 @@
             {
               "name": "استاد ندیم ملاں چھت جگا سیال",
               "image": "",
-              "total": "0:00",
+              "total": "18:00",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -2325,7 +2325,7 @@
               "sync_targets": {},
               "excluded": false,
               "times": [
-                "",
+                "1/01:11:51",
                 "",
                 "",
                 "",
@@ -2338,7 +2338,7 @@
                 ""
               ],
               "cp_names": [
-                "",
+                "کرول والی مادی",
                 "",
                 "",
                 "",
