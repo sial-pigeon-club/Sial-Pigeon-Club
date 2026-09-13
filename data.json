@@ -297,10 +297,10 @@
             "duration_days": 1,
             "sunrise": "05:45",
             "sunset": "18:11",
-            "flying": 223,
+            "flying": 258,
             "landed": 1,
-            "pigeons": 224,
-            "lofts": 32,
+            "pigeons": 259,
+            "lofts": 37,
             "is_live": false,
             "is_upcoming": true,
             "first_winner_time": "",
@@ -1263,7 +1263,152 @@
               ]
             },
             {
-              "name": "استاد شیخ اطہر چھت میاں برادران",
+              "name": "استاد اعتراز خان چھت انعام اللہ جٹ",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "چھت پراواں نال بہاراں",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد عامر کھرل چھت ڈوگر والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد سلیم چھت وائٹ ہاؤس والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد عبد الخالق چھت حیدر روڈ",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد حاجی نواز چھت مجاھد گجر",
               "image": "",
               "total": "0:00",
               "deduction": "",
