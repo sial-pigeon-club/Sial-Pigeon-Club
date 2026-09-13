@@ -2950,7 +2950,7 @@ function renderFlexCard(bird, club, tour, idx){
     const isBaby = babyCols.includes(i);
     const rowCls = (isDm ? ' flex-row-mohar' : '') + (isBaby ? ' flex-row-baby' : '');
     const marker = (isDm ? '⭐ ' : '') + (isBaby ? '🐣 ' : '');
-    const nameText = cpName ? cpName : '—';
+    const nameText = cpName ? cpName : c;
     const dayTag = (parsed.time && parsed.day > 1) ? `<div class="flex-cday">Din ${parsed.day}</div>` : '';
     return `<div class="flex-table-row${rowCls}">
       <div class="flex-table-cell flex-col-num">${i+1}</div>
@@ -2987,10 +2987,10 @@ function renderFlexCard(bird, club, tour, idx){
       </div>
       <div class="flex-result-table">
         ${club.logo ? `<div class="flex-table-watermark"><img src="${club.logo}" alt=""></div>` : ''}
-        <div class="flex-table-row flex-table-head">
-          <div class="flex-table-cell flex-col-num flex-urdu">نمبر شمار</div>
-          <div class="flex-table-cell flex-col-name flex-urdu">کبوتر کا نام</div>
-          <div class="flex-table-cell flex-col-time flex-urdu">وقت آمد</div>
+        <div class="flex-table-row flex-table-head flex-urdu">
+          <div class="flex-table-cell flex-col-num">#</div>
+          <div class="flex-table-cell flex-col-name">کبوتر کا نام</div>
+          <div class="flex-table-cell flex-col-time">وقت آمد</div>
         </div>
         ${rows}
       </div>
@@ -3681,7 +3681,7 @@ function downloadJson(){
 // ref update) 100MB tak ki file bina kisi size-limit warning ke publish
 // kar deta hai — bas thoda zyada API calls lagti hain (isliye thora time
 // lagta hai, lekin fail nahi hota).
-async function publishViaGitDataApi(jsonString, commitMessage, isRetry){
+async function publishViaGitDataApi(jsonString, commitMessage){
   const headers = { 'Authorization': `Bearer ${conn.token}`, 'Accept': 'application/vnd.github+json' };
   const branch = conn.branch || 'main';
 
@@ -3735,16 +3735,7 @@ async function publishViaGitDataApi(jsonString, commitMessage, isRetry){
   });
   if(!updateRefRes.ok){
     const e = await updateRefRes.json().catch(()=>({}));
-    const msg = e.message || `Ref update failed (${updateRefRes.status})`;
-    // Agar branch hamare ref-fetch aur ref-update ke darmiyan kisi aur
-    // commit (backup, ya kahin aur se publish) ki wajah se aage badh gayi
-    // ho, to GitHub "not a fast forward" deta hai. Aik dafa khud-ba-khud
-    // latest ref par dobara try kar lete hain, taake user ko dobara Publish
-    // dabana na pare.
-    if(!isRetry && /fast.forward/i.test(msg)){
-      return publishViaGitDataApi(jsonString, commitMessage, true);
-    }
-    throw new Error(msg);
+    throw new Error(e.message || `Ref update failed (${updateRefRes.status})`);
   }
 }
 
@@ -3760,12 +3751,9 @@ async function publish(){
   btn.textContent = 'Publishing…';
 
   try{
-    // NOTE: pehle yahan har publish se pehle ek "backup" commit (backups/
-    // folder mein) bhi banta tha. User ke mutabiq isse publish bohot slow
-    // ho gaya tha, aur data.json ka purana data waise bhi GitHub ki commit
-    // history mein maujood rehta hai — is liye alag se backup file banana
-    // hata diya gaya hai. Publish ab seedha, tez, aur sirf ek commit karta
-    // hai.
+    // Git Data API ke zariye publish, taake data.json kitni bhi bari ho
+    // jaye, publish hamesha ho sake (koi size limit nahi). Koi backup nahi
+    // banti — publish jitni tez ho sake, utni tez rakhne ke liye.
     await publishViaGitDataApi(JSON.stringify(data, null, 2), 'Update tournament results via admin panel');
     showToast('✅ Published! Live on the homepage in about a minute.');
   } catch(err){
@@ -3776,10 +3764,6 @@ async function publish(){
   }
 }
 
-// 7 din se purani backups khud-ba-khud delete kar deta hai (best-effort,
-// backups har publish par bhi call hota hai). Backup filename ka pattern
-// "data-YYYY-MM-DDTHH-MM-SS-mmm-Z.json" hai — hum sirf "YYYY-MM-DD" wala
-// hissa (5th se 15th character) nikal kar date compare karte hain.
 function goToLiveSite(){
   loadConn();
   if(conn.owner && conn.repo){

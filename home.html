@@ -43,6 +43,20 @@
   }
   .live-banner .title{ font-size: 20px; font-weight: 700; color: var(--green-dark); }
   .live-banner .sub{ font-size: 12px; color: var(--text-dim); margin-inline-start: auto; }
+
+  .live-tabs{
+    display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  .live-tabs::-webkit-scrollbar{ display:none; }
+  .live-tab{
+    flex-shrink:0; border: 1.5px solid var(--line); background: var(--card); color: var(--text-dim);
+    font-family: 'Noto Nastaliq Urdu', serif; font-size: 14px; padding: 8px 16px; border-radius: 999px;
+    cursor: pointer; white-space: nowrap;
+  }
+  .live-tab.active{
+    border-color: var(--green); background: var(--green); color: #fff; font-weight: 700;
+  }
   .upcoming-banner{
     display:flex; align-items:center; gap: 8px; margin-bottom: 16px;
   }
@@ -524,7 +538,16 @@ function updateCountdowns(){
 }
 setInterval(updateCountdowns, 1000);
 
+let lastRawData = null;
+let selectedLiveIdx = 0;
+
+function selectLiveClub(i){
+  selectedLiveIdx = i;
+  if(lastRawData) render(lastRawData);
+}
+
 function render(raw){
+  lastRawData = raw;
   const data = migrateData(raw);
   const clubs = data.clubs || [];
 
@@ -562,7 +585,17 @@ function render(raw){
     return;
   }
 
-  const blocks = liveList.map(x => clubBlockHtml(x.club, x.tour)).join('<div style="height:8px;"></div>');
+  // Agar 1 se zyada club live hain, to upar ek row mein tabs dikhte hain —
+  // jis club par tap karein sirf uska hi result neeche khulta hai (sab ko
+  // ek sath stack karke scroll nahi karna parta).
+  if(selectedLiveIdx >= liveList.length) selectedLiveIdx = 0;
+  const tabsHtml = liveList.length > 1 ? `
+    <div class="live-tabs">
+      ${liveList.map((x,i) => `<button type="button" class="live-tab ${i===selectedLiveIdx?'active':''}" onclick="selectLiveClub(${i})">${escapeHtml(x.club.name)}</button>`).join('')}
+    </div>
+  ` : '';
+  const selected = liveList[selectedLiveIdx];
+  const block = clubBlockHtml(selected.club, selected.tour);
 
   document.getElementById('app').innerHTML = `
     <div class="live-banner">
@@ -570,7 +603,8 @@ function render(raw){
       <div class="title">Live Tournament</div>
       <div class="sub">${liveList.length} club${liveList.length===1?'':'s'} live</div>
     </div>
-    ${blocks}
+    ${tabsHtml}
+    ${block}
     ${upcomingSection}
     <footer><a href="clubs.html">← Sab Clubs dekhein</a></footer>
   `;
