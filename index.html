@@ -332,7 +332,8 @@ function migrateData(raw){
   };
 }
 // Sirf AAJ ki tareekh wale tournaments hi "Live" summary mein ginte hain —
-// agar Date field mein likhi tareekh aaj se mukhtalif ho, to wo tournament
+// agar Date field (ya multi-day tournaments ke liye kisi bhi din ki apni
+// alag date) mein likhi tareekh aaj se mukhtalif ho, to wo tournament
 // (chahe is_live tick ho ya flying > 0 ho) is card mein shamil nahi hota,
 // taake purane/aane wale tournaments ka record yahan jama na ho.
 function isSameAsToday(dateStr){
@@ -342,10 +343,23 @@ function isSameAsToday(dateStr){
   const now = new Date();
   return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
 }
+// Tournament ki har date-candidate (asal Date field, aur agar multi-day hai
+// to har din ki apni saved date) check karta hai — agar in mein se KOI BHI
+// aaj se match kare to tournament "aaj ka" mana jata hai (chahe tournament
+// abhi kis din par ho). Sirf tab reject karta hai jab kam se kam ek date
+// maujood ho lekin koi bhi aaj ki na ho.
+function isTournamentToday(m){
+  const candidates = [m.date];
+  if(m.day_dates && typeof m.day_dates === 'object') candidates.push(...Object.values(m.day_dates));
+  const checks = candidates.map(isSameAsToday);
+  if(checks.some(v => v === true)) return true;
+  if(checks.every(v => v === null)) return null; // koi bhi date maujood/samajh nahi aayi — undecided
+  return false;
+}
 function isLive(tour){
   const m = tour && tour.meta;
   if(!m) return false;
-  if(isSameAsToday(m.date) === false) return false; // date maujood hai magar aaj ki nahi
+  if(isTournamentToday(m) === false) return false; // date(s) maujood hain magar koi bhi aaj ki nahi
   if(m.is_live === true) return true;
   return Number(m.flying) > 0;
 }

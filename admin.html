@@ -3360,11 +3360,16 @@ async function lookupCityCoords(){
 }
 
 function attachAutoSave(){
-  // clubSelect, tourSelect, birdSearchBox aur globalSearchBox ko yahan se
-  // bahar rakhte hain — in sab ka apna khud ka alag oninput/onchange hai
-  // (club/tournament switch karna, ya search filter karna). Agar wo bhi is
-  // generic autosave se overwrite ho jayein to unka asal kaam rukk jata hai.
-  document.querySelectorAll('input:not(.f-image-file):not(.f-image):not(#birdSearchBox):not(#globalSearchBox), textarea, select:not(#clubSelect):not(#tourSelect)').forEach(el=>{
+  // clubSelect, tourSelect, birdSearchBox, globalSearchBox, entryDaySelect
+  // aur entryDayDate ko yahan se bahar rakhte hain — in sab ka apna khud ka
+  // alag oninput/onchange hai (club/tournament switch karna, search filter
+  // karna, ya din-wise date save karna). Agar wo bhi is generic autosave se
+  // overwrite ho jayein to unka asal kaam rukk jata hai — entryDaySelect ka
+  // onchange (jo din badalte hi uski date load karta hai) aur entryDayDate
+  // ka oninput (jo type karte hi us din ki date save karta hai) generic
+  // autosave se overwrite ho rahe the, isi wajah se din badalne par purani
+  // date hi dikhti rehti thi.
+  document.querySelectorAll('input:not(.f-image-file):not(.f-image):not(#birdSearchBox):not(#globalSearchBox):not(#entryDayDate), textarea, select:not(#clubSelect):not(#tourSelect):not(#entryDaySelect)').forEach(el=>{
     el.oninput = () => {
       const card = el.closest('.row-card.bird');
       // Agar checkpoint field ko khaali kar diya jaye, to uska din turant column ke
