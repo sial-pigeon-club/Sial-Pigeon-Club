@@ -1597,7 +1597,7 @@
                 "first_winner_time": "",
                 "winner_pigeon_name": "",
                 "winner_pigeon_time": "",
-                "ready": false
+                "ready": true
               },
               {
                 "day": 2,
@@ -1780,21 +1780,21 @@
               "sync_targets": {},
               "excluded": false,
               "times": [
-                "1/13:16",
-                "1/13:47",
-                "1/15:52",
-                "1/16:10",
-                "1/16:38",
-                "1/19:36",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
                 ""
               ],
               "cp_names": [
-                "استاد ملاں کا پان پتے والا",
-                "بھائی زوہیب والا",
-                "استاد منیر والی چینی",
-                "میڈم مایا",
-                "پھڑت والی",
-                "استاد ملاں والی ابابیل",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
                 ""
               ]
             },
@@ -1809,10 +1809,10 @@
               "sync_targets": {},
               "excluded": false,
               "times": [
-                "1/14:31",
-                "1/14:33",
-                "1/14:51",
-                "1/16:40",
+                "",
+                "",
+                "",
+                "",
                 "",
                 "",
                 ""
@@ -1855,24 +1855,24 @@
             "duration_days": 5,
             "sunrise": "05:45",
             "sunset": "18:11",
-            "flying": 46,
+            "flying": 39,
             "landed": 10,
-            "pigeons": 56,
-            "lofts": 8,
+            "pigeons": 49,
+            "lofts": 7,
             "is_live": true,
             "is_upcoming": false,
-            "first_winner_time": "",
-            "first_winner_name": "",
-            "winner_pigeon_time": "19:36",
+            "first_winner_time": "8:31",
+            "first_winner_name": "استاد عامر کھرل چھت ملک چاند",
+            "winner_pigeon_time": "59:19",
             "winner_pigeon_name": "استاد ندیم ملاں چھت جگا سیال",
             "double_mohar_col": null,
             "double_mohar_time": "",
             "double_mohar_name": "",
-            "winner_pigeon_total_ready": false,
+            "winner_pigeon_total_ready": true,
             "daily_winners": [
               {
                 "day": 1,
-                "first_winner_name": "استاد عامر کھرل چھت رائے محسن",
+                "first_winner_name": "استاد عامر کھرل چھت ملک چاند",
                 "first_winner_time": "14:31",
                 "winner_pigeon_name": "استاد ندیم ملاں چھت جگا سیال",
                 "winner_pigeon_time": "19:36",
@@ -2056,26 +2056,7 @@
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
-              "sync_targets": {
-                "0": [
-                  "2:0"
-                ],
-                "1": [
-                  "2:0"
-                ],
-                "2": [
-                  "2:0"
-                ],
-                "3": [
-                  "2:0"
-                ],
-                "4": [
-                  "2:0"
-                ],
-                "5": [
-                  "2:0"
-                ]
-              },
+              "sync_targets": {},
               "excluded": false,
               "times": [
                 "1/13:16",
@@ -2097,27 +2078,14 @@
               ]
             },
             {
-              "name": "استاد عامر کھرل چھت رائے محسن",
+              "name": "استاد عامر کھرل چھت ملک چاند",
               "image": "",
               "total": "36:35",
               "deduction": "",
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
-              "sync_targets": {
-                "0": [
-                  "2:0"
-                ],
-                "1": [
-                  "2:0"
-                ],
-                "2": [
-                  "2:0"
-                ],
-                "3": [
-                  "2:0"
-                ]
-              },
+              "sync_targets": {},
               "excluded": false,
               "times": [
                 "1/14:31",
@@ -2139,94 +2107,7 @@
               ]
             },
             {
-              "name": "استاد افضال چھت حیدری",
-              "image": "",
-              "total": "0:00",
-              "deduction": "",
-              "note": "",
-              "dm_cols": [],
-              "baby_cols": [],
-              "sync_targets": {},
-              "excluded": false,
-              "times": [
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
-              ],
-              "cp_names": [
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
-              ]
-            },
-            {
-              "name": "استاد عامر کھرل چھت ملک چاند",
-              "image": "",
-              "total": "0:00",
-              "deduction": "",
-              "note": "",
-              "dm_cols": [],
-              "baby_cols": [],
-              "sync_targets": {},
-              "excluded": false,
-              "times": [
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
-              ],
-              "cp_names": [
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
-              ]
-            },
-            {
-              "name": "استاد ملک مانی کچ دا گلاس چھت استاد انعام شیخ",
-              "image": "",
-              "total": "0:00",
-              "deduction": "",
-              "note": "",
-              "dm_cols": [],
-              "baby_cols": [],
-              "sync_targets": {},
-              "excluded": false,
-              "times": [
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
-              ],
-              "cp_names": [
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
-              ]
-            },
-            {
-              "name": "استاد رانا حسن چھت گھر والی مریدکے",
+              "name": "استاد ملک مانی کچ دا گلاس چھت شیخ انعام",
               "image": "",
               "total": "0:00",
               "deduction": "",
@@ -2284,7 +2165,65 @@
               ]
             },
             {
+              "name": "استاد بادشاہ گجر چھت دربار والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
               "name": "استاد حیدر جوئیہ چھت شفاقت جرمنی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded": false,
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد افضال چھت حیدری مریدکے",
               "image": "",
               "total": "0:00",
               "deduction": "",
@@ -2334,8 +2273,8 @@
             "duration_days": 1,
             "sunrise": "05:45",
             "sunset": "18:11",
-            "flying": 24,
-            "landed": 20,
+            "flying": 23,
+            "landed": 21,
             "pigeons": 44,
             "lofts": 4,
             "is_live": true,
@@ -2343,8 +2282,8 @@
             "mode": "tournament",
             "first_winner_time": "15:08",
             "first_winner_name": "استاد حیدر جوئیہ چھت شفاقت جرمنی",
-            "winner_pigeon_time": "18:09",
-            "winner_pigeon_name": "استاد حیدر جوئیہ چھت شفاقت جرمنی",
+            "winner_pigeon_time": "19:36",
+            "winner_pigeon_name": "استاد ندیم ملاں چھت جگا سیال",
             "double_mohar_col": null,
             "double_mohar_time": "",
             "double_mohar_name": "",
@@ -2354,8 +2293,8 @@
                 "day": 1,
                 "first_winner_name": "استاد حیدر جوئیہ چھت شفاقت جرمنی",
                 "first_winner_time": "15:08",
-                "winner_pigeon_name": "استاد حیدر جوئیہ چھت شفاقت جرمنی",
-                "winner_pigeon_time": "18:09",
+                "winner_pigeon_name": "استاد ندیم ملاں چھت جگا سیال",
+                "winner_pigeon_time": "19:36",
                 "ready": true
               }
             ],
@@ -2407,7 +2346,7 @@
             {
               "name": "استاد ندیم ملاں چھت جگا سیال",
               "image": "",
-              "total": "79:51",
+              "total": "93:27",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -2424,7 +2363,7 @@
                 "1/16:10",
                 "1/16:38",
                 "1/16:56",
-                "",
+                "1/19:36",
                 ""
               ],
               "cp_names": [
