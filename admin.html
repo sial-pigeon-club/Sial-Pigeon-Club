@@ -200,6 +200,7 @@
   .flex-entry-name{ font-size: 16px; font-weight: 700; color:#3a1418; }
   .flex-entry-deduction{ font-size: 10.5px; color: #D64545; font-weight: 600; }
   .flex-excluded-lbl{ color: #D64545; font-weight: 700; font-size: 11px; margin-top: 2px; }
+  .flex-table-row.flex-row-excluded{ opacity: 0.5; }
   .flex-entry-note{ font-size: 11px; color: #D64545; margin-top: 2px; }
 
   /* Result table — reference-image ke poster jaisa: Sr# | Pigeon naam | Waqt aamad */
@@ -680,6 +681,40 @@ function currentEntryDay(){
   return sel ? (Number(sel.value) || 1) : 1;
 }
 
+// Har din ke liye "❌ nahi ud raha" mark alag-alag hoti hai — ek bird Din 2
+// ko nahi uda lekin Din 1 aur Din 3 ko uda, to sirf Din 2 ka data har jagah
+// se bahar rehta hai, baaqi dinon ka data normal shamil hota hai. Card ke
+// DOM par JSON string ke tor par store hota hai (dataset.excludedDays).
+function cardExcludedDays(card){
+  try{ return JSON.parse((card && card.dataset.excludedDays) || '{}'); }catch(e){ return {}; }
+}
+function isCardExcludedForDay(card, day){
+  return !!cardExcludedDays(card)[day];
+}
+// Bird sirf tab "poori tarah excluded" mana jata hai jab tournament ke SAB
+// din uske liye excluded hon — is se loft/pigeon-count aur "koi bhi din
+// participate nahi kiya" jaisi jagah blanket-skip hoti hai.
+function isCardExcludedForAllDays(card){
+  const durationDays = Number(document.getElementById('m_duration_days').value) || 1;
+  const dd = cardExcludedDays(card);
+  for(let d = 1; d <= durationDays; d++){
+    if(!dd[d]) return false;
+  }
+  return true;
+}
+// Same logic, lekin data-model (tour.birds[i]) ke bird object par — jahan
+// DOM card maujood nahi (jaise Compare feature, Result Flex).
+function isBirdExcludedForDay(bird, day){
+  return !!((bird && bird.excluded_days) || {})[day];
+}
+function isBirdExcludedForAllDays(bird, durationDays){
+  const ed = (bird && bird.excluded_days) || {};
+  for(let d = 1; d <= durationDays; d++){
+    if(!ed[d]) return false;
+  }
+  return true;
+}
+
 // Har din ki apni asal date manually save hoti hai (tour.meta.day_dates[day]) — kisi
 // pehle din ki date se agla din khud guess nahi kiya jata, kyunke tournament ke din
 // zaroori nahi consecutive hon.
@@ -765,6 +800,10 @@ function onEntryDayChange(){
   // ka "save ho gayi" message naye din pe switch karne ke baad bhi dikhta rehta
   // tha, jo confusing tha.
   refreshDayDateStatus();
+
+  // Har bird row ka "❌ Mark not-flying" button naye selected din ka status
+  // dikhaye (har din ka apna alag mark hota hai).
+  renderRows();
 }
 
 // Har checkpoint value "day/time" format mein store hota hai (e.g. "2/12:23" = din 2, 12:23 baje).
@@ -941,7 +980,7 @@ function birdGrandTotalMinutes(card, start){
   const times = cpEls.map(i => i.value.trim());
   const days = cpEls.map(i => parseInt(i.dataset.day, 10) || 1);
   const ded = parseHM(card.querySelector('.f-deduction').value);
-  const filledIdx = times.map((v,i) => v ? i : -1).filter(i => i !== -1);
+  const filledIdx = times.map((v,i) => v ? i : -1).filter(i => i !== -1 && !isCardExcludedForDay(card, days[i]));
   if(filledIdx.length === 0) return null;
   const byDay = {};
   filledIdx.forEach(i => {
@@ -963,7 +1002,7 @@ function dayWinnerPigeon(day, start){
   let bestDiff = null;
   let winners = [];
   document.querySelectorAll('.row-card.bird').forEach(card => {
-    if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
+    if(isCardExcludedForDay(card, day)) return; // is din 'nahi ud raha' mark kiya hua bird is din ke calculation mein shamil nahi
     const timeEls = Array.from(card.querySelectorAll('.f-cp'));
     const name = card.querySelector('.f-name').value.trim();
     let lastIdx = -1;
@@ -1023,8 +1062,7 @@ function recalcWinnerPigeon(){
     let bestVal = null;
     let winners = [];
     document.querySelectorAll('.row-card.bird').forEach(card => {
-      if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
-      const total = birdGrandTotalMinutes(card, start);
+      if(isCardExcludedForAllDays(card)) return; // sab din 'nahi ud raha' mark — is bird ka koi din shamil nahi
       if(total === null) return;
       const name = card.querySelector('.f-name').value.trim();
       if(bestVal === null || total > bestVal){
@@ -1102,7 +1140,7 @@ function recalcDailyWinners(){
     let pigeonWinners = [];
 
     document.querySelectorAll('.row-card.bird').forEach(card => {
-      if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
+      if(isCardExcludedForDay(card, d)) return; // is din 'nahi ud raha' mark kiya hua bird is din ke calculation mein shamil nahi
       const timeEls = Array.from(card.querySelectorAll('.f-cp'));
       const name = card.querySelector('.f-name').value.trim();
 
@@ -1187,13 +1225,20 @@ function renderDailyWinnersBox(results){
 
 function recalcMetaCounts(){
   const allCards = Array.from(document.querySelectorAll('.row-card.bird'));
-  const activeCards = allCards.filter(c => c.dataset.excluded !== 'true');
+  // Loft count mein bird tab tak shamil hai jab tak wo KISI bhi din poori
+  // tarah excluded na ho (kam az kam ek din udd raha ho) — har checkpoint
+  // ka apna hisaab uske khud ke din ki exclusion se hota hai (neeche).
+  const activeCards = allCards.filter(c => !isCardExcludedForAllDays(c));
   const birdCount = activeCards.length;
-  const colCount = document.querySelectorAll('.f-collabel').length;
-  const total = birdCount * colCount;
-  const activeCps = activeCards.flatMap(c => Array.from(c.querySelectorAll('.f-cp')));
-  const filledCount = activeCps.filter(i => i.value.trim()).length;
-  const landed = filledCount;
+  let total = 0, landed = 0;
+  activeCards.forEach(c => {
+    Array.from(c.querySelectorAll('.f-cp')).forEach(el => {
+      const day = parseInt(el.dataset.day, 10) || 1;
+      if(isCardExcludedForDay(c, day)) return; // is din is bird ka checkpoint kisi count mein nahi
+      total++;
+      if(el.value.trim()) landed++;
+    });
+  });
   const flying = total - landed;
   document.getElementById('m_pigeons').value = total;
   document.getElementById('m_landed').value = landed;
@@ -1260,7 +1305,7 @@ function recalcDoubleMohar(){
   let participating = 0, readyParticipants = 0;
 
   document.querySelectorAll('.row-card.bird').forEach((card, bIdx) => {
-    if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
+    if(isCardExcludedForAllDays(card)) return; // sab din 'nahi ud raha' mark — is bird ka koi din shamil nahi
     const bird = tour.birds[bIdx];
     const dmCols = (bird && bird.dm_cols) || [];
     if(dmCols.length === 0) return;
@@ -1293,6 +1338,7 @@ function recalcDoubleMohar(){
     // din jama karte hain.
     let sum = 0, participatedAnyDay = false;
     for(let d = 1; d <= durationDays; d++){
+      if(isCardExcludedForDay(card, d)) continue; // is din 'nahi ud raha' — is din ka contribution nahi
       let dayBest = null;
       dmCols.forEach(idx => {
         if(idx >= timeEls.length) return;
@@ -1362,7 +1408,7 @@ function recalcDailyDoubleMohar(){
     let participating = 0, readyParticipants = 0;
 
     document.querySelectorAll('.row-card.bird').forEach((card, bIdx) => {
-      if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
+      if(isCardExcludedForDay(card, d)) return; // is din 'nahi ud raha' mark kiya hua bird is din ke calculation mein shamil nahi
       const bird = tour.birds[bIdx];
       const dmCols = (bird && bird.dm_cols) || [];
       const timeEls = Array.from(card.querySelectorAll('.f-cp'));
@@ -1455,7 +1501,7 @@ function recalcBabyWinner(){
   let participating = 0, readyParticipants = 0;
 
   document.querySelectorAll('.row-card.bird').forEach((card, bIdx) => {
-    if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
+    if(isCardExcludedForAllDays(card)) return; // sab din 'nahi ud raha' mark — is bird ka koi din shamil nahi
     const bird = tour.birds[bIdx];
     const babyCols = (bird && bird.baby_cols) || [];
     if(babyCols.length === 0) return;
@@ -1486,6 +1532,7 @@ function recalcBabyWinner(){
 
     let sum = 0, participatedAnyDay = false;
     for(let d = 1; d <= durationDays; d++){
+      if(isCardExcludedForDay(card, d)) continue; // is din 'nahi ud raha' — is din ka contribution nahi
       let dayBest = null;
       babyCols.forEach(idx => {
         if(idx >= timeEls.length) return;
@@ -1551,7 +1598,7 @@ function recalcDailyBabyWinner(){
     let participating = 0, readyParticipants = 0;
 
     document.querySelectorAll('.row-card.bird').forEach((card, bIdx) => {
-      if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
+      if(isCardExcludedForDay(card, d)) return; // is din 'nahi ud raha' mark kiya hua bird is din ke calculation mein shamil nahi
       const bird = tour.birds[bIdx];
       const babyCols = (bird && bird.baby_cols) || [];
       const timeEls = Array.from(card.querySelectorAll('.f-cp'));
@@ -1634,7 +1681,7 @@ function recalcFirstWinner(){
   let bestVal = null;
   let winners = [];
   document.querySelectorAll('.row-card.bird').forEach(card => {
-    if(card.dataset.excluded === 'true') return; // '❌ nahi ud raha' mark kiya hua bird kisi bhi calculation mein shamil nahi
+    if(isCardExcludedForAllDays(card)) return; // sab din 'nahi ud raha' mark — is bird ka koi din shamil nahi
     const timeEls = Array.from(card.querySelectorAll('.f-cp'));
     if(!timeEls.length) return;
     const name = card.querySelector('.f-name').value.trim();
@@ -1655,6 +1702,7 @@ function recalcFirstWinner(){
 
     let sum = 0, participatedAnyDay = false;
     for(let d = 1; d <= durationDays; d++){
+      if(isCardExcludedForDay(card, d)) continue; // is din 'nahi ud raha' — is din ka contribution nahi
       let idxForDay = -1;
       for(let i = 0; i < timeEls.length; i++){
         const dayI = parseInt(timeEls[i].dataset.day, 10) || 1;
@@ -1968,6 +2016,7 @@ function save(){
   });
   if(Object.keys(dayAmounts).length) tour.meta.day_amounts = dayAmounts;
   const existingBirds = tour.birds || [];
+  const durationDaysNow = Number(document.getElementById('m_duration_days').value) || 1;
   tour.birds = Array.from(document.querySelectorAll('.row-card.bird')).map((card, idx)=>{
     return {
       name: card.querySelector('.f-name').value,
@@ -1985,9 +2034,14 @@ function save(){
       // sync_targets bhi isi tarah picker/modal se set hota hai, DOM se nahi
       // padha ja sakta, isliye carry-forward.
       sync_targets: (existingBirds[idx] && existingBirds[idx].sync_targets) ? JSON.parse(JSON.stringify(existingBirds[idx].sync_targets)) : {},
-      // excluded bhi DOM mein nahi hota (button click se hi set hota hai),
-      // isliye wahi carry-forward tareeqa.
-      excluded: !!(existingBirds[idx] && existingBirds[idx].excluded),
+      // excluded_days bhi DOM mein nahi hota (button click se hi set hota
+      // hai, dataset.excludedDays se), isliye wahi carry-forward tareeqa.
+      // Purana blanket boolean `excluded` bhi yahan migrate ho jata hai.
+      excluded_days: (existingBirds[idx] && existingBirds[idx].excluded_days)
+        ? JSON.parse(JSON.stringify(existingBirds[idx].excluded_days))
+        : ((existingBirds[idx] && existingBirds[idx].excluded)
+            ? Object.fromEntries(Array.from({length: durationDaysNow}, (_,i) => [i+1, true]))
+            : {}),
       times: Array.from(card.querySelectorAll('.f-cp')).map(el =>
         makeCp(el.dataset.day, el.value)
       ),
@@ -2470,6 +2524,7 @@ function cmpBirdGrandTotal(bird, start){
     if(!raw) return;
     const { day, time } = parseCp(raw);
     if(!time) return;
+    if(isBirdExcludedForDay(bird, day)) return; // is din 'nahi ud raha' — is din ka checkpoint shamil nahi
     any = true;
     let diff = parseHM(time) - start;
     if(diff < 0) diff += 1440;
@@ -2481,8 +2536,8 @@ function cmpBirdGrandTotal(bird, start){
   return total;
 }
 
-// Bird ka sab se aakhri bhara hua checkpoint (sab se badhe din mein), Uraan
-// se uska waqfa — Winner Pigeon comparison ke liye.
+// Bird ka sab se aakhri bhara hua checkpoint (sab se badhe din mein, jo din
+// excluded na ho), Uraan se uska waqfa — Winner Pigeon comparison ke liye.
 function cmpBirdLastCpDiff(bird, start){
   const times = bird.times || [];
   let bestDay = -1, bestIdx = -1;
@@ -2490,6 +2545,7 @@ function cmpBirdLastCpDiff(bird, start){
     if(!raw) return;
     const { day, time } = parseCp(raw);
     if(!time) return;
+    if(isBirdExcludedForDay(bird, day)) return; // is din 'nahi ud raha' — is din ka checkpoint shamil nahi
     if(day > bestDay || (day === bestDay && i > bestIdx)){ bestDay = day; bestIdx = i; }
   });
   if(bestIdx === -1) return null;
@@ -2501,7 +2557,11 @@ function cmpBirdLastCpDiff(bird, start){
 
 function cmpEligibleBirds(){
   const tour = currentTournament();
-  return (tour.birds || []).map((b, i) => ({ bird: b, idx: i })).filter(x => !x.bird.excluded);
+  const durationDays = Number(document.getElementById('m_duration_days')?.value) || 1;
+  // Sirf wahi bird bahar rakhte hain jo SAB din excluded hain — jo kisi ek
+  // din udd raha hai, wo Compare mein shamil rehta hai (uske excluded din ke
+  // checkpoints khud checkpoint-diff functions mein hi chhod diye jate hain).
+  return (tour.birds || []).map((b, i) => ({ bird: b, idx: i })).filter(x => !isBirdExcludedForAllDays(x.bird, durationDays));
 }
 
 function openBirdCompare(idx){
@@ -2593,8 +2653,10 @@ function cmpAlignedPairs(birdA, birdB){
     const list = [];
     (bird.times || []).forEach((raw, i) => {
       if(!raw) return;
-      const { time } = parseCp(raw);
-      if(time) list.push(i);
+      const { day, time } = parseCp(raw);
+      if(!time) return;
+      if(isBirdExcludedForDay(bird, day)) return; // is din 'nahi ud raha' — is din ka checkpoint shamil nahi
+      list.push(i);
     });
     return list;
   };
@@ -2803,7 +2865,7 @@ function recalcCardTotal(card){
   const times = cpEls.map(i => i.value.trim());
   const days = cpEls.map(i => parseInt(i.dataset.day, 10) || 1);
   const ded = parseHM(card.querySelector('.f-deduction').value);
-  const filledIdx = times.map((v,i) => v ? i : -1).filter(i => i !== -1);
+  const filledIdx = times.map((v,i) => v ? i : -1).filter(i => i !== -1 && !isCardExcludedForDay(card, days[i]));
   const totalPreview = card.querySelector('.total-preview');
   if(filledIdx.length === 0){
     card.querySelector('.f-total').value = formatMinutes(ded);
@@ -2841,15 +2903,26 @@ function renderRows(){
   const tour = currentTournament();
   migrateDoubleMoharToPerBird(tour);
   wrap.innerHTML = '';
+  const durationDaysR = Number(document.getElementById('m_duration_days')?.value) || 1;
+  const entryDay = currentEntryDay();
   tour.birds.forEach((b, idx)=>{
+    // Purana blanket `b.excluded` migrate karte hain: agar excluded_days
+    // abhi tak nahi bana, lekin purana excluded===true tha, to matlab sab
+    // din excluded the (jitne bhi ab configured hain).
+    const excludedDaysObj = b.excluded_days || (b.excluded ? Object.fromEntries(Array.from({length: durationDaysR}, (_,i) => [i+1, true])) : {});
+    const excludedToday = !!excludedDaysObj[entryDay];
+    let excludedAllDays = true;
+    for(let d = 1; d <= durationDaysR; d++){ if(!excludedDaysObj[d]){ excludedAllDays = false; break; } }
+    const dayLabel = durationDaysR > 1 ? ` (Din ${entryDay})` : '';
+
     const div = document.createElement('div');
     div.className = 'row-card bird';
     div.dataset.name = b.name || '';
-    if(b.excluded) div.dataset.excluded = 'true';
+    div.dataset.excludedDays = JSON.stringify(excludedDaysObj);
     div.innerHTML = `
       <div class="row-card-actions">
         ${tour.meta.mode === 'competition' ? `<button type="button" class="rm" style="border-color:#4C9BD6; color:#4C9BD6;" onclick="openBirdCompare(${idx})">🆚 Compare</button>` : ''}
-        <button type="button" class="rm" style="background: ${b.excluded ? 'var(--danger)' : 'transparent'}; color: ${b.excluded ? '#fff' : 'var(--danger)'};" onclick="toggleBirdExcluded(${idx})">${b.excluded ? '❌ Excluded' : '❌ Mark not-flying'}</button>
+        <button type="button" class="rm" style="background: ${excludedToday ? 'var(--danger)' : 'transparent'}; color: ${excludedToday ? '#fff' : 'var(--danger)'};" onclick="toggleBirdExcludedForDay(${idx})">${excludedToday ? `❌ Excluded${dayLabel}` : `❌ Mark not-flying${dayLabel}`}</button>
         <button class="rm" onclick="removeRow(${idx})">Remove</button>
       </div>
       <div class="row-card-header" onclick="toggleCardCollapse(this)">
@@ -2858,7 +2931,7 @@ function renderRows(){
         <span class="total-preview">${b.total || ''}</span>
       </div>
       <div class="row-card-body collapsed">
-      <div class="row-fields" style="${b.excluded ? 'opacity:0.55;' : ''}">
+      <div class="row-fields" style="${excludedToday ? 'opacity:0.55;' : ''}">
         <div><label>Name (Urdu)</label><input class="f-name" dir="rtl" value="${b.name}"></div>
         <div>
           <label>Bird photo (optional)</label>
@@ -2874,15 +2947,22 @@ function renderRows(){
         </div>
         <div><label>Total time (auto-calculated)</label><input class="f-total" value="${b.total}" readonly style="opacity:0.75; cursor:not-allowed;"></div>
       </div>
-      ${b.excluded ? `<p class="sub" style="color:var(--danger); margin: -6px 0 10px;">❌ Ye bird is tournament ke calculations (Flying/Landed, First Winner, Winner Pigeon, Double Mohar, Baby Winner, leaderboard) mein bilkul shamil nahi hoga — result page par bhi cross ke sath "nahi ud raha" dikhega.</p>` : ''}
+      ${excludedToday ? `<p class="sub" style="color:var(--danger); margin: -6px 0 10px;">❌ Ye bird${dayLabel ? ` Din ${entryDay} ke` : ' is tournament ke'} calculations (Flying/Landed, First Winner, Winner Pigeon, Double Mohar, Baby Winner, leaderboard) mein bilkul shamil nahi hoga${dayLabel ? ` — baaqi dinon mein normal shamil rahega` : ''} — result page par bhi cross ke sath "nahi ud raha" dikhega.</p>` : ''}
       <div class="row-fields">
         <div><label>Deduction (optional, e.g. -06:00)</label><input class="f-deduction" value="${b.deduction||''}"></div>
         <div style="grid-column: span 2;"><label>Note (optional, Urdu)</label><input class="f-note" dir="rtl" value="${b.note||''}"></div>
       </div>
-      <label>Checkpoint times (matching labels above) — is bird ke jis checkpoint ko highlight karna hai use dabaye rakhein (long-press) — <b style="color:var(--gold);">jab mode ⭐ Double Mohar par ho</b> to gold border, aur <b style="color:#ff6fb0;">jab mode 🐣 Baby Winner par ho</b> to gold ki jagah pink border milega (upar wale mode buttons se switch karein). Har bird ka apna alag checkpoint (ya ek se zyada) highlight kiya ja sakta hai, aur ek checkpoint dono ke liye bhi highlight ho sakta hai. Dobara dabaye rakhein taake highlight hat jaye. Neeche wala chhota box optional hai — agar bhar dein to flex mein us checkpoint ke sath naam bhi dikhega, khaali chhod dein to sirf time dikhega. <b style="color:#4C9BD6;">🔗 button</b> dabane se ek chhota box khulega jahan aap club aur phir usi club ki specific tournament(s) choose kar sakte hain — sirf UNHI chuni hui tournaments mein (agar wahan isi naam ka bird ho) is checkpoint ka time+naam sync hoga, baaki kahin nahi, chahe wahan bhi same naam ka bird ho.</label>
+      <label>Checkpoint times${durationDaysR > 1 ? ` — sirf <b style="color:var(--gold);">Din ${entryDay}</b> ke checkpoints (upar "Abhi aap kis din ka result likh rahe hain" se din badlein)` : ' (matching labels above)'} — is bird ke jis checkpoint ko highlight karna hai use dabaye rakhein (long-press) — <b style="color:var(--gold);">jab mode ⭐ Double Mohar par ho</b> to gold border, aur <b style="color:#ff6fb0;">jab mode 🐣 Baby Winner par ho</b> to gold ki jagah pink border milega (upar wale mode buttons se switch karein). Har bird ka apna alag checkpoint (ya ek se zyada) highlight kiya ja sakta hai, aur ek checkpoint dono ke liye bhi highlight ho sakta hai. Dobara dabaye rakhein taake highlight hat jaye. Neeche wala chhota box optional hai — agar bhar dein to flex mein us checkpoint ke sath naam bhi dikhega, khaali chhod dein to sirf time dikhega. <b style="color:#4C9BD6;">🔗 button</b> dabane se ek chhota box khulega jahan aap club aur phir usi club ki specific tournament(s) choose kar sakte hain — sirf UNHI chuni hui tournaments mein (agar wahan isi naam ka bird ho) is checkpoint ka time+naam sync hoga, baaki kahin nahi, chahe wahan bhi same naam ka bird ho.</label>
       <div class="row-fields-cp">
         ${tour.columns.map((c,i)=>{
-          const day = b.times[i] ? parseCp(b.times[i]).day : getColumnDay(tour, i);
+          const colDay = getColumnDay(tour, i);
+          // Sirf currently-selected din ke checkpoints DIKHATE hain — lekin
+          // baaqi dinon wale bhi DOM mein maujood rehte hain (sirf hidden),
+          // warna save() aur sab calculations (jo card.querySelectorAll('.f-cp')
+          // se poore tour.columns.length jitne elements expect karte hain)
+          // baaqi dinon ka data khoke sirf isi din ka data save kar dete.
+          const hideThisDay = durationDaysR > 1 && colDay !== entryDay;
+          const day = b.times[i] ? parseCp(b.times[i]).day : colDay;
           const timeVal = b.times[i] ? parseCp(b.times[i]).time : '';
           const cpNameVal = (b.cp_names && b.cp_names[i]) || '';
           const isDm = (b.dm_cols || []).includes(i);
@@ -2892,7 +2972,7 @@ function renderRows(){
           if(isDm && isBaby) style = 'style="border:2px solid var(--gold); box-shadow:0 0 6px rgba(230,180,60,0.6), inset 0 0 0 3px #ff6fb0;"';
           else if(isDm) style = 'style="border:2px solid var(--gold); box-shadow:0 0 6px rgba(230,180,60,0.6);"';
           else if(isBaby) style = 'style="border:2px solid #ff6fb0; box-shadow:0 0 6px rgba(255,111,176,0.6);"';
-          return `<div class="f-cp-wrap">
+          return `<div class="f-cp-wrap" ${hideThisDay ? 'style="display:none;"' : ''}>
             <input class="f-cp" data-day="${day}" placeholder="${c}" value="${timeVal}" ${style}>
             <input class="f-cp-name" dir="rtl" placeholder="Naam (optional)" value="${escapeHtmlAdmin(cpNameVal)}">
             <button type="button" class="f-cp-sync-btn${syncCount ? ' active' : ''}" onclick="openSyncPicker(${idx}, ${i})" title="Kin specific tournaments mein sync karna hai, choose karein">🔗 ${syncCount ? syncCount + ' tournament' + (syncCount > 1 ? 's' : '') : 'Sync off'}</button>
@@ -2940,6 +3020,8 @@ function renderFlexCard(bird, club, tour, idx){
   const card = document.getElementById(`flexCard-${idx}`);
   if(!card || !bird) return;
   const m = tour.meta || {};
+  const durationDaysFlex = Number(m.duration_days) || 1;
+  const birdFullyExcluded = isBirdExcludedForAllDays(bird, durationDaysFlex);
   const avatarInner = bird.image ? `<img src="${bird.image}" alt="">` : escapeHtmlAdmin(initialsAdmin(bird.name));
   const dmCols = bird.dm_cols || [];
   const babyCols = bird.baby_cols || [];
@@ -2948,8 +3030,9 @@ function renderFlexCard(bird, club, tour, idx){
     const cpName = (bird.cp_names && bird.cp_names[i]) || '';
     const isDm = dmCols.includes(i);
     const isBaby = babyCols.includes(i);
-    const rowCls = (isDm ? ' flex-row-mohar' : '') + (isBaby ? ' flex-row-baby' : '');
-    const marker = (isDm ? '⭐ ' : '') + (isBaby ? '🐣 ' : '');
+    const dayExcluded = parsed.time && isBirdExcludedForDay(bird, parsed.day);
+    const rowCls = (isDm ? ' flex-row-mohar' : '') + (isBaby ? ' flex-row-baby' : '') + (dayExcluded ? ' flex-row-excluded' : '');
+    const marker = (isDm ? '⭐ ' : '') + (isBaby ? '🐣 ' : '') + (dayExcluded ? '❌ ' : '');
     const nameText = cpName ? cpName : c;
     const dayTag = (parsed.time && parsed.day > 1) ? `<div class="flex-cday">Din ${parsed.day}</div>` : '';
     return `<div class="flex-table-row${rowCls}">
@@ -2981,7 +3064,7 @@ function renderFlexCard(bird, club, tour, idx){
         <div class="flex-entry-name-wrap">
           <div class="flex-entry-name flex-urdu">${escapeHtmlAdmin(bird.name) || '(bila naam)'}</div>
           ${bird.deduction ? `<div class="flex-entry-deduction">${escapeHtmlAdmin(bird.deduction)}</div>` : ''}
-          ${bird.excluded ? `<div class="flex-excluded-lbl">❌ Nahi ud raha</div>` : ''}
+          ${birdFullyExcluded ? `<div class="flex-excluded-lbl">❌ Nahi ud raha</div>` : ''}
           ${bird.note ? `<div class="flex-entry-note flex-urdu">${escapeHtmlAdmin(bird.note)}</div>` : ''}
         </div>
       </div>
@@ -2996,7 +3079,7 @@ function renderFlexCard(bird, club, tour, idx){
       </div>
       <div class="flex-total-row flex-urdu">
         <span>ٹوٹل ٹائم</span>
-        <span class="flex-total-val">${bird.excluded ? '—' : escapeHtmlAdmin(bird.total || '')}</span>
+        <span class="flex-total-val">${birdFullyExcluded ? '—' : escapeHtmlAdmin(bird.total || '')}</span>
       </div>
     </div>
     <div class="flex-card-watermark"><span dir="ltr" style="direction:ltr;unicode-bidi:isolate;">${escapeHtmlAdmin(m.date || '')}</span>${club.name ? `<span class="flex-urdu"> · ${escapeHtmlAdmin(club.name)}</span>` : ''}</div>
@@ -3518,11 +3601,18 @@ function submitQuickAddBirds(){
 // dono) aur public leaderboard ranking — sab se bahar ho jata hai. Bird ka
 // data delete nahi hota, sirf calculations mein shamil nahi hota, aur result
 // page par cross ke sath dikhta hai.
-function toggleBirdExcluded(idx){
+// Sirf CURRENTLY SELECTED din (currentEntryDay()) ke liye is bird ka
+// "❌ nahi ud raha" mark ON/OFF karta hai — baaqi dinon ka mark alag rehta
+// hai. Single-day tournament mein din hamesha 1 hota hai, isliye wahan
+// bilkul pehle jaisa (blanket) hi kaam karta hai.
+function toggleBirdExcludedForDay(idx){
   save();
   const bird = currentTournament().birds[idx];
   if(!bird) return;
-  bird.excluded = !bird.excluded;
+  const day = currentEntryDay();
+  if(!bird.excluded_days) bird.excluded_days = {};
+  if(bird.excluded_days[day]) delete bird.excluded_days[day];
+  else bird.excluded_days[day] = true;
   renderRows();
   recalcMetaCounts();
   save();

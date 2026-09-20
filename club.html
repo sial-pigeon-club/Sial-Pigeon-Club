@@ -683,6 +683,22 @@ function switchDayTab(tab){
   renderList(searchBox ? searchBox.value : '');
 }
 
+// Har din ka apna alag "❌ nahi ud raha" mark ho sakta hai (bird.excluded_days
+// = {2: true} matlab sirf Din 2 ko exclude). Purana data jisme sirf blanket
+// bird.excluded tha (excluded_days abhi tak migrate nahi hua), usay "sab din
+// excluded" maan lete hain — pehle jaisa hi behavior barqarar rehta hai.
+function isBirdFullyExcluded(b, durationDays){
+  if(b && b.excluded_days){
+    for(let d = 1; d <= durationDays; d++){ if(!b.excluded_days[d]) return false; }
+    return true;
+  }
+  return !!(b && b.excluded);
+}
+function isBirdExcludedForDayPublic(b, day){
+  if(b && b.excluded_days) return !!b.excluded_days[day];
+  return !!(b && b.excluded);
+}
+
 function renderList(filter){
   const term = (filter||'').trim();
   const list = document.getElementById('birdList');
@@ -692,9 +708,16 @@ function renderList(filter){
 
   // ❌ "Nahi ud raha" mark kiye hue birds kabhi bhi ranking/position mein
   // shamil nahi hote — hamesha list ke aakhir mein, bina rank number ke,
-  // dikhte hain (taake pata rahe wo kaun hain, lekin faisla saaf ho).
-  const activeBirds = ALL_BIRDS.filter(b => !b.excluded);
-  const excludedBirds = ALL_BIRDS.filter(b => b.excluded);
+  // dikhte hain (taake pata rahe wo kaun hain, lekin faisla saaf ho). Din-wise
+  // tab par sirf USI din ka mark check hota hai; Total tab par sirf tab
+  // excluded hai jab bird SAB din excluded ho — kisi ek din excluded bird
+  // baaqi dinon ke total mein normal shamil rehta hai.
+  const activeBirds = isDayTab
+    ? ALL_BIRDS.filter(b => !isBirdExcludedForDayPublic(b, dayNum))
+    : ALL_BIRDS.filter(b => !isBirdFullyExcluded(b, durationDays));
+  const excludedBirds = isDayTab
+    ? ALL_BIRDS.filter(b => isBirdExcludedForDayPublic(b, dayNum))
+    : ALL_BIRDS.filter(b => isBirdFullyExcluded(b, durationDays));
 
   let baseList;
   if(isDayTab){
