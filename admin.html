@@ -2505,7 +2505,7 @@ function addColumn(){
   tour.birds.forEach(b => b.times.push(''));
   if(!tour.column_days) tour.column_days = {};
   tour.column_days[newIdx] = currentEntryDay(); // is column ka din hamesha ke liye fix
-  renderCols(); renderRows(); recalcMetaCounts(); save();
+  renderCols(); renderRows(); setAllCardsCollapsed(false); recalcMetaCounts(); save();
 }
 
 function removeColumn(idx){
@@ -2967,6 +2967,15 @@ function renderRows(){
   const wrap = document.getElementById('rows');
   const tour = currentTournament();
   migrateDoubleMoharToPerBird(tour);
+  // Pehle se expand ki hui cards ka record rakhte hain (bird index ke
+  // hisaab se) — warna din badalne ya checkpoint add/remove karne par
+  // renderRows() dobara chalta hai aur SAB cards wapas collapse ho jati
+  // hain, jis se lagta hai "kuch show hi nahi ho raha / add nahi hua".
+  const expandedIdx = new Set();
+  Array.from(wrap.querySelectorAll('.row-card.bird')).forEach((card, i) => {
+    const body = card.querySelector('.row-card-body');
+    if(body && !body.classList.contains('collapsed')) expandedIdx.add(i);
+  });
   wrap.innerHTML = '';
   const durationDaysR = Number(document.getElementById('m_duration_days')?.value) || 1;
   const entryDay = currentEntryDay();
@@ -2990,12 +2999,12 @@ function renderRows(){
         <button type="button" class="rm" style="background: ${excludedToday ? 'var(--danger)' : 'transparent'}; color: ${excludedToday ? '#fff' : 'var(--danger)'};" onclick="toggleBirdExcludedForDay(${idx})">${excludedToday ? `❌ Excluded${dayLabel}` : `❌ Mark not-flying${dayLabel}`}</button>
         <button class="rm" onclick="removeRow(${idx})">Remove</button>
       </div>
-      <div class="row-card-header" onclick="toggleCardCollapse(this)">
+      <div class="row-card-header${expandedIdx.has(idx) ? ' is-open' : ''}" onclick="toggleCardCollapse(this)">
         <span class="collapse-arrow">▾</span>
         <span class="name-preview">${b.name || '(bila naam)'}</span>
         <span class="total-preview">${b.total || ''}</span>
       </div>
-      <div class="row-card-body collapsed">
+      <div class="row-card-body${expandedIdx.has(idx) ? '' : ' collapsed'}">
       <div class="row-fields" style="${excludedToday ? 'opacity:0.55;' : ''}">
         <div><label>Name (Urdu)</label><input class="f-name" dir="rtl" value="${b.name}"></div>
         <div>
