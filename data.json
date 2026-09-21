@@ -17,15 +17,15 @@
             "duration_days": 1,
             "sunrise": "05:26",
             "sunset": "18:47",
-            "flying": 32,
-            "landed": 18,
-            "pigeons": 50,
-            "lofts": 10,
+            "flying": 54,
+            "landed": 30,
+            "pigeons": 84,
+            "lofts": 12,
             "is_live": false,
-            "first_winner_time": "15:17",
-            "first_winner_name": "استاد ناظم چھت حسنین ڈیرے والی",
-            "winner_pigeon_time": "16:18",
-            "winner_pigeon_name": "استاد ناظم چھت حسنین ڈیرے والی",
+            "first_winner_time": "15:23",
+            "first_winner_name": "رئیس باجوہ",
+            "winner_pigeon_time": "18:37",
+            "winner_pigeon_name": "رئیس باجوہ",
             "double_mohar_col": null,
             "double_mohar_time": "",
             "double_mohar_name": "",
@@ -33,10 +33,10 @@
             "daily_winners": [
               {
                 "day": 1,
-                "first_winner_name": "استاد ناظم چھت حسنین ڈیرے والی",
-                "first_winner_time": "15:17",
-                "winner_pigeon_name": "استاد ناظم چھت حسنین ڈیرے والی",
-                "winner_pigeon_time": "16:18",
+                "first_winner_name": "رئیس باجوہ",
+                "first_winner_time": "15:23",
+                "winner_pigeon_name": "رئیس باجوہ",
+                "winner_pigeon_time": "18:37",
                 "ready": true
               }
             ],
@@ -71,14 +71,16 @@
             "is_upcoming": false,
             "entry_fee": "5000",
             "tour_note": "",
-            "mode": "tournament"
+            "mode": "competition"
           },
           "columns": [
             "#1",
             "#2",
             "#3",
             "#4",
-            "#5"
+            "#5",
+            "#6",
+            "#7"
           ],
           "birds": [
             {
@@ -90,15 +92,19 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/7:26",
+                "",
+                "",
                 "",
                 "",
                 "",
                 ""
               ],
               "cp_names": [
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -115,15 +121,19 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/7:37",
                 "1/9:56",
                 "",
                 "",
+                "",
+                "",
                 ""
               ],
               "cp_names": [
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -140,15 +150,19 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/13:31",
+                "",
+                "",
                 "",
                 "",
                 "",
                 ""
               ],
               "cp_names": [
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -165,15 +179,19 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/15:17",
                 "1/16:18",
                 "",
                 "",
+                "",
+                "",
                 ""
               ],
               "cp_names": [
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -190,15 +208,19 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/8:46",
                 "1/10:44",
                 "",
                 "",
+                "",
+                "",
                 ""
               ],
               "cp_names": [
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -215,15 +237,19 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/8:08",
                 "1/13:47",
                 "1/13:57",
                 "",
+                "",
+                "",
                 ""
               ],
               "cp_names": [
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -240,15 +266,19 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/6:36",
                 "1/7:26",
                 "1/7:49",
                 "1/15:04",
+                "",
+                "",
                 ""
               ],
               "cp_names": [
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -265,15 +295,19 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/13:24",
                 "1/14:37",
                 "",
                 "",
+                "",
+                "",
                 ""
               ],
               "cp_names": [
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -290,15 +324,19 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/13:00",
+                "",
+                "",
                 "",
                 "",
                 "",
                 ""
               ],
               "cp_names": [
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -315,8 +353,10 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -324,6 +364,66 @@
                 ""
               ],
               "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "حیدری مریدکے",
+              "image": "",
+              "total": "63:42",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded_days": {},
+              "times": [
+                "1/13:56",
+                "1/14:20",
+                "1/14:39",
+                "1/14:40",
+                "1/15:49",
+                "1/15:53",
+                "1/16:25"
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "رئیس باجوہ",
+              "image": "",
+              "total": "56:02",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded_days": {},
+              "times": [
+                "1/15:23",
+                "1/16:11",
+                "1/17:17",
+                "1/18:34",
+                "1/18:37",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -355,7 +455,9 @@
           },
           "column_days": {
             "3": 1,
-            "4": 1
+            "4": 1,
+            "5": 1,
+            "6": 1
           }
         }
       ]
