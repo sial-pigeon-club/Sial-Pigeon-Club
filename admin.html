@@ -2160,6 +2160,25 @@ function getColumnDay(tour, idx){
   return 1;
 }
 
+// Multi-day tournaments mein har din apne checkpoints #1 se shuru karta hai
+// (Din 1: #1,#2,#3... Din 2: phir se #1,#2,#3... na ke #8,#9,#10 continue).
+function dayRelativeColNum(tour, idx){
+  const day = getColumnDay(tour, idx);
+  let n = 0;
+  for(let i = 0; i <= idx; i++){
+    if(getColumnDay(tour, i) === day) n++;
+  }
+  return n;
+}
+// Sirf DEFAULT auto-numbered labels (#<number>) ko is tarah dikhate hain —
+// agar admin ne label ko koi custom naam de rakha hai (jaise "Subha wala"),
+// use bilkul waisa hi rehne dete hain, chhurte nahi.
+function displayColLabel(tour, idx){
+  const raw = tour.columns[idx];
+  if(!/^#\d+$/.test(raw)) return raw;
+  return '#' + dayRelativeColNum(tour, idx);
+}
+
 function renderCols(){
   const wrap = document.getElementById('colLabels');
   const tour = currentTournament();
@@ -2174,7 +2193,7 @@ function renderCols(){
     return `
     <div style="position:relative;">
       ${dayBadge}
-      <input class="f-collabel" value="${c}">
+      <input class="f-collabel" value="${displayColLabel(tour, idx)}">
       <button type="button" onclick="removeColumn(${idx})" style="position:absolute; top:-6px; right:-6px; background:var(--danger); color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:11px; line-height:1; cursor:pointer;">×</button>
     </div>`;
   }).join('');
@@ -2779,7 +2798,7 @@ function renderCmpCheckpoints(selfIdx){
   const selfBird = tour.birds[selfIdx];
   const competitors = cmpEligibleBirds().filter(x => x.idx !== selfIdx);
   if(!competitors.length) return `<p class="cmp-empty">Is tournament mein koi aur bird nahi jis se compare kiya ja sake.</p>`;
-  const colLabel = ci => tour.columns[ci] || ('#' + (ci+1));
+  const colLabel = ci => displayColLabel(tour, ci);
   const blocks = competitors.map(x => {
     const compName = x.bird.name || '(bila naam)';
     const { pairs, extraA, extraB } = cmpAlignedPairs(selfBird, x.bird);
@@ -3047,7 +3066,7 @@ function renderRows(){
           else if(isDm) style = 'style="border:2px solid var(--gold); box-shadow:0 0 6px rgba(230,180,60,0.6);"';
           else if(isBaby) style = 'style="border:2px solid #ff6fb0; box-shadow:0 0 6px rgba(255,111,176,0.6);"';
           return `<div class="f-cp-wrap" ${hideThisDay ? 'style="display:none;"' : ''}>
-            <input class="f-cp" data-day="${day}" placeholder="${c}" value="${timeVal}" ${style}>
+            <input class="f-cp" data-day="${day}" placeholder="${displayColLabel(tour, i)}" value="${timeVal}" ${style}>
             <input class="f-cp-name" dir="rtl" placeholder="Naam (optional)" value="${escapeHtmlAdmin(cpNameVal)}">
             <button type="button" class="f-cp-sync-btn${syncCount ? ' active' : ''}" onclick="openSyncPicker(${idx}, ${i})" title="Kin specific tournaments mein sync karna hai, choose karein">🔗 ${syncCount ? syncCount + ' tournament' + (syncCount > 1 ? 's' : '') : 'Sync off'}</button>
           </div>`;
@@ -3138,10 +3157,11 @@ function renderFlexCard(bird, club, tour, idx){
     const dayExcluded = parsed.time && isBirdExcludedForDay(bird, parsed.day);
     const rowCls = (isDm ? ' flex-row-mohar' : '') + (isBaby ? ' flex-row-baby' : '') + (dayExcluded ? ' flex-row-excluded' : '');
     const marker = (isDm ? '⭐ ' : '') + (isBaby ? '🐣 ' : '') + (dayExcluded ? '❌ ' : '');
-    const nameText = cpName ? cpName : c;
+    const nameText = cpName ? cpName : displayColLabel(tour, i);
     const dayTag = (flexDay === 'total' && parsed.time && parsed.day > 1) ? `<div class="flex-cday">Din ${parsed.day}</div>` : '';
+    const rowNum = (flexDay !== 'total') ? dayRelativeColNum(tour, i) : (i+1);
     return `<div class="flex-table-row${rowCls}">
-      <div class="flex-table-cell flex-col-num">${i+1}</div>
+      <div class="flex-table-cell flex-col-num">${rowNum}</div>
       <div class="flex-table-cell flex-col-name flex-urdu">${marker}${escapeHtmlAdmin(nameText)}</div>
       <div class="flex-table-cell flex-col-time">${parsed.time ? escapeHtmlAdmin(parsed.time) : '—'}${dayTag}</div>
     </div>`;

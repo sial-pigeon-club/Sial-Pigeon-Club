@@ -172,7 +172,7 @@
   .chip.mohar-chip{ background: linear-gradient(135deg, #fff6da, #ffe6b0); box-shadow: 0 0 0 2px var(--gold), 0 0 10px rgba(230,180,60,0.7); animation: winnerGlow 1.8s ease-in-out infinite; }
   .chip.baby-chip{ background: linear-gradient(135deg, #ffe4f0, #ffc2df); box-shadow: 0 0 0 2px #ff6fb0, 0 0 10px rgba(255,111,176,0.7); animation: winnerGlowBaby 1.8s ease-in-out infinite; }
 
-  .view-full{ display:block; text-align:center; font-size: 12.5px; font-weight:600; color: var(--green); text-decoration:none; margin: 4px 0 4px; }
+  .view-full{ display:block; text-align:center; font-size: 16px; font-weight:700; color: var(--green); text-decoration:none; margin: 6px 0 6px; }
 
   .empty-box{
     text-align:center; padding: 70px 18px; color: var(--text-dim);
@@ -358,6 +358,25 @@ function entriesHtml(club, tour){
   const birds = [...activeBirds, ...excludedBirds];
   const activeCount = activeBirds.length;
   const cols = tour.columns || [];
+  // Column ka apna "din" tag — column_days (admin ne column banate waqt
+  // permanently save kiya) se, warna kisi bird ke us column mein bhare hue
+  // waqt se guess kar lete hain.
+  const getColDay = (idx) => {
+    if(tour.column_days && tour.column_days[idx] != null) return Number(tour.column_days[idx]);
+    const filled = allBirds.find(b => b.times && b.times[idx]);
+    if(filled) return parseCp(filled.times[idx]).day;
+    return 1;
+  };
+  // Multi-day mein har din apne checkpoints #1 se shuru karta hai (custom
+  // naam diye hue checkpoints ko chhurte nahi, sirf default #<number> ko).
+  const displayColLabel = (idx) => {
+    const raw = cols[idx];
+    if(!/^#\d+$/.test(raw)) return raw;
+    const day = getColDay(idx);
+    let n = 0;
+    for(let i = 0; i <= idx; i++){ if(getColDay(i) === day) n++; }
+    return '#' + n;
+  };
   return birds.map((b, idx) => {
     const isExcluded = idx >= activeCount;
     const avatarInner = b.image ? `<img src="${escapeHtml(b.image)}" alt="">` : escapeHtml(initials(b.name));
@@ -369,7 +388,7 @@ function entriesHtml(club, tour){
       const isBaby = babyCols.includes(i);
       const cls = (isDm ? ' mohar-chip' : '') + (isBaby ? ' baby-chip' : '');
       const marker = (isDm ? '⭐ ' : '') + (isBaby ? '🐣 ' : '');
-      return `<div class="chip${cls}"><div class="clabel">${marker}${escapeHtml(c)}</div><div class="ctime">${parsed.time ? escapeHtml(parsed.time) : '—'}</div>${(parsed.time && parsed.day > 1) ? `<div class="cday">Din ${parsed.day}</div>` : ''}</div>`;
+      return `<div class="chip${cls}"><div class="clabel">${marker}${escapeHtml(displayColLabel(i))}</div><div class="ctime">${parsed.time ? escapeHtml(parsed.time) : '—'}</div>${(parsed.time && parsed.day > 1) ? `<div class="cday">Din ${parsed.day}</div>` : ''}</div>`;
     }).join('');
 
     let breakdownRow = '';
@@ -486,7 +505,7 @@ function clubBlockHtml(club, tour){
         `}
       </div>` : ''}
     </div>
-    <a class="view-full" href="club.html?club=${encodeURIComponent(club.id)}&t=${encodeURIComponent(tour.id)}">Pura result dekhein →</a>
+    <a class="view-full urdu" href="club.html?club=${encodeURIComponent(club.id)}&t=${encodeURIComponent(tour.id)}">پورا نتیجہ دیکھیں ←</a>
     ${entriesHtml(club, tour)}
   `;
 }

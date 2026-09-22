@@ -378,6 +378,19 @@ function getColumnDayPublic(tour, idx){
   if(filled) return parseCp(filled.times[idx]).day;
   return 1;
 }
+// Multi-day tournaments mein har din apne checkpoints #1 se shuru karta hai
+// (Din 1: #1,#2,#3... Din 2: phir se #1,#2,#3...). Sirf DEFAULT auto-numbered
+// labels (#<number>) ko is tarah dikhate hain — custom naam waisa hi rehta hai.
+function displayColLabelPublic(tour, idx){
+  const raw = (tour.columns || [])[idx];
+  if(!/^#\d+$/.test(raw)) return raw;
+  const day = getColumnDayPublic(tour, idx);
+  let n = 0;
+  for(let i = 0; i <= idx; i++){
+    if(getColumnDayPublic(tour, i) === day) n++;
+  }
+  return '#' + n;
+}
 
 // Total tab => poore tournament ke aggregate stats (meta se, jo checkpoint
 // CELLS ke hisaab se calculate hote hain — birds × sab checkpoints). Kisi din
@@ -745,7 +758,7 @@ function renderList(filter){
       const isBaby = babyCols.includes(i);
       const cls = (isDm ? ' mohar-chip' : '') + (isBaby ? ' baby-chip' : '');
       const marker = (isDm ? '⭐ ' : '') + (isBaby ? '🐣 ' : '');
-      return `<div class="chip${cls}"><div class="clabel">${marker}${escapeHtml(c)}</div><div class="ctime">${parsed.time ? escapeHtml(parsed.time) : '—'}</div>${(parsed.time && parsed.day > 1) ? `<div class="cday">Din ${parsed.day}</div>` : ''}</div>`;
+      return `<div class="chip${cls}"><div class="clabel">${marker}${escapeHtml(displayColLabelPublic(CURRENT_TOUR, i))}</div><div class="ctime">${parsed.time ? escapeHtml(parsed.time) : '—'}</div>${(parsed.time && parsed.day > 1) ? `<div class="cday">Din ${parsed.day}</div>` : ''}</div>`;
     }).join('');
 
     let totalDisplay;
