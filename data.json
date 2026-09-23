@@ -486,10 +486,10 @@
             "lofts": 37,
             "is_live": true,
             "is_upcoming": false,
-            "first_winner_time": "",
-            "first_winner_name": "",
-            "winner_pigeon_time": "",
-            "winner_pigeon_name": "",
+            "first_winner_time": "10:32",
+            "first_winner_name": "استاد عامر کھرل چھت ملک چاند",
+            "winner_pigeon_time": "10:32",
+            "winner_pigeon_name": "استاد عامر کھرل چھت ملک چاند",
             "double_mohar_col": null,
             "double_mohar_time": "",
             "double_mohar_name": "",
@@ -497,11 +497,11 @@
             "daily_winners": [
               {
                 "day": 1,
-                "first_winner_name": "",
-                "first_winner_time": "",
-                "winner_pigeon_name": "",
-                "winner_pigeon_time": "",
-                "ready": false
+                "first_winner_name": "استاد عامر کھرل چھت ملک چاند",
+                "first_winner_time": "10:32",
+                "winner_pigeon_name": "استاد عامر کھرل چھت ملک چاند",
+                "winner_pigeon_time": "10:32",
+                "ready": true
               }
             ],
             "daily_double_mohar": [
@@ -555,7 +555,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -584,7 +584,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -613,7 +613,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -642,7 +642,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -671,7 +671,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -700,7 +700,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/9:14",
                 "",
@@ -729,7 +729,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -764,7 +764,7 @@
                   "2:0"
                 ]
               },
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/10:32",
                 "",
@@ -793,7 +793,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/8:57",
                 "",
@@ -822,7 +822,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -851,7 +851,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -880,7 +880,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -909,7 +909,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/9:23",
                 "",
@@ -938,7 +938,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -967,7 +967,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -996,7 +996,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1025,7 +1025,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1054,7 +1054,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1083,7 +1083,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1112,7 +1112,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1141,7 +1141,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1170,7 +1170,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1199,7 +1199,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1228,7 +1228,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1257,7 +1257,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1286,7 +1286,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1315,7 +1315,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1344,7 +1344,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1373,7 +1373,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1402,7 +1402,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1431,7 +1431,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/6:17",
                 "1/9:54",
@@ -1460,7 +1460,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1489,7 +1489,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/10:28",
                 "1/10:29",
@@ -1518,7 +1518,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1547,7 +1547,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1576,7 +1576,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "1/9:21",
                 "",
@@ -1605,7 +1605,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1859,7 +1859,7 @@
               "4": "04 October 2026",
               "5": "11 October 2026"
             },
-            "mode": "tournament"
+            "mode": "competition"
           },
           "columns": [
             "#1",
@@ -1880,7 +1880,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -1909,7 +1909,7 @@
               "dm_cols": [],
               "baby_cols": [],
               "sync_targets": {},
-              "excluded": false,
+              "excluded_days": {},
               "times": [
                 "",
                 "",
@@ -2190,7 +2190,7 @@
               "sync_targets": {},
               "excluded": false,
               "times": [
-                "1/14:31",
+                "1/10:32",
                 "1/14:33",
                 "1/14:51",
                 "1/16:40",
