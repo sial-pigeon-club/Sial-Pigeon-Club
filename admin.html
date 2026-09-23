@@ -1111,6 +1111,7 @@ function recalcWinnerPigeon(){
     let winners = [];
     document.querySelectorAll('.row-card.bird').forEach(card => {
       if(isCardExcludedForAllDays(card)) return; // sab din 'nahi ud raha' mark — is bird ka koi din shamil nahi
+      const total = birdGrandTotalMinutes(card, start);
       if(total === null) return;
       const name = card.querySelector('.f-name').value.trim();
       if(bestVal === null || total > bestVal){
