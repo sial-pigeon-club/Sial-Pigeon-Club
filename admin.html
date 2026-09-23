@@ -3173,16 +3173,17 @@ function renderFlexCard(bird, club, tour, idx){
   }
 
   const rows = (tour.columns || []).map((c,i)=>{
+    const colDay = getColumnDay(tour, i);
+    if(flexDay !== 'total' && colDay !== flexDay) return ''; // sirf isi din ke checkpoints (chahe bhara ho ya khali)
     const parsed = parseCp(bird.times ? bird.times[i] : '');
-    if(flexDay !== 'total' && parsed.time && parsed.day !== flexDay) return ''; // sirf isi din ke checkpoints
     const cpName = (bird.cp_names && bird.cp_names[i]) || '';
     const isDm = dmCols.includes(i);
     const isBaby = babyCols.includes(i);
-    const dayExcluded = parsed.time && isBirdExcludedForDay(bird, parsed.day);
+    const dayExcluded = isBirdExcludedForDay(bird, colDay);
     const rowCls = (isDm ? ' flex-row-mohar' : '') + (isBaby ? ' flex-row-baby' : '') + (dayExcluded ? ' flex-row-excluded' : '');
     const marker = (isDm ? '⭐ ' : '') + (isBaby ? '🐣 ' : '') + (dayExcluded ? '❌ ' : '');
     const nameText = cpName ? cpName : displayColLabel(tour, i);
-    const dayTag = (flexDay === 'total' && parsed.time && parsed.day > 1) ? `<div class="flex-cday">Din ${parsed.day}</div>` : '';
+    const dayTag = (flexDay === 'total' && colDay > 1) ? `<div class="flex-cday">Din ${colDay}</div>` : '';
     const rowNum = (flexDay !== 'total') ? dayRelativeColNum(tour, i) : (i+1);
     return `<div class="flex-table-row${rowCls}">
       <div class="flex-table-cell flex-col-num">${rowNum}</div>
