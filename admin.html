@@ -644,6 +644,15 @@ initSignIn();
 </script>
 
 <script>
+// Koi bhi na-pakdi hui JS error seedha screen par dikha dete hain — taake
+// "kuch kaam nahi kar raha" jaisi problems ka asal wajah turant pata chal
+// sake, bina developer console khole.
+window.onerror = function(msg, src, line, col, err){
+  console.error('Uncaught error:', msg, src, line, col, err);
+  alert('APP ERROR (isay screenshot karke bhej dein):\n\n' + msg + '\nLine: ' + line + ':' + col + '\n\n' + (err && err.stack ? err.stack : ''));
+  return false;
+};
+
 const STORAGE_KEY = 'pigeon_admin_data_v3';
 const CONN_KEY = 'pigeon_admin_conn_v1';
 
@@ -2017,6 +2026,15 @@ async function load(){
 }
 
 function save(){
+  try{
+    saveInner();
+  }catch(err){
+    console.error('save() error:', err);
+    showToast('⚠️ Save error: ' + err.message, true);
+    alert('SAVE ERROR (isay screenshot karke bhej dein):\n\n' + err.message + '\n\n' + (err.stack || ''));
+  }
+}
+function saveInner(){
   recalcMetaCounts();
   const club = data.clubs[currentClubIdx];
   const tour = currentTournament();
@@ -2516,15 +2534,20 @@ function migrateDoubleMoharToPerBird(tour){
 }
 
 function addColumn(){
-  save();
-  const tour = currentTournament();
-  const n = tour.columns.length + 1;
-  const newIdx = tour.columns.length;
-  tour.columns.push('#' + n);
-  tour.birds.forEach(b => b.times.push(''));
-  if(!tour.column_days) tour.column_days = {};
-  tour.column_days[newIdx] = currentEntryDay(); // is column ka din hamesha ke liye fix
-  renderCols(); renderRows(); setAllCardsCollapsed(false); recalcMetaCounts(); save();
+  try{
+    save();
+    const tour = currentTournament();
+    const n = tour.columns.length + 1;
+    const newIdx = tour.columns.length;
+    tour.columns.push('#' + n);
+    tour.birds.forEach(b => b.times.push(''));
+    if(!tour.column_days) tour.column_days = {};
+    tour.column_days[newIdx] = currentEntryDay(); // is column ka din hamesha ke liye fix
+    renderCols(); renderRows(); setAllCardsCollapsed(false); recalcMetaCounts(); save();
+  }catch(err){
+    console.error('addColumn() error:', err);
+    alert('CHECKPOINT ADD ERROR (isay screenshot karke bhej dein):\n\n' + err.message + '\n\n' + (err.stack || ''));
+  }
 }
 
 function removeColumn(idx){
@@ -3593,6 +3616,7 @@ function attachAutoSave(){
   // date hi dikhti rehti thi.
   document.querySelectorAll('input:not(.f-image-file):not(.f-image):not(#birdSearchBox):not(#globalSearchBox):not(#entryDayDate), textarea, select:not(#clubSelect):not(#tourSelect):not(#entryDaySelect)').forEach(el=>{
     el.oninput = () => {
+     try{
       const card = el.closest('.row-card.bird');
       // Agar checkpoint field ko khaali kar diya jaye, to uska din turant column ke
       // fixed din se reset ho jaye (reload ka intezar na karna pade) — lekin jab tak
@@ -3645,6 +3669,10 @@ function attachAutoSave(){
         if(mirror) mirror.value = el.value;
       }
       save();
+     }catch(err){
+       console.error('autosave input error:', err);
+       alert('TYPING/INPUT ERROR (isay screenshot karke bhej dein):\n\n' + err.message + '\n\n' + (err.stack || ''));
+     }
     };
     el.onchange = el.oninput;
   });
