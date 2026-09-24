@@ -440,7 +440,11 @@
         <button type="button" class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="saveEntryDayDate()">💾 Is din ki date save karein</button>
         <div id="dayDateStatus" style="margin-top:6px; font-size:12.5px;"></div>
       </div>
-      <button type="button" class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="addColumn()">+ Is din ke liye naya checkpoint add karein</button>
+      <div style="margin-top:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <label style="margin:0; font-weight:400;">Kitne checkpoints add karne hain?</label>
+        <input id="entryDayCpCount" type="number" min="1" step="1" value="1" style="width:80px;">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="addColumnsForDay()">+ Is din ke liye checkpoints add karein</button>
+      </div>
     </div>
     <div id="flexViewWrap" style="display:none; margin-top:12px; padding:12px; border:1.5px solid #4C9BD6; border-radius:10px; background: rgba(76,155,214,0.08);">
       <label style="font-weight:700; color:#4C9BD6;">🖼️ Neeche har bird ki Result Flex kis ki dikhaye?</label>
@@ -521,6 +525,10 @@
         <button type="button" id="modeBtnMohar" class="btn btn-sm" onclick="setHighlightMode('mohar')" style="border:1.5px solid var(--gold); background:var(--gold); color:#1a1408; font-weight:700;">⭐ Double Mohar</button>
         <button type="button" id="modeBtnBaby" class="btn btn-sm btn-ghost" onclick="setHighlightMode('baby')" style="border:1.5px solid #ff6fb0;">🐣 Baby Winner</button>
       </div>
+    </div>
+    <div id="birdEntryDayTabsWrap" style="display:none; margin-bottom:14px; padding:10px 12px; border:1.5px solid var(--gold); border-radius:10px; background: rgba(230,180,60,0.08);">
+      <label style="font-weight:700; display:block; margin-bottom:8px;">📅 Kis din ke checkpoints yahan likhne hain?</label>
+      <div id="birdEntryDayTabs" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
     </div>
     <div id="rows"></div>
     <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -782,6 +790,7 @@ function renderEntryDaySelector(){
   if(!wrap || !sel) return;
   if(durationDays <= 1){
     wrap.style.display = 'none';
+    renderBirdEntryDayTabs();
     return;
   }
   const prevVal = sel.value;
@@ -790,6 +799,34 @@ function renderEntryDaySelector(){
     .join('');
   sel.value = (prevVal && Number(prevVal) <= durationDays) ? prevVal : '1';
   wrap.style.display = '';
+  renderBirdEntryDayTabs();
+}
+
+// "Bird results" panel ke upar hi din-wise tabs — taake upar "Tournament info"
+// wale entryDaySelect tak baar baar scroll karke din badalne ki zaroorat na
+// pare, seedha yahin se din select karke us din ke checkpoints fori likhe
+// ja sakein. Ye entryDaySelect ka hi ek dusra, nazdeek wala control hai —
+// dono hamesha sync rehte hain (currentEntryDay() wahi ek jagah se padhi jati hai).
+function renderBirdEntryDayTabs(){
+  const durationDays = Number(document.getElementById('m_duration_days').value) || 1;
+  const wrap = document.getElementById('birdEntryDayTabsWrap');
+  const tabsEl = document.getElementById('birdEntryDayTabs');
+  if(!wrap || !tabsEl) return;
+  if(durationDays <= 1){
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = '';
+  const activeDay = currentEntryDay();
+  tabsEl.innerHTML = Array.from({ length: durationDays }, (_, i) => i + 1)
+    .map(d => `<button type="button" class="btn btn-sm cmp-tab-btn${activeDay === d ? ' active' : ''}" onclick="selectBirdEntryDay(${d})">Din ${d}</button>`)
+    .join('');
+}
+
+function selectBirdEntryDay(d){
+  const sel = document.getElementById('entryDaySelect');
+  if(sel){ sel.value = d; }
+  onEntryDayChange();
 }
 
 // Result Flex preview ke liye "Din 1 / Din 2 / 🏆 Total" tabs — single-day
@@ -838,6 +875,7 @@ function onEntryDayChange(){
   // column/din ke liye bana ho — jo galat data-day tag ka sabab ban raha tha).
   loadEntryDayDate();
   renderCols();
+  renderBirdEntryDayTabs();
 
   // Status message ab is din ke hisaab se refresh hota hai — pehle purane din
   // ka "save ho gayi" message naye din pe switch karne ke baad bhi dikhta rehta
@@ -2535,18 +2573,37 @@ function migrateDoubleMoharToPerBird(tour){
 }
 
 function addColumn(){
+  addColumnsForDay(1);
+}
+
+// Ek dafa mein kai checkpoints add karne ke liye — count ya to seedha
+// pass ki ja sakti hai (addColumn se, hamesha 1), ya agar nahi di gayi to
+// "entryDayCpCount" number field se padhi jati hai (naya bulk-add button).
+// Sab naye columns isi waqt ke currentEntryDay() ke saath tag hote hain,
+// bilkul us tarah jaise pehle ek-ek karke add hote the.
+function addColumnsForDay(countArg){
   try{
     save();
+    let count = countArg;
+    if(count === undefined){
+      const countEl = document.getElementById('entryDayCpCount');
+      count = Number(countEl && countEl.value) || 1;
+    }
+    count = Math.max(1, Math.floor(count));
     const tour = currentTournament();
-    const n = tour.columns.length + 1;
-    const newIdx = tour.columns.length;
-    tour.columns.push('#' + n);
-    tour.birds.forEach(b => b.times.push(''));
     if(!tour.column_days) tour.column_days = {};
-    tour.column_days[newIdx] = currentEntryDay(); // is column ka din hamesha ke liye fix
+    const day = currentEntryDay();
+    for(let i = 0; i < count; i++){
+      const n = tour.columns.length + 1;
+      const newIdx = tour.columns.length;
+      tour.columns.push('#' + n);
+      tour.birds.forEach(b => b.times.push(''));
+      tour.column_days[newIdx] = day; // is column ka din hamesha ke liye fix
+    }
     renderCols(); renderRows(); setAllCardsCollapsed(false); recalcMetaCounts(); save();
+    if(count > 1) showToast(count + ' checkpoints add ho gaye');
   }catch(err){
-    console.error('addColumn() error:', err);
+    console.error('addColumnsForDay() error:', err);
     alert('CHECKPOINT ADD ERROR (isay screenshot karke bhej dein):\n\n' + err.message + '\n\n' + (err.stack || ''));
   }
 }
