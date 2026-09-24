@@ -2724,20 +2724,24 @@ function birdGrandTotalDisplay(bird){
 // pehle save() zaroor call hota hai taake abhi-abhi type ki hui values bhi
 // shamil ho jayein.
 
-function cmpBirdGrandTotal(bird, start){
+// day parametr: 'total' (sab din milla ke, purana/asal tareeqa) ya koi
+// khaas din ka number (sirf usi din ke checkpoints shamil hote hain).
+function cmpBirdGrandTotal(bird, start, day){
+  day = day === undefined ? 'total' : day;
   const times = bird.times || [];
   const ded = parseHM(bird.deduction || '');
   const byDay = {};
   let any = false;
   times.forEach(raw => {
     if(!raw) return;
-    const { day, time } = parseCp(raw);
+    const { day: d, time } = parseCp(raw);
     if(!time) return;
-    if(isBirdExcludedForDay(bird, day)) return; // is din 'nahi ud raha' — is din ka checkpoint shamil nahi
+    if(day !== 'total' && d !== day) return; // sirf isi din tak mehdood
+    if(isBirdExcludedForDay(bird, d)) return; // is din 'nahi ud raha' — is din ka checkpoint shamil nahi
     any = true;
     let diff = parseHM(time) - start;
     if(diff < 0) diff += 1440;
-    byDay[day] = (byDay[day] || 0) + diff;
+    byDay[d] = (byDay[d] || 0) + diff;
   });
   if(!any) return null;
   let total = 0;
@@ -2745,17 +2749,20 @@ function cmpBirdGrandTotal(bird, start){
   return total;
 }
 
-// Bird ka sab se aakhri bhara hua checkpoint (sab se badhe din mein, jo din
-// excluded na ho), Uraan se uska waqfa — Winner Pigeon comparison ke liye.
-function cmpBirdLastCpDiff(bird, start){
+// Bird ka sab se aakhri bhara hua checkpoint — 'total' mode mein sab se
+// badhe din mein, khaas din mode mein sirf usi din ke andar — Uraan se
+// uska waqfa — Winner Pigeon comparison ke liye.
+function cmpBirdLastCpDiff(bird, start, day){
+  day = day === undefined ? 'total' : day;
   const times = bird.times || [];
   let bestDay = -1, bestIdx = -1;
   times.forEach((raw, i) => {
     if(!raw) return;
-    const { day, time } = parseCp(raw);
+    const { day: d, time } = parseCp(raw);
     if(!time) return;
-    if(isBirdExcludedForDay(bird, day)) return; // is din 'nahi ud raha' — is din ka checkpoint shamil nahi
-    if(day > bestDay || (day === bestDay && i > bestIdx)){ bestDay = day; bestIdx = i; }
+    if(day !== 'total' && d !== day) return; // sirf isi din tak mehdood
+    if(isBirdExcludedForDay(bird, d)) return; // is din 'nahi ud raha' — is din ka checkpoint shamil nahi
+    if(d > bestDay || (d === bestDay && i > bestIdx)){ bestDay = d; bestIdx = i; }
   });
   if(bestIdx === -1) return null;
   const { time } = parseCp(times[bestIdx]);
@@ -2779,7 +2786,12 @@ function openBirdCompare(idx){
   const tour = currentTournament();
   const bird = tour.birds[idx];
   if(!bird) return;
-  window.__cmpState = { idx };
+  const durationDays = Number(document.getElementById('m_duration_days')?.value) || 1;
+  window.__cmpState = { idx, day: 'total' };
+
+  const dayTabsHtml = durationDays > 1
+    ? `<div id="cmpDayTabs" style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;"></div>`
+    : '';
 
   const overlay = document.createElement('div');
   overlay.id = 'cmpOverlay';
@@ -2788,6 +2800,7 @@ function openBirdCompare(idx){
     <div style="background:var(--bg-panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px; max-width:640px; width:100%; max-height:85vh; overflow-y:auto;">
       <h3 style="margin:0 0 4px; font-family:'Fraunces',serif; color:var(--gold);">🆚 Compare — ${escapeHtmlAdmin(bird.name || '(bila naam)')}</h3>
       <p class="sub" style="margin:0 0 14px;">Isi tournament ke baaqi sab birds (jo "❌ not-flying" mark nahi) ke sath comparison.</p>
+      ${dayTabsHtml}
       <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
         <button type="button" class="btn btn-sm cmp-tab-btn" data-tab="wp" onclick="switchCmpTab('wp')">🏆 Winner Pigeon</button>
         <button type="button" class="btn btn-sm cmp-tab-btn" data-tab="cp" onclick="switchCmpTab('cp')">📍 Checkpoint-wise</button>
@@ -2801,7 +2814,32 @@ function openBirdCompare(idx){
     </div>
   `;
   document.body.appendChild(overlay);
+  if(durationDays > 1) renderCmpDayTabs();
   switchCmpTab('wp');
+}
+
+// Compare modal ke upar Din 1 / Din 2 / ... / 🏆 Total tabs — 'Total' hamesha
+// sab dinon ka combined comparison hai (jaisa Compare pehle se karta tha),
+// har din alag se apna khaas din ka comparison (bas usi din ke checkpoints
+// shamil hote hain, baaqi din bilkul nazar-andaz). Single-day tournaments
+// mein ye tabs sirey se dikhte hi nahi — 'total' hi hamesha use hota hai.
+function renderCmpDayTabs(){
+  const state = window.__cmpState;
+  const tabsEl = document.getElementById('cmpDayTabs');
+  if(!state || !tabsEl) return;
+  const durationDays = Number(document.getElementById('m_duration_days')?.value) || 1;
+  const dayBtns = Array.from({ length: durationDays }, (_, i) => i + 1)
+    .map(d => `<button type="button" class="btn btn-sm cmp-tab-btn${state.day === d ? ' active' : ''}" onclick="selectCmpDay(${d})">Din ${d}</button>`)
+    .join('');
+  tabsEl.innerHTML = `${dayBtns}<button type="button" class="btn btn-sm cmp-tab-btn${state.day === 'total' ? ' active' : ''}" onclick="selectCmpDay('total')">🏆 Total</button>`;
+}
+
+function selectCmpDay(d){
+  const state = window.__cmpState;
+  if(!state) return;
+  state.day = d;
+  renderCmpDayTabs();
+  switchCmpTab(state.tab || 'wp');
 }
 
 function closeBirdCompare(){
@@ -2814,24 +2852,26 @@ function switchCmpTab(tab){
   const state = window.__cmpState;
   if(!state) return;
   state.tab = tab;
-  document.querySelectorAll('.cmp-tab-btn').forEach(btn => {
+  document.querySelectorAll('#cmpOverlay .cmp-tab-btn[data-tab]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tab);
   });
   const body = document.getElementById('cmpBody');
   if(!body) return;
-  if(tab === 'wp') body.innerHTML = renderCmpWinnerPigeon(state.idx);
-  else if(tab === 'cp') body.innerHTML = renderCmpCheckpoints(state.idx);
-  else if(tab === 'sc') body.innerHTML = renderCmpScore(state.idx);
-  else body.innerHTML = renderCmpTotalTime(state.idx);
+  const day = state.day || 'total';
+  if(tab === 'wp') body.innerHTML = renderCmpWinnerPigeon(state.idx, day);
+  else if(tab === 'cp') body.innerHTML = renderCmpCheckpoints(state.idx, day);
+  else if(tab === 'sc') body.innerHTML = renderCmpScore(state.idx, day);
+  else body.innerHTML = renderCmpTotalTime(state.idx, day);
 }
 
-function renderCmpWinnerPigeon(selfIdx){
+function renderCmpWinnerPigeon(selfIdx, day){
+  day = day === undefined ? 'total' : day;
   const tour = currentTournament();
   const start = parseHM(tour.meta.uraan_time);
   const rows = cmpEligibleBirds().map(x => ({
-    idx: x.idx, name: x.bird.name || '(bila naam)', diff: cmpBirdLastCpDiff(x.bird, start)
+    idx: x.idx, name: x.bird.name || '(bila naam)', diff: cmpBirdLastCpDiff(x.bird, start, day)
   })).filter(r => r.diff !== null);
-  if(!rows.length) return `<p class="cmp-empty">Abhi kisi bird ka koi checkpoint bhara nahi — comparison ke liye kam se kam ek checkpoint chahiye.</p>`;
+  if(!rows.length) return `<p class="cmp-empty">${day === 'total' ? 'Abhi kisi bird ka koi checkpoint bhara nahi' : `Din ${day} ka abhi kisi bird ka koi checkpoint bhara nahi`} — comparison ke liye kam se kam ek checkpoint chahiye.</p>`;
   rows.sort((a,b) => b.diff - a.diff);
   const trs = rows.map((r, i) => `
     <tr class="${r.idx === selfIdx ? 'cmp-self' : ''}">
@@ -2857,14 +2897,16 @@ function renderCmpWinnerPigeon(selfIdx){
 // Misaal: Bird A ke 3 checkpoints (#1,#2,#3), Bird B ke 2 (#1,#2) — to
 // A ka #2(aakhir se doosra) = B ka #1, A ka #3(aakhri) = B ka #2 match
 // honge, aur A ka #1 (shuru wala) A ka bonus ban jayega.
-function cmpAlignedPairs(birdA, birdB){
+function cmpAlignedPairs(birdA, birdB, day){
+  day = day === undefined ? 'total' : day;
   const filledOf = (bird) => {
     const list = [];
     (bird.times || []).forEach((raw, i) => {
       if(!raw) return;
-      const { day, time } = parseCp(raw);
+      const { day: d, time } = parseCp(raw);
       if(!time) return;
-      if(isBirdExcludedForDay(bird, day)) return; // is din 'nahi ud raha' — is din ka checkpoint shamil nahi
+      if(day !== 'total' && d !== day) return; // sirf isi din tak mehdood
+      if(isBirdExcludedForDay(bird, d)) return; // is din 'nahi ud raha' — is din ka checkpoint shamil nahi
       list.push(i);
     });
     return list;
@@ -2901,8 +2943,8 @@ function cmpBirdRawTimeAt(bird, ci){
 // (har ek) — kyun ke un checkpoints par is bird peeche reh gaya. Total
 // number POSITIVE (zyada jeeta), NEGATIVE (zyada haara), ya ZERO (barabar)
 // ho sakta hai.
-function cmpCheckpointNetScore(selfBird, compBird, start){
-  const { pairs, extraA, extraB } = cmpAlignedPairs(selfBird, compBird);
+function cmpCheckpointNetScore(selfBird, compBird, start, day){
+  const { pairs, extraA, extraB } = cmpAlignedPairs(selfBird, compBird, day);
   let score = 0;
   pairs.forEach(p => {
     const sVal = cmpBirdCpDiffAt(selfBird, p.aCol, start);
@@ -2917,7 +2959,8 @@ function cmpCheckpointNetScore(selfBird, compBird, start){
   return score;
 }
 
-function renderCmpCheckpoints(selfIdx){
+function renderCmpCheckpoints(selfIdx, day){
+  day = day === undefined ? 'total' : day;
   const tour = currentTournament();
   const start = parseHM(tour.meta.uraan_time);
   const selfBird = tour.birds[selfIdx];
@@ -2926,7 +2969,7 @@ function renderCmpCheckpoints(selfIdx){
   const colLabel = ci => displayColLabel(tour, ci);
   const blocks = competitors.map(x => {
     const compName = x.bird.name || '(bila naam)';
-    const { pairs, extraA, extraB } = cmpAlignedPairs(selfBird, x.bird);
+    const { pairs, extraA, extraB } = cmpAlignedPairs(selfBird, x.bird, day);
     if(!pairs.length && !extraA.length && !extraB.length){
       return `<div class="cmp-cp-block"><h4>${escapeHtmlAdmin(compName)}</h4><p class="cmp-empty">Kisi bhi bird ka koi checkpoint abhi bhara nahi.</p></div>`;
     }
@@ -2961,7 +3004,7 @@ function renderCmpCheckpoints(selfIdx){
       </tr>`;
     }).join('');
     const allRows = bonusRows + pairRows;
-    const netScore = cmpCheckpointNetScore(selfBird, x.bird, start);
+    const netScore = cmpCheckpointNetScore(selfBird, x.bird, start, day);
     const netColor = netScore > 0 ? 'var(--up)' : (netScore < 0 ? 'var(--danger)' : 'var(--text-dim)');
     const netSign = netScore > 0 ? `+${netScore}` : `${netScore}`;
     return `<div class="cmp-cp-block">
@@ -3003,25 +3046,26 @@ function cmpBirdCpDiffAt(bird, ci, start){
 // ki poori ginti), aur Winner Pigeon + Total Time dono bhi us bird ke ✅ ban
 // jate hain. Agar DONO ka ek bhi checkpoint fill nahi, to sab kuch "barabar"
 // (level) ho jata hai — na ✅ na ❌.
-function renderCmpScore(selfIdx){
+function renderCmpScore(selfIdx, day){
+  day = day === undefined ? 'total' : day;
   const tour = currentTournament();
   const start = parseHM(tour.meta.uraan_time);
   const selfBird = tour.birds[selfIdx];
   const competitors = cmpEligibleBirds().filter(x => x.idx !== selfIdx);
   if(!competitors.length) return `<p class="cmp-empty">Is tournament mein koi aur bird nahi jis se compare kiya ja sake.</p>`;
-  const selfWP = cmpBirdLastCpDiff(selfBird, start);
-  const selfTotal = cmpBirdGrandTotal(selfBird, start);
+  const selfWP = cmpBirdLastCpDiff(selfBird, start, day);
+  const selfTotal = cmpBirdGrandTotal(selfBird, start, day);
   // v==='level' -> barabar, v===true -> jeeta, v===false -> haara
   const sign = v => v === 'level' ? '➖ Barabar' : (v ? '✅' : '❌');
   const rows = competitors.map(x => {
-    const score = cmpCheckpointNetScore(selfBird, x.bird, start);
-    const compWP = cmpBirdLastCpDiff(x.bird, start);
+    const score = cmpCheckpointNetScore(selfBird, x.bird, start, day);
+    const compWP = cmpBirdLastCpDiff(x.bird, start, day);
     let wpWin;
     if(selfWP === null && compWP === null) wpWin = 'level';
     else if(selfWP === null) wpWin = false;
     else if(compWP === null) wpWin = true;
     else wpWin = selfWP > compWP;
-    const compTotal = cmpBirdGrandTotal(x.bird, start);
+    const compTotal = cmpBirdGrandTotal(x.bird, start, day);
     let ttWin;
     if(selfTotal === null && compTotal === null) ttWin = 'level';
     else if(selfTotal === null) ttWin = false;
@@ -3047,13 +3091,14 @@ function renderCmpScore(selfIdx){
   `;
 }
 
-function renderCmpTotalTime(selfIdx){
+function renderCmpTotalTime(selfIdx, day){
+  day = day === undefined ? 'total' : day;
   const tour = currentTournament();
   const start = parseHM(tour.meta.uraan_time);
   const rows = cmpEligibleBirds().map(x => ({
-    idx: x.idx, name: x.bird.name || '(bila naam)', total: cmpBirdGrandTotal(x.bird, start)
+    idx: x.idx, name: x.bird.name || '(bila naam)', total: cmpBirdGrandTotal(x.bird, start, day)
   })).filter(r => r.total !== null);
-  if(!rows.length) return `<p class="cmp-empty">Abhi kisi bird ka koi checkpoint bhara nahi — comparison ke liye kam se kam ek checkpoint chahiye.</p>`;
+  if(!rows.length) return `<p class="cmp-empty">${day === 'total' ? 'Abhi kisi bird ka koi checkpoint bhara nahi' : `Din ${day} ka abhi kisi bird ka koi checkpoint bhara nahi`} — comparison ke liye kam se kam ek checkpoint chahiye.</p>`;
   rows.sort((a,b) => b.total - a.total);
   const trs = rows.map((r,i) => `
     <tr class="${r.idx === selfIdx ? 'cmp-self' : ''}">
