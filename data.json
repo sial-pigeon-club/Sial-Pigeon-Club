@@ -1678,15 +1678,15 @@
             "duration_days": 5,
             "sunrise": "05:45",
             "sunset": "18:11",
-            "flying": 5,
-            "landed": 23,
+            "flying": 22,
+            "landed": 6,
             "pigeons": 28,
             "lofts": 2,
             "is_live": true,
             "is_upcoming": false,
-            "first_winner_time": "16:26",
-            "first_winner_name": "استاد عامر کھرل چھت رائے محسن",
-            "winner_pigeon_time": "110:52",
+            "first_winner_time": "6:05",
+            "first_winner_name": "استاد ندیم ملاں چھت جگا سیال",
+            "winner_pigeon_time": "51:33",
             "winner_pigeon_name": "استاد ندیم ملاں چھت جگا سیال",
             "double_mohar_col": null,
             "double_mohar_time": "",
@@ -1695,16 +1695,16 @@
             "daily_winners": [
               {
                 "day": 1,
-                "first_winner_name": "استاد عامر کھرل چھت رائے محسن",
-                "first_winner_time": "14:31",
-                "winner_pigeon_name": "استاد ندیم ملاں چھت جگا سیال",
-                "winner_pigeon_time": "19:36",
+                "first_winner_name": "",
+                "first_winner_time": "",
+                "winner_pigeon_name": "",
+                "winner_pigeon_time": "",
                 "ready": true
               },
               {
                 "day": 2,
-                "first_winner_name": "استاد عامر کھرل چھت رائے محسن",
-                "first_winner_time": "13:55",
+                "first_winner_name": "استاد ندیم ملاں چھت جگا سیال",
+                "first_winner_time": "12:05",
                 "winner_pigeon_name": "استاد ندیم ملاں چھت جگا سیال",
                 "winner_pigeon_time": "18:38",
                 "ready": true
@@ -1881,20 +1881,39 @@
             {
               "name": "استاد ندیم ملاں چھت جگا سیال",
               "image": "",
-              "total": "Din 1: 59:19 · Din 2: 51:33",
+              "total": "51:33",
               "deduction": "",
               "note": "",
               "dm_cols": [],
               "baby_cols": [],
-              "sync_targets": {},
+              "sync_targets": {
+                "7": [
+                  "2:1"
+                ],
+                "8": [
+                  "2:1"
+                ],
+                "9": [
+                  "2:1"
+                ],
+                "10": [
+                  "2:1"
+                ],
+                "11": [
+                  "2:1"
+                ],
+                "12": [
+                  "2:1"
+                ]
+              },
               "excluded_days": {},
               "times": [
-                "1/13:16",
-                "1/13:47",
-                "1/15:52",
-                "1/16:10",
-                "1/16:38",
-                "1/19:36",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
                 "",
                 "2/12:05",
                 "2/12:33",
@@ -1924,7 +1943,7 @@
             {
               "name": "استاد عامر کھرل چھت رائے محسن",
               "image": "",
-              "total": "Din 1: 36:35 · Din 2: 61:28",
+              "total": "0:00",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -1932,20 +1951,20 @@
               "sync_targets": {},
               "excluded_days": {},
               "times": [
-                "1/14:31",
-                "1/14:33",
-                "1/14:51",
-                "1/16:40",
                 "",
                 "",
                 "",
-                "2/13:55",
-                "2/14:02",
-                "2/14:06",
-                "2/14:06",
-                "2/14:26",
-                "2/15:07",
-                "2/17:46"
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
               ],
               "cp_names": [
                 "",
@@ -1969,7 +1988,7 @@
           "position_amounts_by_tab": {
             "total": [
               {
-                "amount": " Honda 70 Motocycle",
+                "amount": "China Honda 70",
                 "show": true
               }
             ]
@@ -1998,15 +2017,15 @@
             "duration_days": 5,
             "sunrise": "05:45",
             "sunset": "18:11",
-            "flying": 82,
-            "landed": 16,
-            "pigeons": 98,
-            "lofts": 7,
+            "flying": 61,
+            "landed": 23,
+            "pigeons": 84,
+            "lofts": 6,
             "is_live": true,
             "is_upcoming": false,
             "first_winner_time": "13:21",
             "first_winner_name": "استاد ندیم ملاں چھت جگا سیال",
-            "winner_pigeon_time": "110:54",
+            "winner_pigeon_time": "110:52",
             "winner_pigeon_name": "استاد ندیم ملاں چھت جگا سیال",
             "double_mohar_col": null,
             "double_mohar_time": "",
@@ -2201,7 +2220,7 @@
             {
               "name": "استاد ندیم ملاں چھت جگا سیال",
               "image": "",
-              "total": "Din 1: 59:19 · Din 2: 51:35",
+              "total": "Din 1: 59:19 · Din 2: 51:33",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -2217,7 +2236,7 @@
                 "1/19:36",
                 "",
                 "2/12:05",
-                "2/12:35",
+                "2/12:33",
                 "2/13:29",
                 "2/13:48",
                 "2/17:00",
@@ -2287,7 +2306,7 @@
             {
               "name": "استاد ملک مانی کچ دا گلاس چھت شیخ انعام",
               "image": "",
-              "total": "0:00",
+              "total": "62:50",
               "deduction": "",
               "note": "",
               "dm_cols": [],
@@ -2302,13 +2321,13 @@
                 "",
                 "",
                 "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
+                "2/10:22",
+                "2/14:00",
+                "2/14:02",
+                "2/16:12",
+                "2/16:19",
+                "2/16:19",
+                "2/17:36"
               ],
               "cp_names": [
                 "",
@@ -2329,49 +2348,6 @@
             },
             {
               "name": "استاد اعجاز چھت لاہور قلندر",
-              "image": "",
-              "total": "0:00",
-              "deduction": "",
-              "note": "",
-              "dm_cols": [],
-              "baby_cols": [],
-              "sync_targets": {},
-              "excluded_days": {},
-              "times": [
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
-              ],
-              "cp_names": [
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
-              ]
-            },
-            {
-              "name": "استاد بادشاہ گجر چھت دربار والی",
               "image": "",
               "total": "0:00",
               "deduction": "",
