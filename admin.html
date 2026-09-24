@@ -490,6 +490,10 @@
   <div class="panel">
     <h2>Checkpoint labels</h2>
     <p class="sub" style="margin-bottom:10px;">In display order left-to-right (e.g. #6, #5, #4, #3, #2, #1) — add or remove as needed, birds update automatically</p>
+    <div id="checkpointDayTabsWrap" style="display:none; margin-bottom:14px; padding:10px 12px; border:1.5px solid var(--gold); border-radius:10px; background: rgba(230,180,60,0.08);">
+      <label style="font-weight:700; display:block; margin-bottom:8px;">📅 Kis din ke checkpoints yahan dikhane/edit karne hain?</label>
+      <div id="checkpointDayTabs" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+    </div>
     <div class="row-fields-cp" id="colLabels"></div>
     <button class="btn btn-ghost" onclick="addColumn()">+ Add checkpoint</button>
   </div>
@@ -2091,7 +2095,18 @@ function saveInner(){
     const val = el.type === 'number' ? Number(el.value) : el.value;
     tour.meta[METAKEYS[i]] = val;
   });
-  tour.columns = Array.from(document.querySelectorAll('.f-collabel')).map(i=>i.value);
+  // colLabels ab multi-day tournaments mein sirf currentEntryDay() ke
+  // checkpoints dikhata hai (baaki din chhupe rehte hain, DOM mein hote hi
+  // nahi) — isliye poora tour.columns array yahan se dobara nahi banate
+  // (warna doosre dinon ke labels save hote hi mit jate), sirf jo columns
+  // is waqt DOM mein visible hain unhi ka label (data-colidx se asal index)
+  // update karte hain, baaki columns apni purani value par rehte hain.
+  document.querySelectorAll('.f-collabel').forEach(el => {
+    const colIdx = Number(el.dataset.colidx);
+    if(!Number.isNaN(colIdx) && tour.columns[colIdx] !== undefined){
+      tour.columns[colIdx] = el.value;
+    }
+  });
   const posAmountsByTab = migratePositionAmounts(tour);
   const allPosAmtEls = Array.from(document.querySelectorAll('.f-posamt'));
   const allPosShowEls = Array.from(document.querySelectorAll('.f-posamt-show'));
@@ -2241,7 +2256,15 @@ function renderCols(){
   const tour = currentTournament();
   const cols = tour.columns;
   const durationDays = Number(document.getElementById('m_duration_days')?.value) || 1;
-  wrap.innerHTML = cols.map((c,idx)=>{
+  // Single-day tournaments: bilkul pehle jaisa, sab checkpoints ek hi flat
+  // list mein. Multi-day: sirf currentEntryDay() (abhi jo din select hai)
+  // ke checkpoints yahan dikhte hain — baaki dinon ke apne tab par alag se.
+  const activeDay = currentEntryDay();
+  const visibleIdx = durationDays > 1
+    ? cols.map((_,idx)=>idx).filter(idx => getColumnDay(tour, idx) === activeDay)
+    : cols.map((_,idx)=>idx);
+  wrap.innerHTML = visibleIdx.map((idx)=>{
+    const c = cols[idx];
     let dayBadge = '';
     if(durationDays > 1){
       const day = getColumnDay(tour, idx);
@@ -2250,11 +2273,32 @@ function renderCols(){
     return `
     <div style="position:relative;">
       ${dayBadge}
-      <input class="f-collabel" value="${displayColLabel(tour, idx)}">
+      <input class="f-collabel" data-colidx="${idx}" value="${displayColLabel(tour, idx)}">
       <button type="button" onclick="removeColumn(${idx})" style="position:absolute; top:-6px; right:-6px; background:var(--danger); color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:11px; line-height:1; cursor:pointer;">×</button>
     </div>`;
   }).join('');
+  renderCheckpointDayTabs();
   attachAutoSave();
+}
+
+// Checkpoint labels panel ke upar din-wise tabs — Bird results wale tabs ki
+// tarah hi, yahan se din badalne par colLabels list bhi turant usi din ke
+// checkpoints tak filter ho jati hai (yeh aur birdEntryDayTabs/entryDaySelect
+// teeno hamesha sync rehte hain, sab ek hi currentEntryDay() padhte hain).
+function renderCheckpointDayTabs(){
+  const durationDays = Number(document.getElementById('m_duration_days')?.value) || 1;
+  const wrap = document.getElementById('checkpointDayTabsWrap');
+  const tabsEl = document.getElementById('checkpointDayTabs');
+  if(!wrap || !tabsEl) return;
+  if(durationDays <= 1){
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = '';
+  const activeDay = currentEntryDay();
+  tabsEl.innerHTML = Array.from({ length: durationDays }, (_, i) => i + 1)
+    .map(d => `<button type="button" class="btn btn-sm cmp-tab-btn${activeDay === d ? ' active' : ''}" onclick="selectBirdEntryDay(${d})">Din ${d}</button>`)
+    .join('');
 }
 
 // Position-wise Amount (Inaam): har ranking position (1st, 2nd, 3rd...) ke
