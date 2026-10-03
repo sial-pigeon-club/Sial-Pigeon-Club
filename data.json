@@ -3983,6 +3983,452 @@
           }
         }
       ]
+    },
+    {
+      "id": "musjf0tckhkoq",
+      "name": "چک 44 کلب",
+      "city": "Lahore",
+      "lat": 31.558,
+      "lon": 74.35071,
+      "logo": "",
+      "tournaments": [
+        {
+          "id": "musjf0tck9a0g",
+          "name": "یاراں نال بہاراں چک 44 کپ",
+          "meta": {
+            "date": "04 October 2026",
+            "uraan_time": "06:00",
+            "aakhri_time": "20:00",
+            "duration_days": 1,
+            "sunrise": "05:58",
+            "sunset": "17:44",
+            "flying": 84,
+            "landed": 0,
+            "pigeons": 84,
+            "lofts": 12,
+            "is_live": false,
+            "is_upcoming": true,
+            "mode": "tournament",
+            "first_winner_time": "",
+            "first_winner_name": "",
+            "winner_pigeon_time": "",
+            "winner_pigeon_name": "",
+            "double_mohar_col": null,
+            "double_mohar_time": "",
+            "double_mohar_name": "",
+            "winner_pigeon_total_ready": false,
+            "daily_winners": [
+              {
+                "day": 1,
+                "first_winner_name": "",
+                "first_winner_time": "",
+                "winner_pigeon_name": "",
+                "winner_pigeon_time": "",
+                "ready": false
+              }
+            ],
+            "daily_double_mohar": [
+              {
+                "day": 1,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              }
+            ],
+            "daily_baby_winner": [
+              {
+                "day": 1,
+                "participating": 0,
+                "name": "",
+                "time": "",
+                "ready": false
+              }
+            ],
+            "first_winner_amount_show": true,
+            "winner_pigeon_amount_show": true,
+            "double_mohar_amount_show": true,
+            "baby_winner_amount_show": true,
+            "entry_fee": "3,000",
+            "tour_note": "",
+            "first_winner_amount": "",
+            "winner_pigeon_amount": "",
+            "double_mohar_amount": "",
+            "baby_winner_time": "",
+            "baby_winner_name": "",
+            "baby_winner_amount": ""
+          },
+          "columns": [
+            "#1",
+            "#2",
+            "#3",
+            "#4",
+            "#5",
+            "#6",
+            "#7"
+          ],
+          "birds": [
+            {
+              "name": "استاد ندیم ملاں چھت جگا سیال",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded_days": {},
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد ملک کرامت رضوان مہر",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded_days": {},
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد پپو ڈرمہ والا چھت شاواں والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded_days": {},
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد یاسر بھٹی چھت گھر والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded_days": {},
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد ارسلان بھٹی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded_days": {},
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد رانا آصف",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded_days": {},
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد ارسلان بھٹی چھت نزاکت بھٹی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded_days": {},
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "پیر خرم شاہ",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded_days": {},
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد منیر مغل چھت رانا افضل چک 47",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded_days": {},
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "رانا وسیم چک 49",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded_days": {},
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "لالو 49 چک ماھر",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded_days": {},
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            },
+            {
+              "name": "استاد افضال چھت کالے والی",
+              "image": "",
+              "total": "0:00",
+              "deduction": "",
+              "note": "",
+              "dm_cols": [],
+              "baby_cols": [],
+              "sync_targets": {},
+              "excluded_days": {},
+              "times": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "cp_names": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ]
+            }
+          ],
+          "gallery": [],
+          "position_amounts_by_tab": {
+            "total": []
+          },
+          "column_days": {
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1
+          }
+        }
+      ]
     }
   ]
 }
